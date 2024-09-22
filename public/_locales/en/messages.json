@@ -1,0 +1,35 @@
+{
+  "extensionName": {
+    "message": "Selfty AI"
+  },
+  "extensionDescription": {
+    "message": "Selfty AI is a browser extension with an chat sidebar with your self-hosted AI. Such as Ollama, LM Studio, etc."
+  },
+  "ollamaModels": {
+    "message": "Ollama Models"
+  },
+  "ollamaConnectionError": {
+    "message": "Ollama is not connected. Please check your base URL and try again. If you don't use dedicated server, verify you have installed Ollama on your local machine."
+  },
+  "ollamaOriginError": {
+    "message": "Ollama is connected, but the origin is not allowed. Please allow the origin in your Ollama, otherwise you will not be able to use the models. Learn Learn more about how you can <LINK>."
+  },
+  "setupOllamaOrigins": {
+    "message": "setup Ollama origins"
+  },
+  "disclaimer": {
+    "message": "LLM's can make mistakes. Check important info."
+  },
+  "message1": {
+    "message": "Study Italian vocabulary"
+  },
+  "message2": {
+    "message": "Message inviting friend to wedding"
+  },
+  "message3": {
+    "message": "Experience Buenos Aires like a local"
+  },
+  "message4": {
+    "message": "Design a fun Tetris game"
+  }
+}
