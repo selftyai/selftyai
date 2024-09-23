@@ -1,4 +1,6 @@
 import { createConversation, getConversations, sendMessage } from '@/workers/conversation'
+import { getModels } from '@/workers/models'
+import { isConnected } from '@/workers/models/ollama'
 
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
 
@@ -8,8 +10,28 @@ const chatTypes = {
   sendMessage
 }
 
+const ollamaTypes = {
+  connected: isConnected,
+  getModels
+}
+
 chrome.runtime.onConnect.addListener(function (port) {
   switch (port.name) {
+    case 'ollama':
+      port.onMessage.addListener(async (message) => {
+        const { type } = message
+
+        const ollamaType = ollamaTypes[type as keyof typeof ollamaTypes]
+
+        if (ollamaType) {
+          const response = await ollamaType()
+          port.postMessage({
+            type,
+            ...response
+          })
+        }
+      })
+      break
     case 'chat':
       port.onMessage.addListener(async (message) => {
         const { type } = message
@@ -26,14 +48,4 @@ chrome.runtime.onConnect.addListener(function (port) {
       })
       break
   }
-
-  // console.assert(port.name === "knockknock");
-  // port.onMessage.addListener(function(msg) {
-  //   if (msg.joke === "Knock knock")
-  //     port.postMessage({question: "Who's there?"});
-  //   else if (msg.answer === "Madame")
-  //     port.postMessage({question: "Madame who?"});
-  //   else if (msg.answer === "Madame... Bovary")
-  //     port.postMessage({question: "I don't get it."});
-  // });
 })

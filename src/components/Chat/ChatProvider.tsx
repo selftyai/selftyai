@@ -5,6 +5,7 @@ import { CoreMessage, ImagePart, streamText } from 'ai'
 import { createOllama } from 'ollama-ai-provider'
 import React, { useEffect, useMemo } from 'react'
 
+import { useOllama } from '@/providers/OllamaProvider'
 import OllamaService from '@/services/ollama/OllamaService'
 import { Model } from '@/services/types/Model'
 import { processChatStream } from '@/utils/stream'
@@ -40,16 +41,16 @@ interface ChatProviderProps {
 }
 
 const ChatProvider = ({ children }: ChatProviderProps) => {
+  const { models } = useOllama()
+
   const [chatId, setChatId] = React.useState<string>()
   const [conversations, setConversations] = React.useState<Conversation[]>([])
   const [messages, setMessages] = React.useState<Message[]>([])
 
-  const port = useMemo(() => {
+  const chatPort = useMemo(() => {
     const chromePort = chrome.runtime.connect({ name: 'chat' })
 
     chromePort.onMessage.addListener((message) => {
-      console.log('Message from background', message)
-
       const types = {
         getConversations: () => {
           setConversations(message.conversations)
@@ -70,10 +71,10 @@ const ChatProvider = ({ children }: ChatProviderProps) => {
   }, [])
 
   useEffect(() => {
-    port.postMessage({ type: 'getConversations' })
+    chatPort.postMessage({ type: 'getConversations' })
 
     return () => {
-      port.disconnect()
+      chatPort.disconnect()
     }
   }, [])
 
@@ -96,52 +97,11 @@ const ChatProvider = ({ children }: ChatProviderProps) => {
 
     setSelectedModel(selectedModel || 'Select model')
     setMessages(messages)
-
-    return () => {
-      port.disconnect()
-    }
   }, [chatId])
 
   const [isGenerating, setIsGenerating] = React.useState(false)
   const [error, setError] = React.useState('')
-  const [models, setModels] = React.useState<Model[]>([])
   const [selectedModel, setSelectedModel] = React.useState<Model | 'Select model'>('Select model')
-
-  React.useEffect(() => {
-    const fetchModels = async () => {
-      const models = await OllamaService.getInstance().getModels()
-
-      setModels(models)
-    }
-
-    fetchModels()
-  }, [])
-
-  const getOrCreateConversation = async () => {
-    if (typeof selectedModel === 'string') {
-      return null
-    }
-
-    if (!chatId) {
-      port.postMessage({
-        type: 'createConversation',
-        conversation: {
-          title: 'New conversation',
-          model: selectedModel.model,
-          provider: selectedModel.provider,
-          messages: [],
-          systemMessage: 'You are a helpful assistant.'
-        }
-      })
-      await new Promise((resolve) => setTimeout(resolve, 50))
-
-      const conversation = conversations[conversations.length - 1]
-
-      return conversation
-    }
-
-    return conversations.find((c) => c.id === chatId) || null
-  }
 
   const sendMessage = async (message: string, images: string[] = []) => {
     const trimmedMessage = message.trim()
@@ -213,7 +173,7 @@ const ChatProvider = ({ children }: ChatProviderProps) => {
       ] as Message[]
       setMessages(newMessages)
 
-      port.postMessage({
+      chatPort.postMessage({
         type: 'createConversation',
         conversation: {
           title: 'New conversation',
