@@ -4,6 +4,8 @@ import { cn } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
 
+import Markdown from '@/components/Chat/Message/Markdown'
+
 export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   avatar?: string
   showFeedback?: boolean
@@ -121,13 +123,19 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               messageClassName
             )}
           >
-            <div ref={messageRef} className={'pr-20 text-small'}>
+            <div ref={messageRef} className={'pr-10 text-small'}>
               {isGenerating && (
                 <Skeleton className="w-3/5 rounded-lg">
                   <div className="h-3 w-3/5 rounded-lg bg-default-200" />
                 </Skeleton>
               )}
-              {hasFailed ? failedMessage : message}
+              {hasFailed ? (
+                failedMessage
+              ) : typeof message === 'string' ? (
+                <Markdown message={message} />
+              ) : (
+                message
+              )}
             </div>
             {showFeedback && !hasFailed && (
               <div className="absolute right-2 top-2 hidden rounded-full bg-content2 shadow-small group-hover:flex">
