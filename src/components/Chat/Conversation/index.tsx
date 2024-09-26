@@ -15,6 +15,7 @@ export default function Component() {
   return (
     <div className="flex flex-col gap-4 px-1">
       {messages.map(({ role, content }, index, arr) => {
+        console.log(content)
         const message =
           typeof content === 'string'
             ? content
