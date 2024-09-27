@@ -1,8 +1,8 @@
 import { RadioGroup } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
+import { useTheme } from 'next-themes'
 import * as React from 'react'
 
-import { useTheme } from '@/components/Theme'
 import { ThemeCustomRadio } from '@/components/Theme/Switcher'
 
 interface AppearanceSettingCardProps {
