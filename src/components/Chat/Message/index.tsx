@@ -103,7 +103,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
       <div {...props} ref={ref} className={cn('flex gap-3', className)}>
         <div className="relative flex-none">
           {avatar ? (
-            <Avatar src={avatar} radius="full" className="bg-background" isBordered />
+            <Avatar src={avatar} radius="full" className="bg-foreground" isBordered />
           ) : (
             <Avatar
               isBordered
