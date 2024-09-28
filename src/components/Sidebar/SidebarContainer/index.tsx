@@ -42,13 +42,12 @@ function RecentPromptDropdown({
         className="py-2"
         variant="faded"
         onAction={(key) => {
-          alert(key)
           if (key === 'delete') {
             onDelete()
           }
         }}
       >
-        <DropdownItem
+        {/* <DropdownItem
           key="rename"
           className="text-default-500 data-[hover=true]:text-default-500"
           startContent={
@@ -56,7 +55,7 @@ function RecentPromptDropdown({
           }
         >
           Rename
-        </DropdownItem>
+        </DropdownItem> */}
         {/* <DropdownItem
           key="archive"
           className="text-default-500 data-[hover=true]:text-default-500"
