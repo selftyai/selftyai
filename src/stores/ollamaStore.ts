@@ -9,6 +9,8 @@ interface OllamaState {
   setModels: (models: Model[]) => void
   connected: boolean
   setConnected: (connected: boolean) => void
+  baseURL: string
+  setBaseURL: (baseURL: string) => void
 }
 
 export const useOllamaStore = create<OllamaState>()(
@@ -17,7 +19,9 @@ export const useOllamaStore = create<OllamaState>()(
       models: [],
       setModels: (models) => set({ models }),
       connected: false,
-      setConnected: (connected) => set({ connected })
+      setConnected: (connected) => set({ connected }),
+      baseURL: 'http://127.0.0.1:11434',
+      setBaseURL: (baseURL) => set({ baseURL })
     }),
     {
       name: 'ollama',

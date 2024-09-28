@@ -1,5 +1,6 @@
 import React from 'react'
 
+import OllamaService from '@/services/ollama/OllamaService'
 import { useOllamaStore } from '@/stores/ollamaStore'
 import { AIProvider } from '@/types/AIProvider'
 import type { Model } from '@/types/Model'
@@ -8,6 +9,8 @@ interface OllamaContextType {
   models: Model[]
   connected: boolean
   error: JSX.Element[]
+  baseURL: string
+  setBaseURL: (baseURL: string) => void
 }
 
 const OllamaContext = React.createContext<OllamaContextType | undefined>(undefined)
@@ -28,7 +31,7 @@ interface OllamaProviderProps {
 }
 
 const OllamaProvider = ({ children }: OllamaProviderProps) => {
-  const { models, setModels, connected, setConnected } = useOllamaStore()
+  const { models, setModels, connected, setConnected, baseURL } = useOllamaStore()
 
   const [error, setError] = React.useState<JSX.Element[]>([])
 
@@ -100,7 +103,12 @@ const OllamaProvider = ({ children }: OllamaProviderProps) => {
       value={{
         models,
         connected,
-        error
+        error,
+        baseURL,
+        setBaseURL: async (baseURL: string) => {
+          OllamaService.getInstance().setBaseURL(baseURL)
+          useOllamaStore.setState({ baseURL })
+        }
       }}
     >
       {children}

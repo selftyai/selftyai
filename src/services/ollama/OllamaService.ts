@@ -123,13 +123,6 @@ class OllamaService extends AIService {
   }
 
   async setBaseURL(baseURL: string): Promise<boolean> {
-    await this.ensureInitialized()
-    const connectionVerified = await this.verifyConnection(baseURL)
-
-    if (!connectionVerified) {
-      return false
-    }
-
     this.baseURL = baseURL
     await this.cacheManager.set(CacheKey.BaseURL, baseURL)
 

@@ -1,4 +1,4 @@
-import { Input, Spacer, ScrollShadow } from '@nextui-org/react'
+import { Input, Spacer, ScrollShadow, Button } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -14,7 +14,9 @@ interface TeamSettingCardProps {
 
 const OllamaSetting = React.forwardRef<HTMLDivElement, TeamSettingCardProps>(
   ({ className, ...rest }, ref) => {
-    const { models, connected, error } = useOllama()
+    const { models, connected, error, setBaseURL, baseURL } = useOllama()
+
+    const inputRef = React.useRef<HTMLInputElement>(null)
 
     return (
       <ScrollShadow {...rest} ref={ref} className={cn('py-2', className)}>
@@ -33,7 +35,35 @@ const OllamaSetting = React.forwardRef<HTMLDivElement, TeamSettingCardProps>(
             <span className="text-default-700">http://127.0.0.1:11434</span>. If you have a
             dedicated server, you can change the base URL here.
           </p>
-          <Input className="mt-2" defaultValue="http://127.0.0.1:11434" placeholder="" />
+          <Input
+            className="mt-2"
+            ref={inputRef}
+            defaultValue={baseURL}
+            placeholder=""
+            validate={(value) => {
+              if (!value) {
+                return 'Base URL is required'
+              }
+              return ''
+            }}
+            endContent={
+              <Button
+                className="bg-default-foreground text-background"
+                radius="md"
+                size="sm"
+                onClick={() => {
+                  setBaseURL(inputRef.current?.value || 'http://127.0.0.1:11434')
+
+                  toast.success('Base URL updated successfully', {
+                    position: 'top-center',
+                    duration: 5000
+                  })
+                }}
+              >
+                Save
+              </Button>
+            }
+          />
         </div>
         {connected && (
           <>
