@@ -24,7 +24,6 @@ export const isConnected = async () => {
       connected
     }
   } catch (error: any) {
-    console.error(error.message)
     return {
       connected: false,
       error: error.message

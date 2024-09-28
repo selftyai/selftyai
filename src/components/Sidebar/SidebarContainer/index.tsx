@@ -18,34 +18,36 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import logo from '@/assets/logo.svg'
-import { useChat } from '@/components/Chat/ChatProvider'
 import SidebarDrawer from '@/components/Sidebar/SidebarDrawer'
+import { useChat } from '@/providers/ChatProvider'
 
-function RecentPromptDropdown() {
+function RecentPromptDropdown({
+  onDelete,
+  selected
+}: {
+  onDelete: () => void
+  selected?: boolean
+}) {
   return (
     <Dropdown>
       <DropdownTrigger>
         <Icon
-          className="hidden text-default-500 group-hover:block"
+          className={cn('hidden text-default-500 group-hover:block', selected && 'block')}
           icon="solar:menu-dots-bold"
           width={24}
         />
       </DropdownTrigger>
-      <DropdownMenu aria-label="Dropdown menu with icons" className="py-2" variant="faded">
-        {/* <DropdownItem
-          key="share"
-          className="text-default-500 data-[hover=true]:text-default-500"
-          startContent={
-            <Icon
-              className="text-default-300"
-              height={20}
-              icon="solar:square-share-line-linear"
-              width={20}
-            />
+      <DropdownMenu
+        aria-label="Dropdown menu with icons"
+        className="py-2"
+        variant="faded"
+        onAction={(key) => {
+          alert(key)
+          if (key === 'delete') {
+            onDelete()
           }
-        >
-          Share
-        </DropdownItem> */}
+        }}
+      >
         <DropdownItem
           key="rename"
           className="text-default-500 data-[hover=true]:text-default-500"
@@ -104,7 +106,7 @@ export default function Component({
 }) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const navigator = useNavigate()
-  const { conversations } = useChat()
+  const { chatId, conversations, deleteConversation } = useChat()
 
   const content = (
     <div className="relative flex h-full w-72 flex-1 flex-col p-6">
@@ -140,7 +142,6 @@ export default function Component({
           onAction={(key) => {
             navigator(`/${key}`)
             onOpenChange()
-            alert(key)
           }}
         >
           <ListboxSection
@@ -154,8 +155,18 @@ export default function Component({
             {(conversation) => (
               <ListboxItem
                 key={conversation.id}
-                className="h-[44px] px-[12px] py-[10px] text-default-500"
-                endContent={<RecentPromptDropdown />}
+                className={cn(
+                  'h-[44px] px-[12px] py-[10px] text-default-500',
+                  chatId === conversation.id && 'bg-default-100 text-default-foreground'
+                )}
+                endContent={
+                  <RecentPromptDropdown
+                    onDelete={() => {
+                      deleteConversation(conversation.id)
+                    }}
+                    selected={chatId === conversation.id}
+                  />
+                }
               >
                 {conversation.title}
               </ListboxItem>

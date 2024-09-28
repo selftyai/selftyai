@@ -46,12 +46,16 @@ class OllamaService extends AIService {
 
     const ollamaText = 'Ollama is running'
 
-    const response = await fetch(`${urlToVerify}`, {
-      method: 'GET'
-    })
-    const text = await response.text()
+    try {
+      const response = await fetch(`${urlToVerify}`, {
+        method: 'GET'
+      })
+      const text = await response.text()
 
-    if (!response.ok || text !== ollamaText) {
+      if (!response.ok || text !== ollamaText) {
+        throw new Error()
+      }
+    } catch {
       throw new Error(chrome.i18n.getMessage('ollamaConnectionError'))
     }
 

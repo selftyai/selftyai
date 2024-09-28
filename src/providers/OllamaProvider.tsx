@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 
-import { Model } from '@/services/types/Model'
-import { Provider } from '@/services/types/Provider'
+import { useOllamaStore } from '@/stores/ollamaStore'
+import { AIProvider } from '@/types/AIProvider'
+import type { Model } from '@/types/Model'
 
 interface OllamaContextType {
   models: Model[]
@@ -27,73 +28,72 @@ interface OllamaProviderProps {
 }
 
 const OllamaProvider = ({ children }: OllamaProviderProps) => {
-  const [models, setModels] = React.useState<Model[]>([])
-  const [connected, setConnected] = React.useState<boolean>(false)
+  const { models, setModels, connected, setConnected } = useOllamaStore()
+
   const [error, setError] = React.useState<JSX.Element[]>([])
 
-  const modelsPort = useMemo(() => {
-    const chromePort = chrome.runtime.connect({ name: 'ollama' })
+  React.useEffect(() => {
+    const port = chrome.runtime.connect()
 
-    chromePort.onMessage.addListener((message) => {
-      const types = {
-        getModels: () => {
-          setModels(message.models.filter((model: Model) => model.provider === Provider.OLLAMA))
-        },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleMessage = (message: any) => {
+      const { type } = message
+
+      const messageTypes = {
+        getModels: () =>
+          setModels(message.models.filter((model: Model) => model.provider === AIProvider.ollama)),
         connected: () => {
           setConnected(message.connected)
           setError([])
 
-          if (message.error.includes('<LINK>')) {
-            setError([
-              <span>{message.error.substring(0, message.error.indexOf('<LINK>'))}</span>,
-              <span className="relative">
-                <a
-                  href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
-                  target="_blank"
-                  className="font-medium text-default-foreground hover:underline"
-                >
-                  {chrome.i18n.getMessage('setupOllamaOrigins')}
-                  {'.'}
-                </a>
-              </span>
-            ])
-            return
-          }
-
-          if (message.error === 'Failed to fetch') {
-            setError([<p key="fetch-error">{chrome.i18n.getMessage('ollamaConnectionError')}</p>])
-            return
-          }
-
           if (message.error) {
-            setError([<p key="error">{message.error}</p>])
+            if (message.error.includes('<LINK>')) {
+              setError([
+                <span>{message.error.substring(0, message.error.indexOf('<LINK>'))}</span>,
+                <span className="relative">
+                  <a
+                    href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
+                    target="_blank"
+                    className="font-medium text-default-foreground hover:underline"
+                    rel="noreferrer"
+                  >
+                    {chrome.i18n.getMessage('setupOllamaOrigins')}
+                    {'.'}
+                  </a>
+                </span>
+              ])
+            } else {
+              setError([<p key="error">{message.error}</p>])
+            }
           }
         }
       }
 
-      const type = types[message.type as keyof typeof types]
+      const messageType = messageTypes[type as keyof typeof messageTypes]
 
-      if (type) {
-        type()
+      if (!messageType) {
+        return
       }
-    })
 
-    return chromePort
-  }, [])
+      messageType()
+    }
 
-  React.useEffect(() => {
-    modelsPort.postMessage({ type: 'getModels' })
-    modelsPort.postMessage({ type: 'connected' })
+    port.onMessage.addListener(handleMessage)
 
-    setInterval(() => {
-      modelsPort.postMessage({ type: 'connected' })
-      modelsPort.postMessage({ type: 'getModels' })
+    port.postMessage({ type: 'getModels' })
+    port.postMessage({ type: 'connected' })
+
+    const intervalId = setInterval(() => {
+      port.postMessage({ type: 'connected' })
+      port.postMessage({ type: 'getModels' })
     }, 5000)
 
     return () => {
-      modelsPort.disconnect()
+      clearInterval(intervalId)
+      port.disconnect()
     }
-  }, [modelsPort])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <OllamaContext.Provider

@@ -8,12 +8,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    root: isDevelopment ? './pages' : undefined,
-    base: isDevelopment ? '/' : './',
     build: {
+      minify: isDevelopment ? false : 'esbuild',
       rollupOptions: {
         input: {
-          main: resolve(__dirname, 'index.html'),
+          index: resolve(__dirname, 'index.html'),
           background: resolve(__dirname, 'src/background.ts'),
           contentScript: resolve(__dirname, 'src/contentScript.ts')
         },
