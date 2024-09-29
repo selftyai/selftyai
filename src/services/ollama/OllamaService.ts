@@ -46,12 +46,16 @@ class OllamaService extends AIService {
 
     const ollamaText = 'Ollama is running'
 
-    const response = await fetch(`${urlToVerify}`, {
-      method: 'GET'
-    })
-    const text = await response.text()
+    try {
+      const response = await fetch(`${urlToVerify}`, {
+        method: 'GET'
+      })
+      const text = await response.text()
 
-    if (!response.ok || text !== ollamaText) {
+      if (!response.ok || text !== ollamaText) {
+        throw new Error()
+      }
+    } catch {
       throw new Error(chrome.i18n.getMessage('ollamaConnectionError'))
     }
 
@@ -119,13 +123,6 @@ class OllamaService extends AIService {
   }
 
   async setBaseURL(baseURL: string): Promise<boolean> {
-    await this.ensureInitialized()
-    const connectionVerified = await this.verifyConnection(baseURL)
-
-    if (!connectionVerified) {
-      return false
-    }
-
     this.baseURL = baseURL
     await this.cacheManager.set(CacheKey.BaseURL, baseURL)
 

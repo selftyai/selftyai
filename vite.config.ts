@@ -8,24 +8,16 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    root: isDevelopment ? './pages' : undefined,
-    base: isDevelopment ? '/' : './',
     build: {
+      minify: isDevelopment ? false : 'esbuild',
       rollupOptions: {
         input: {
-          main: resolve(__dirname, 'index.html'),
+          index: resolve(__dirname, 'index.html'),
           background: resolve(__dirname, 'src/background.ts'),
           contentScript: resolve(__dirname, 'src/contentScript.ts')
         },
         output: {
-          entryFileNames: (chunkInfo) => {
-            const options = {
-              background: true,
-              contentScript: true
-            } as Record<string, boolean>
-
-            return options[chunkInfo.name] ? '[name].js' : '[name]/[name].js'
-          },
+          entryFileNames: '[name].js',
           chunkFileNames: 'assets/[name].js',
           assetFileNames: 'assets/[name].[ext]'
         }
