@@ -2,8 +2,8 @@ import { Image } from '@nextui-org/react'
 import type { CoreMessage } from 'ai'
 
 import logo from '@/assets/logo.svg'
-import { useChat } from '@/components/Chat/ChatProvider'
 import MessageCard from '@/components/Chat/Message'
+import { useChat } from '@/providers/ChatProvider'
 
 export default function Component() {
   const { messages, isGenerating, error } = useChat()

@@ -14,11 +14,7 @@ interface ModelPullingStatus {
   modelTag?: string
 }
 
-interface PullModelProps {
-  onPullModel: () => void
-}
-
-const PullModel = ({ onPullModel }: PullModelProps) => {
+const PullModel = () => {
   const modelTagRef = React.useRef<HTMLInputElement>(null)
 
   const [pullingModels, setPullingModels] = React.useState<ModelPullingStatus[]>([])
@@ -40,7 +36,6 @@ const PullModel = ({ onPullModel }: PullModelProps) => {
             pullingModels.filter((item) => item.modelTag !== modelTag).map((item) => item.modelTag)
           )
         )
-        onPullModel()
         return
       }
 

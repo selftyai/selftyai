@@ -16,11 +16,11 @@ import { useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import logo from '@/assets/logo.svg'
-import { useChat } from '@/components/Chat/ChatProvider'
 import Conversation from '@/components/Chat/Conversation'
 import SidebarContainer from '@/components/Sidebar/SidebarContainer'
 import Textarea from '@/components/Textarea'
 import { suggestions, icons } from '@/pages/Chat/utils'
+import { useChat } from '@/providers/ChatProvider'
 import type { Model } from '@/services/types/Model'
 
 const Chat = () => {

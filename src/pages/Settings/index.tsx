@@ -35,7 +35,7 @@ const Settings = () => {
             {/* <Tab key="api" title="Network AI API">
               <APISetting />
             </Tab> */}
-            <Tab key="self-hosted" title="Self-hosted">
+            <Tab key="ollama" title="Ollama">
               <SelfHosted className="max-h-[68dvh]" />
             </Tab>
           </Tabs>

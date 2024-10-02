@@ -3,8 +3,9 @@ import { Button, Tooltip, Image, Badge, Spinner } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import React from 'react'
 
-import { useChat } from '@/components/Chat/ChatProvider'
 import PromptInput from '@/components/Textarea/PromptInput'
+import { useEnterSubmit } from '@/hooks/useEnterSubmit'
+import { useChat } from '@/providers/ChatProvider'
 
 interface ComponentProps {
   regenerateActive?: boolean
@@ -12,6 +13,7 @@ interface ComponentProps {
 
 export default function Component({ regenerateActive }: ComponentProps) {
   const { sendMessage, isGenerating, selectedModel } = useChat()
+  const { formRef, onKeyDown } = useEnterSubmit()
 
   const [isRegenerating, setIsRegenerating] = React.useState<boolean>(false)
   const [prompt, setPrompt] = React.useState<string>('')
@@ -84,6 +86,7 @@ export default function Component({ regenerateActive }: ComponentProps) {
       <form
         className="flex w-full flex-col items-start rounded-medium bg-default-100 transition-colors hover:bg-default-200/70"
         onSubmit={onSubmit}
+        ref={formRef}
       >
         <div className="group flex gap-2 px-4 pt-4">
           {images.map((image, index) => (
@@ -151,6 +154,7 @@ export default function Component({ regenerateActive }: ComponentProps) {
           radius="lg"
           value={prompt}
           variant="flat"
+          onKeyDown={onKeyDown}
           onValueChange={setPrompt}
           startContent={
             typeof selectedModel !== 'string' &&
