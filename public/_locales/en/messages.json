@@ -12,7 +12,7 @@
     "message": "Ollama is not connected. Please check your base URL and try again. If you don't use dedicated server, verify you have installed Ollama on your local machine."
   },
   "ollamaOriginError": {
-    "message": "Ollama is connected, but the origin is not allowed. Please allow the origin in your Ollama, otherwise you will not be able to use the models. Learn Learn more about how you can <LINK>."
+    "message": "Ollama is connected, but the origin is not allowed. Please allow the origin in your Ollama, otherwise you will not be able to use the models. Learn more about how you can <LINK>."
   },
   "setupOllamaOrigins": {
     "message": "setup Ollama origins"

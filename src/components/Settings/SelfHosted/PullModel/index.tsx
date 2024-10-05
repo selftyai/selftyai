@@ -1,85 +1,20 @@
 import { Icon } from '@iconify/react'
 import { Button, Card, CardBody, Divider, Input, Spacer, Progress } from '@nextui-org/react'
 import React from 'react'
-import { toast } from 'sonner'
 
-import OllamaService from '@/services/ollama/OllamaService'
-import { streamingFetch } from '@/utils/stream'
-
-interface ModelPullingStatus {
-  status: string
-  digest?: string
-  total?: number
-  completed?: number
-  modelTag?: string
-}
+import { useOllama } from '@/providers/OllamaProvider'
 
 const PullModel = () => {
   const modelTagRef = React.useRef<HTMLInputElement>(null)
 
-  const [pullingModels, setPullingModels] = React.useState<ModelPullingStatus[]>([])
+  const { pullModel, pullingModels } = useOllama()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const iteratePull = async (generator: AsyncGenerator<any, void, unknown>, modelTag: string) => {
-    for await (const model of generator) {
-      const modelPullingStatus = model as ModelPullingStatus
-      modelPullingStatus.modelTag = modelTag
-
-      if (modelPullingStatus.status === 'success') {
-        toast.success(`Model ${modelTag} has been pulled successfully`, {
-          position: 'top-center'
-        })
-        setPullingModels((prev) => prev.filter((item) => item.modelTag !== modelTag))
-        localStorage.setItem(
-          'pullingModels',
-          JSON.stringify(
-            pullingModels.filter((item) => item.modelTag !== modelTag).map((item) => item.modelTag)
-          )
-        )
-        return
-      }
-
-      setPullingModels((prev) =>
-        prev.map((item) => (item.modelTag === modelTag ? modelPullingStatus : item))
-      )
-    }
-  }
-
-  React.useEffect(() => {
-    async function checkPulling() {
-      const pullingModels = JSON.parse(localStorage.getItem('pullingModels') ?? '[]') as string[]
-
-      const ollamaRest = OllamaService.getInstance()
-
-      setPullingModels(pullingModels.map((modelTag) => ({ status: 'pulling progress', modelTag })))
-
-      await Promise.all(
-        pullingModels.map(async (modelTag) => {
-          const generator = streamingFetch(() => ollamaRest.pullModel(modelTag))
-
-          await iteratePull(generator, modelTag)
-        })
-      )
-    }
-
-    checkPulling()
-  }, [])
-
-  const handlePullModel = async (modelTag: string) => {
-    const ollamaRest = OllamaService.getInstance()
-
-    const generator = streamingFetch(() => ollamaRest.pullModel(modelTag))
-
-    const pullingModels = JSON.parse(localStorage.getItem('pullingModels') ?? '[]') as string[]
-    localStorage.setItem('pullingModels', JSON.stringify([...pullingModels, modelTag]))
-
-    setPullingModels((prev) => [...prev, { status: 'pulling progress', modelTag }])
+  const handlePullModel = (modelTag: string) => {
+    pullModel(modelTag)
 
     if (modelTagRef.current) {
       modelTagRef.current.value = ''
     }
-
-    await iteratePull(generator, modelTag)
   }
 
   return (
@@ -135,6 +70,7 @@ const PullModel = () => {
                 className="bg-default-foreground text-background"
                 radius="md"
                 size="sm"
+                disabled={!modelTagRef.current?.value}
                 onClick={() => {
                   if (modelTagRef.current) {
                     handlePullModel(modelTagRef.current.value)

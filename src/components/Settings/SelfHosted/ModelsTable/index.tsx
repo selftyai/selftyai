@@ -20,7 +20,7 @@ import {
 import { SearchIcon } from '@nextui-org/shared-icons'
 import React from 'react'
 
-import { Model } from '@/services/types/Model'
+import { Model } from '@/types/Model'
 
 interface ModelsTableProps {
   className?: string

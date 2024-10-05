@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import ModelsTable from '@/components/Settings/SelfHosted/ModelsTable'
 import PullModel from '@/components/Settings/SelfHosted/PullModel'
 import { useOllama } from '@/providers/OllamaProvider'
-import OllamaService from '@/services/ollama/OllamaService'
 
 interface TeamSettingCardProps {
   className?: string
@@ -14,7 +13,8 @@ interface TeamSettingCardProps {
 
 const OllamaSetting = React.forwardRef<HTMLDivElement, TeamSettingCardProps>(
   ({ className, ...rest }, ref) => {
-    const { models, connected, error, setBaseURL, baseURL } = useOllama()
+    const { baseURL, deleteModel, changeBaseURL, models, connected, error, pullingModels } =
+      useOllama()
 
     const inputRef = React.useRef<HTMLInputElement>(null)
 
@@ -51,8 +51,9 @@ const OllamaSetting = React.forwardRef<HTMLDivElement, TeamSettingCardProps>(
                 className="bg-default-foreground text-background"
                 radius="md"
                 size="sm"
+                disabled={!inputRef.current?.value || pullingModels.length > 0}
                 onClick={() => {
-                  setBaseURL(inputRef.current?.value || 'http://127.0.0.1:11434')
+                  changeBaseURL(inputRef.current?.value || 'http://127.0.0.1:11434')
 
                   toast.success('Base URL updated successfully', {
                     position: 'top-center',
@@ -72,26 +73,7 @@ const OllamaSetting = React.forwardRef<HTMLDivElement, TeamSettingCardProps>(
             <Spacer y={4} />
             <ModelsTable
               models={models}
-              onModelDelete={async (model) => {
-                const ollamaService = OllamaService.getInstance()
-
-                const response = await ollamaService.deleteModel(model.model)
-
-                if (!response.ok || response.status !== 200) {
-                  toast.error('Failed to delete model', {
-                    position: 'top-center',
-                    duration: 5000
-                  })
-                  return
-                }
-
-                // ollamaService.getModels().then(setModels)
-
-                toast.error('Model deleted successfully', {
-                  position: 'top-center',
-                  duration: 5000
-                })
-              }}
+              onModelDelete={async (model) => deleteModel(model.model)}
             />
           </>
         )}

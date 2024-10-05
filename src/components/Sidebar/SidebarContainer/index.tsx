@@ -15,6 +15,7 @@ import {
   Image
 } from '@nextui-org/react'
 import React from 'react'
+import Markdown from 'react-markdown'
 import { useNavigate } from 'react-router-dom'
 
 import logo from '@/assets/logo.svg'
@@ -105,7 +106,7 @@ export default function Component({
 }) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const navigator = useNavigate()
-  const { chatId, conversations, deleteConversation } = useChat()
+  const { chatId, deleteConversation, conversations, setChatId } = useChat()
 
   const content = (
     <div className="relative flex h-full w-72 flex-1 flex-col p-6">
@@ -129,7 +130,8 @@ export default function Component({
           }
           onClick={() => {
             navigator('/')
-            onOpenChange()
+            setChatId(undefined)
+            if (isOpen) onOpenChange()
           }}
         >
           New Chat
@@ -155,9 +157,12 @@ export default function Component({
               <ListboxItem
                 key={conversation.id}
                 className={cn(
-                  'h-[44px] px-[12px] py-[10px] text-default-500',
+                  'relative h-[44px] truncate px-[12px] py-[10px] text-default-500',
                   chatId === conversation.id && 'bg-default-100 text-default-foreground'
                 )}
+                classNames={{
+                  title: 'truncate'
+                }}
                 endContent={
                   <RecentPromptDropdown
                     onDelete={() => {
@@ -166,8 +171,16 @@ export default function Component({
                     selected={chatId === conversation.id}
                   />
                 }
+                textValue={conversation.title}
               >
-                {conversation.title}
+                <Markdown
+                  components={{
+                    p: ({ children }) => <span>{children}</span>,
+                    strong: ({ children }) => <span>{children}</span>
+                  }}
+                >
+                  {conversation.title}
+                </Markdown>
               </ListboxItem>
             )}
           </ListboxSection>
@@ -231,7 +244,14 @@ export default function Component({
           {(title || subTitle) && (
             <div className="w-full min-w-[120px] sm:w-auto">
               <div className="truncate text-small font-semibold leading-5 text-foreground">
-                {title}
+                <Markdown
+                  components={{
+                    p: ({ children }) => <span>{children}</span>,
+                    strong: ({ children }) => <span>{children}</span>
+                  }}
+                >
+                  {title}
+                </Markdown>
               </div>
               <div className="truncate text-small font-normal leading-5 text-default-500">
                 {subTitle}
