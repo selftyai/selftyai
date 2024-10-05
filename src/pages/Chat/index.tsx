@@ -20,15 +20,17 @@ import Conversation from '@/components/Chat/Conversation'
 import SidebarContainer from '@/components/Sidebar/SidebarContainer'
 import Textarea from '@/components/Textarea'
 import { suggestions, icons } from '@/pages/Chat/utils'
-import { useChat } from '@/providers/ChatProvider'
-import type { Model } from '@/services/types/Model'
+import { useChat, useModels } from '@/providers/ChatProvider'
+import type { Model } from '@/types/Model'
 
 const Chat = () => {
   const { chatId } = useParams()
-  const { messages, models, selectedModel, selectModel, setChatId } = useChat()
+  const { messages, setChatId, error, isGenerating, conversations } = useChat()
+  const { models, selectedModel, selectModel } = useModels()
 
   useEffect(() => {
     setChatId(chatId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId])
 
   const groupedModels = useMemo(() => {
@@ -49,6 +51,11 @@ const Chat = () => {
         classNames={{
           header: 'min-h-[40px] h-[40px] py-[12px] justify-center overflow-hidden'
         }}
+        title={
+          chatId
+            ? conversations.find((conversation) => conversation.id === chatId)?.title
+            : undefined
+        }
         header={
           <Dropdown className="bg-content1">
             <DropdownTrigger>
@@ -128,7 +135,7 @@ const Chat = () => {
         <div className="relative flex h-full max-h-[90dvh] flex-col px-6">
           {messages.length > 0 ? (
             <ScrollShadow className="flex h-full flex-1 flex-col gap-6 overflow-y-auto p-6 pb-8">
-              <Conversation />
+              <Conversation messages={messages} isGenerating={isGenerating} error={error} />
             </ScrollShadow>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-10">

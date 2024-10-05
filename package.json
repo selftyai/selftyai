@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite build --watch --mode development",
-    "build": "tsc -b && vite build",
+    "dev:chrome": "vite build --watch --mode development:chrome",
+    "build:chrome": "tsc -b && vite build --mode production:chrome",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -13,6 +13,7 @@
     "@iconify/react": "^5.0.2",
     "@nextui-org/react": "^2.4.8",
     "ai": "^3.3.43",
+    "axios": "^1.7.7",
     "framer-motion": "^11.5.4",
     "lodash": "^4.17.21",
     "lucide-react": "^0.441.0",
