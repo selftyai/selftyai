@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react'
+import { execSync } from 'child_process'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
 
@@ -7,7 +8,18 @@ export default defineConfig(({ mode }) => {
   const isDevelopment = mode === 'development'
 
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      {
+        name: 'prebuild-commands',
+        buildStart: async () => {
+          buildProject()
+        },
+        handleHotUpdate: async () => {
+          buildProject()
+        }
+      }
+    ],
     build: {
       minify: isDevelopment ? false : 'esbuild',
       rollupOptions: {
@@ -29,3 +41,27 @@ export default defineConfig(({ mode }) => {
     }
   }
 })
+
+// func for build css for context menu and content script
+function buildProject() {
+  try {
+    console.log('Building contentScript...')
+    execSync('vite build --config vite.contentScript-config.ts --mode development', {
+      stdio: 'inherit'
+    })
+    console.log('ContentScript build completed.')
+  } catch (error) {
+    console.error('Error during ContentScript build:', error)
+  }
+
+  try {
+    console.log('Building Tailwind CSS...')
+    execSync(
+      'tailwindcss -c ./src/components/ContextMenu/tailwind.context-menu.config.js -i ./src/index.css -o ./dist/assets/output.css --minify',
+      { stdio: 'inherit' }
+    )
+    console.log('Tailwind CSS build completed.')
+  } catch (error) {
+    console.error('Error during Tailwind CSS build:', error)
+  }
+}

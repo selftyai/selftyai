@@ -9,7 +9,7 @@
     "dev:important": "tailwindcss -c ./src/components/ContextMenu/tailwind.context-menu.config.js -i ./src/index.css -o ./dist/assets/output.css --minify",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "dev": "run-p dev:*"
+    "dev": "npm run dev:general"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.60",
