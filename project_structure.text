@@ -1,0 +1,136 @@
+- .gitignore
+- .prettierignore
+- .prettierrc
+- dist
+  - assets
+    - output.css
+  - contentScript.js
+  - icons
+    - icon128.png
+    - icon16.png
+    - icon32.png
+    - icon48.png
+  - logo.svg
+  - manifest.json
+  - _locales
+    - en
+      - messages.json
+- eslint.config.js
+- index.html
+- package-lock.json
+- package.json
+- postcss.config.js
+- public
+  - icons
+    - icon128.png
+    - icon16.png
+    - icon32.png
+    - icon48.png
+  - logo.svg
+  - manifest.json
+  - _locales
+    - en
+      - messages.json
+- README.md
+- src
+  - assets
+    - dark-theme.svg
+    - light-theme.svg
+    - logo.svg
+  - background.ts
+  - components
+    - Chat
+      - Conversation
+        - index.tsx
+      - Message
+        - CodePanel
+          - index.tsx
+        - index.tsx
+        - Markdown
+          - index.tsx
+    - PageOverlay
+      - ContextMenu
+        - index.tsx
+      - index.tsx
+      - Overlay
+        - index.tsx
+      - tailwind.page-overlay.config.js
+    - Settings
+      - APISetting
+        - index.tsx
+      - AppearanceSetting
+        - index.tsx
+      - SelfHosted
+        - index.tsx
+        - ModelsTable
+          - index.tsx
+        - PullModel
+          - index.tsx
+    - Sidebar
+      - SidebarContainer
+        - index.tsx
+      - SidebarDrawer
+        - index.tsx
+    - Textarea
+      - index.tsx
+      - PromptInput
+        - index.tsx
+    - ThemeSwitcher
+      - index.tsx
+  - contentScript.tsx
+  - hooks
+    - useEnterSubmit.ts
+  - index.css
+  - main.tsx
+  - pages
+    - Chat
+      - index.tsx
+      - utils.tsx
+    - index.tsx
+    - Settings
+      - index.tsx
+  - providers
+    - ChatProvider.tsx
+    - OllamaProvider.tsx
+  - services
+    - AIService.ts
+    - cache
+      - CacheService.ts
+    - chat
+      - ChatService.ts
+    - ollama
+      - OllamaService.ts
+      - types
+        - CacheKey.ts
+        - index.ts
+    - types
+      - Model.ts
+      - Provider.ts
+  - stores
+    - chatStore.ts
+    - ollamaStore.ts
+  - types
+    - AIProvider.ts
+    - Conversation.ts
+    - Message.ts
+    - Model.ts
+  - utils
+    - localStorage.ts
+    - storage.ts
+    - stream.ts
+  - vite-env.d.ts
+  - workers
+    - conversation.ts
+    - models
+      - index.ts
+      - ollama.ts
+    - types.ts
+    - utils.ts
+- tailwind.config.js
+- tsconfig.app.json
+- tsconfig.app.tsbuildinfo
+- tsconfig.json
+- tsconfig.node.json
+- tsconfig.node.tsbuildinfo
+- vite.config.ts
+- vite.contentScript-config.ts

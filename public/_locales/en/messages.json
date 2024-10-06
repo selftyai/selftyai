@@ -31,5 +31,17 @@
   },
   "message4": {
     "message": "Design a fun Tetris game"
+  },
+  "tooltip_askAI": {
+    "message": "Ask AI ✨"
+  },
+  "tooltip_copy": {
+    "message": "Copy"
+  },
+  "tooltip_improveWriting": {
+    "message": "Improve writing"
+  },
+  "tooltip_continueWriting": {
+    "message": "Continue writing"
   }
 }
