@@ -3,8 +3,8 @@ import { toast } from 'sonner'
 
 import { useChromePort } from '@/hooks/useChromePort'
 import { ServerEndpoints } from '@/server/types/ServerEndpoints'
-import type { ModelPullingStatus } from '@/shared/ollama/ModelPullingStatus'
-import { Model } from '@/types/Model'
+import { Model } from '@/shared/types/Model'
+import type { ModelPullingStatus } from '@/shared/types/ollama/ModelPullingStatus'
 
 const OllamaContext = React.createContext<
   | {

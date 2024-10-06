@@ -1,7 +1,7 @@
 import { createOllama } from 'ollama-ai-provider'
 
 import { OllamaService } from '@/server/services/OllamaService'
-import { AIProvider } from '@/types/AIProvider'
+import { AIProvider } from '@/shared/types/AIProvider'
 
 const getProvider = (provider: AIProvider) => {
   switch (provider) {

@@ -1,5 +1,5 @@
 import { ChatStorageKeys } from '@/server/types/chat/ChatStorageKeys'
-import { Conversation } from '@/types/Conversation'
+import { Conversation } from '@/shared/types/Conversation'
 import { createChromeStorage } from '@/utils/storage'
 
 const createConversation = async (

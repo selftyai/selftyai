@@ -21,7 +21,7 @@ import SidebarContainer from '@/components/Sidebar/SidebarContainer'
 import Textarea from '@/components/Textarea'
 import { suggestions, icons } from '@/pages/Chat/utils'
 import { useChat, useModels } from '@/providers/ChatProvider'
-import type { Model } from '@/types/Model'
+import type { Model } from '@/shared/types/Model'
 
 const Chat = () => {
   const { chatId } = useParams()

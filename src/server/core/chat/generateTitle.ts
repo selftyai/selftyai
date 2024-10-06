@@ -1,7 +1,7 @@
 import { generateText } from 'ai'
 
 import getProvider from '@/server/core/chat/getProvider'
-import { Conversation } from '@/types/Conversation'
+import { Conversation } from '@/shared/types/Conversation'
 
 const generateTitle = async (conversation: Conversation): Promise<string> => {
   const provider = getProvider(conversation.provider)
