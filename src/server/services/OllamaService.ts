@@ -3,8 +3,8 @@ import axios from 'axios'
 import { BaseService } from '@/server/services/BaseService'
 import type { OllamaTagsResponse } from '@/server/types/ollama/OllamaTagsResponse'
 import type { ShowOllamaModel } from '@/server/types/ollama/ShowOllamaModel'
-import { AIProvider } from '@/types/AIProvider'
-import type { Model } from '@/types/Model'
+import { AIProvider } from '@/shared/types/AIProvider'
+import type { Model } from '@/shared/types/Model'
 
 export class OllamaService extends BaseService {
   private static instance: OllamaService | null = null

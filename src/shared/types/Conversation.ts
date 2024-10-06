@@ -1,5 +1,5 @@
-import { AIProvider } from '@/types/AIProvider'
-import type { Message } from '@/types/Message'
+import { AIProvider } from '@/shared/types/AIProvider'
+import type { Message } from '@/shared/types/Message'
 
 export type Conversation = {
   id: string

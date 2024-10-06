@@ -5,9 +5,9 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useChromePort } from '@/hooks/useChromePort'
 import { useOllama } from '@/providers/OllamaProvider'
 import { ServerEndpoints } from '@/server/types/ServerEndpoints'
-import { Conversation } from '@/types/Conversation'
-import type { Message } from '@/types/Message'
-import { Model } from '@/types/Model'
+import type { Conversation } from '@/shared/types/Conversation'
+import type { Message } from '@/shared/types/Message'
+import type { Model } from '@/shared/types/Model'
 
 const ModelContext = React.createContext<
   | {

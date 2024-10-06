@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { OllamaStorageKeys } from '@/server/types/ollama/OllamaStoragsKeys'
 import getOllamaService from '@/shared/getOllamaService'
-import { ModelPullingStatus } from '@/shared/ollama/ModelPullingStatus'
+import { ModelPullingStatus } from '@/shared/types/ollama/ModelPullingStatus'
 import { createChromeStorage } from '@/utils/storage'
 import { streamingFetch } from '@/utils/stream'
 

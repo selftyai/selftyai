@@ -4,7 +4,7 @@ import { memo } from 'react'
 
 import logo from '@/assets/logo.svg'
 import MessageCard from '@/components/Chat/Message'
-import { Message } from '@/types/Message'
+import { Message } from '@/shared/types/Message'
 
 interface ConversationProps {
   messages: Message[]
@@ -35,7 +35,7 @@ const Conversation = memo(({ messages, isGenerating, error }: ConversationProps)
                       <Image
                         alt="uploaded image cover"
                         className="size-32 rounded-small border-small border-default-200/50 object-cover"
-                        src={part.image}
+                        src={part.image.toString()}
                       />
                     </div>
                   ))

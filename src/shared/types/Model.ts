@@ -1,4 +1,4 @@
-import { AIProvider } from '@/types/AIProvider'
+import { AIProvider } from '@/shared/types/AIProvider'
 
 export type Model = {
   name: string

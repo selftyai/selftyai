@@ -7,8 +7,7 @@ import { Toaster } from 'sonner'
 import AppRoutes from '@/pages'
 import ChatProvider from '@/providers/ChatProvider'
 import OllamaProvider from '@/providers/OllamaProvider'
-
-import './index.css'
+import '@/style/index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

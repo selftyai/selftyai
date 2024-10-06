@@ -10,7 +10,7 @@ const getOllamaService = async (url?: string): Promise<OllamaService> => {
   const ollamaBaseURL = await storage.getItem(OllamaStorageKeys.baseURL)
   const urlToVerify = url || ollamaBaseURL || 'http://localhost:11434'
 
-	ollamaService.setBaseURL(urlToVerify)
+  ollamaService.setBaseURL(urlToVerify)
 
   return ollamaService
 }
