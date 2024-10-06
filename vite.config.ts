@@ -5,7 +5,8 @@ import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const isDevelopment = mode === 'development'
+  const isDevelopment = mode.includes('development')
+  const isChrome = mode.includes('chrome')
 
   return {
     plugins: [
@@ -25,7 +26,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'index.html'),
-          background: resolve(__dirname, 'src/background.ts')
+          background: resolve(__dirname, `src/server/${isChrome ? 'chrome' : ''}/index.ts`)
         },
         output: {
           entryFileNames: '[name].js',

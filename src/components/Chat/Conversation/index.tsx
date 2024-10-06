@@ -1,13 +1,18 @@
 import { Image } from '@nextui-org/react'
 import type { CoreMessage } from 'ai'
+import { memo } from 'react'
 
 import logo from '@/assets/logo.svg'
 import MessageCard from '@/components/Chat/Message'
-import { useChat } from '@/providers/ChatProvider'
+import { Message } from '@/shared/types/Message'
 
-export default function Component() {
-  const { messages, isGenerating, error } = useChat()
+interface ConversationProps {
+  messages: Message[]
+  error: string
+  isGenerating: boolean
+}
 
+const Conversation = memo(({ messages, isGenerating, error }: ConversationProps) => {
   const isLastMessage = (arr: CoreMessage[], index: number) => {
     return index === arr.length - 1 && arr[index].role === 'assistant'
   }
@@ -30,7 +35,7 @@ export default function Component() {
                       <Image
                         alt="uploaded image cover"
                         className="size-32 rounded-small border-small border-default-200/50 object-cover"
-                        src={part.image}
+                        src={part.image.toString()}
                       />
                     </div>
                   ))
@@ -64,4 +69,6 @@ export default function Component() {
       })}
     </div>
   )
-}
+})
+
+export default Conversation

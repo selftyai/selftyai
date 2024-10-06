@@ -1,18 +1,19 @@
 import { Icon } from '@iconify/react'
 import { Button, Tooltip, Image, Badge, Spinner } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
-import React from 'react'
+import React, { memo } from 'react'
 
 import PromptInput from '@/components/Textarea/PromptInput'
 import { useEnterSubmit } from '@/hooks/useEnterSubmit'
-import { useChat } from '@/providers/ChatProvider'
+import { useChat, useModels } from '@/providers/ChatProvider'
 
-interface ComponentProps {
+interface TextAreaProps {
   regenerateActive?: boolean
 }
 
-export default function Component({ regenerateActive }: ComponentProps) {
-  const { sendMessage, isGenerating, selectedModel } = useChat()
+const TextArea = memo(({ regenerateActive }: TextAreaProps) => {
+  const { sendMessage, isGenerating } = useChat()
+  const { selectedModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
 
   const [isRegenerating, setIsRegenerating] = React.useState<boolean>(false)
@@ -200,4 +201,6 @@ export default function Component({ regenerateActive }: ComponentProps) {
       </form>
     </div>
   )
-}
+})
+
+export default TextArea
