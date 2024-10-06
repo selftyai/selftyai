@@ -58,7 +58,7 @@ function buildProject() {
   try {
     console.log('Building Tailwind CSS...')
     execSync(
-      'tailwindcss -c ./src/components/PageOverlay/tailwind.page-overlay.config.js -i ./src/index.css -o ./dist/assets/output.css --minify',
+      'tailwindcss -c ./src/components/PageOverlay/tailwind.page-overlay.config.js -i ./src/style/index.css -o ./dist/assets/output.css --minify',
       { stdio: 'inherit' }
     )
     console.log('Tailwind CSS build completed.')
