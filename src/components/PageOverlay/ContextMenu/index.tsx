@@ -1,17 +1,43 @@
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { Button, Image } from '@nextui-org/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import logo from '@/assets/logo.svg'
 import Tooltip from '@/components/PageOverlay/CustomTooltip'
+import { useChromePort } from '@/hooks/useChromePort'
+import { ServerEndpoints } from '@/server/types/ServerEndpoints'
+import { SidePanelAction } from '@/server/types/sidePanel/SidePanelActions'
 
 interface ContextMenuProps {
   left: number
   top: number
   onClose: () => void
+  text: string
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose }) => {
+const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) => {
+  const { sendMessage, addMessageListener } = useChromePort()
+
+  useEffect(() => {
+    const removeListener = addMessageListener((message: string) => {
+      console.log('Received message:', message)
+    })
+
+    console.log(text)
+
+    return () => {
+      removeListener()
+    }
+  }, [addMessageListener, text])
+
+  const handleSendMessage = () => {
+    sendMessage(ServerEndpoints.sidePanelHandlerer, { action: SidePanelAction.OPEN })
+  }
+
+  const handleSendMessageClose = () => {
+    sendMessage(ServerEndpoints.sidePanelHandlerer, { action: SidePanelAction.CLOSE })
+  }
+
   return (
     <div
       className="z-[10000] flex items-center justify-center gap-1 rounded-lg bg-background p-1 dark"
@@ -23,12 +49,24 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose }) => {
       onClick={onClose}
     >
       <Tooltip content={chrome.i18n.getMessage('tooltip_askAI')}>
-        <Button isIconOnly size="sm" variant="light" className="border-none text-base">
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          className="border-none text-base"
+          onClick={handleSendMessage}
+        >
           <Image width={35} height={30} src={logo} removeWrapper />
         </Button>
       </Tooltip>
       <Tooltip content={chrome.i18n.getMessage('tooltip_copy')}>
-        <Button isIconOnly size="sm" variant="light" className="border-none text-base">
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          className="border-none text-base"
+          onClick={handleSendMessageClose}
+        >
           <Icon icon="akar-icons:copy" />
         </Button>
       </Tooltip>

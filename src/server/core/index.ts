@@ -6,6 +6,7 @@ import deleteModel from '@/server/core/ollama/deleteModel'
 import ollamaModels from '@/server/core/ollama/ollamaModels'
 import { handlePullModel as ollamaPullModel } from '@/server/core/ollama/ollamaPullModel'
 import ollamaVerifyConnection from '@/server/core/ollama/ollamaVerifyConnection'
+import sidePanelHandlerer from '@/server/core/sidePanel/sidePanelHandlerer'
 
 export {
   ollamaModels,
@@ -15,5 +16,6 @@ export {
   getConversations,
   sendMessage,
   deleteConversation,
-  changeBaseUrl
+  changeBaseUrl,
+  sidePanelHandlerer
 }

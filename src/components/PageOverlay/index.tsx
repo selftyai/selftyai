@@ -47,7 +47,12 @@ const App = () => {
   return (
     <Overlay isVisible={isOverlayVisible} onClose={closeOverlay}>
       {menuPosition && selectedText && (
-        <ContextMenu left={menuPosition.left} top={menuPosition.top} onClose={closeOverlay} />
+        <ContextMenu
+          left={menuPosition.left}
+          top={menuPosition.top}
+          onClose={closeOverlay}
+          text={selectedText}
+        />
       )}
     </Overlay>
   )

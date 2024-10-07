@@ -10,5 +10,8 @@ export enum ServerEndpoints {
   ollamaModels = 'ollamaModels',
   ollamaPullModel = 'ollamaPullModel',
   ollamaDeleteModel = 'ollamaDeleteModel',
-  ollamaChangeUrl = 'ollamaChangeUrl'
+  ollamaChangeUrl = 'ollamaChangeUrl',
+
+  //SidePanel
+  sidePanelHandlerer = 'sidePanelHandlerer'
 }
