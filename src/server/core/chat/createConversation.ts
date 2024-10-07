@@ -1,12 +1,11 @@
+import { StateStorage } from '@/server/types/Storage'
 import { ChatStorageKeys } from '@/server/types/chat/ChatStorageKeys'
 import { Conversation } from '@/shared/types/Conversation'
-import { createChromeStorage } from '@/utils/storage'
 
 const createConversation = async (
-  conversation: Omit<Conversation, 'id' | 'createdAt' | 'updatedAt' | 'messages'>
+  conversation: Omit<Conversation, 'id' | 'createdAt' | 'updatedAt' | 'messages'>,
+  storage: StateStorage
 ) => {
-  const storage = createChromeStorage('local')
-
   const conversations = JSON.parse(
     (await storage.getItem(ChatStorageKeys.conversations)) ?? '[]'
   ) as Conversation[]

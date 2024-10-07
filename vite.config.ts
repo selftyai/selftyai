@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
         input: {
           index: resolve(__dirname, 'index.html'),
           background: resolve(__dirname, `src/server/${isChrome ? 'chrome' : ''}/index.ts`),
-          contentScript: resolve(__dirname, 'src/contentScript.ts')
+          contentScript: resolve(__dirname, 'src/pageContent/contentScript.ts')
         },
         output: {
           entryFileNames: '[name].js',

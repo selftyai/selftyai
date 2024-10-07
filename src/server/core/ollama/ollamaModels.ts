@@ -1,7 +1,12 @@
-import getOllamaService from '@/shared/getOllamaService'
+import getOllamaService from '@/server/core/ollama/getOllamaService'
+import { StateStorage } from '@/server/types/Storage'
 
-const ollamaModels = async () => {
-  const ollamaService = await getOllamaService()
+interface OllamaModelsPayload {
+  storage: StateStorage
+}
+
+const ollamaModels = async ({ storage }: OllamaModelsPayload) => {
+  const ollamaService = await getOllamaService(storage)
 
   try {
     const models = await ollamaService.getModels()
