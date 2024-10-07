@@ -4,11 +4,11 @@ import { streamText, CoreMessage } from 'ai'
 import createConversation from '@/server/core/chat/createConversation'
 import getConversations from '@/server/core/chat/getConversations'
 import getProvider from '@/server/core/chat/getProvider'
+import { StateStorage } from '@/server/types/Storage'
 import { ChatStorageKeys } from '@/server/types/chat/ChatStorageKeys'
+import { processChatStream } from '@/server/utils/stream'
 import { AIProvider } from '@/shared/types/AIProvider'
 import { Message } from '@/shared/types/Message'
-import { createChromeStorage } from '@/utils/storage'
-import { processChatStream } from '@/utils/stream'
 
 import generateTitle from './generateTitle'
 
@@ -20,22 +20,30 @@ interface sendMessagePayload {
     model: string
   }
   broadcastMessage: (data: any) => void
+  storage: StateStorage
 }
 
-const sendMessage = async ({ chatId, message, model, broadcastMessage }: sendMessagePayload) => {
-  const storage = createChromeStorage('local')
-
-  const { conversations } = await getConversations()
+const sendMessage = async ({
+  chatId,
+  message,
+  model,
+  broadcastMessage,
+  storage
+}: sendMessagePayload) => {
+  const { conversations } = await getConversations({ storage })
 
   const conversation =
     conversations.find((conversation) => conversation.id === chatId) ??
-    (await createConversation({
-      title: 'New conversation',
-      ...model,
-      systemMessage: ''
-    }))
+    (await createConversation(
+      {
+        title: 'New conversation',
+        ...model,
+        systemMessage: ''
+      },
+      storage
+    ))
 
-  const { conversations: actualConversations } = await getConversations()
+  const { conversations: actualConversations } = await getConversations({ storage })
 
   const index = actualConversations.findIndex((c) => c.id === conversation.id)
 
@@ -108,7 +116,7 @@ const sendMessage = async ({ chatId, message, model, broadcastMessage }: sendMes
         type: 'finalMessage',
         payload: {
           chatId: conversation.id,
-          conversations: (await getConversations()).conversations
+          conversations: (await getConversations({ storage })).conversations
         }
       })
 

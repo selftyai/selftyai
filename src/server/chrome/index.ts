@@ -1,6 +1,7 @@
 import * as core from '@/server/core'
 import { checkOngoingPulls } from '@/server/core/ollama/ollamaPullModel'
-import { ServerEndpoints } from '@/server/types/ServerEndpoints'
+import { createChromeStorage } from '@/server/utils/chromeStorage'
+import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
 
@@ -16,6 +17,7 @@ const handlers = {
 }
 
 const connectedPorts: chrome.runtime.Port[] = []
+const storage = createChromeStorage('local')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function broadcastMessage(message: any) {
@@ -24,10 +26,10 @@ function broadcastMessage(message: any) {
   })
 }
 
+checkOngoingPulls(broadcastMessage, storage)
+
 chrome.runtime.onConnect.addListener((port) => {
   connectedPorts.push(port)
-
-  checkOngoingPulls(broadcastMessage)
 
   port.onDisconnect.addListener(() => {
     const index = connectedPorts.indexOf(port)
@@ -49,7 +51,7 @@ chrome.runtime.onConnect.addListener((port) => {
     console.log(`Received message: ${type}`)
 
     try {
-      const response = await handler({ ...payload, broadcastMessage })
+      const response = await handler({ ...payload, storage, broadcastMessage })
       port.postMessage({ type, ...response })
     } catch (error: unknown) {
       port.postMessage({ type, error: error instanceof Error ? error.message : String(error) })

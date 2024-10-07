@@ -1,16 +1,16 @@
+import getOllamaService from '@/server/core/ollama/getOllamaService'
+import { StateStorage } from '@/server/types/Storage'
 import { OllamaStorageKeys } from '@/server/types/ollama/OllamaStoragsKeys'
-import getOllamaService from '@/shared/getOllamaService'
-import { createChromeStorage } from '@/utils/storage'
 
 interface OllamaVerifyConnectionPayload {
   url?: string
+  storage: StateStorage
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   broadcastMessage: (data: any) => void
 }
 
-const ollamaVerifyConnection = async ({ url }: OllamaVerifyConnectionPayload) => {
-  const ollamaService = await getOllamaService()
-  const storage = createChromeStorage('local')
+const ollamaVerifyConnection = async ({ url, storage }: OllamaVerifyConnectionPayload) => {
+  const ollamaService = await getOllamaService(storage)
 
   const storedURL = (await storage.getItem(OllamaStorageKeys.baseURL)) || 'http://localhost:11434'
 
