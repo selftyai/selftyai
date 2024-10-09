@@ -11,6 +11,7 @@ const generateTitle = async (conversation: Conversation): Promise<string> => {
     - Be less than 50 characters (including spaces and emojis)
     - Include relevant emojis to enhance meaning (optional but encouraged)
     - Be clear and appropriate
+    Your task is to give only the title of the chat based on the user's prompt. Do not include any other information.
     User's Prompt:
   `.trim()
 
