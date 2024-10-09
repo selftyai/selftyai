@@ -10,23 +10,22 @@ import CodePanel from '@/sidebar/components/Chat/Message/CodePanel'
 
 const preprocessMarkdown = (markdownText: string) => {
   const processedText = markdownText
-    // .replace(/\\\[/g, '$$')
-    // .replace(/\\\]/g, '$$')
-    // .replace(/\\\(/g, '$$')
-    // .replace(/\\\)/g, '$$')
-    // .replace(/\\begin{(?!pmatrix|bmatrix)/g, '\\begin{bmatrix}')
-    // .replace(/\\end{(?!pmatrix|bmatrix)/g, '\\end{bmatrix}')
-    // .replace(/\\begin{bmatrix}/g, '\\begin{bmatrix}')
-    // .replace(/\\end{bmatrix}/g, '\\end{bmatrix}')
-    // .replace(/\\begin{pmatrix}/g, '\\begin{pmatrix}')
-    // .replace(/\\end{pmatrix}/g, '\\end{pmatrix}')
-    .replace(/\\n/g, '\n')
+  // .replace(/\\\[/g, '$$')
+  // .replace(/\\\]/g, '$$')
+  // .replace(/\\\(/g, '$$')
+  // .replace(/\\\)/g, '$$')
+  // .replace(/\\begin{(?!pmatrix|bmatrix)/g, '\\begin{bmatrix}')
+  // .replace(/\\end{(?!pmatrix|bmatrix)/g, '\\end{bmatrix}')
+  // .replace(/\\begin{bmatrix}/g, '\\begin{bmatrix}')
+  // .replace(/\\end{bmatrix}/g, '\\end{bmatrix}')
+  // .replace(/\\begin{pmatrix}/g, '\\begin{pmatrix}')
+  // .replace(/\\end{pmatrix}/g, '\\end{pmatrix}')
 
   return processedText.trim()
 }
 
 const remarkMathOptions = {
-  singleDollarTextMath: false
+  singleDollarTextMath: true
 }
 
 const MessageMarkdown = ({ message }: { message: string }) => {

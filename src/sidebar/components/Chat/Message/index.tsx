@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Avatar, AvatarIcon, Button, Tooltip, Skeleton } from '@nextui-org/react'
+import { Button, Tooltip } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
@@ -7,7 +7,7 @@ import React from 'react'
 import Markdown from '@/sidebar/components/Chat/Message/Markdown'
 
 export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
-  avatar?: string
+  avatar?: React.ReactNode
   showFeedback?: boolean
   message?: React.ReactNode
   currentAttempt?: number
@@ -36,17 +36,16 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
       status,
       onMessageCopy,
       onAttemptChange,
-      onFeedback,
+      // onFeedback,
       onAttemptFeedback,
       className,
       messageClassName,
-      isLastMessage,
-      isGenerating,
+      // isLastMessage,
       ...props
     },
     ref
   ) => {
-    const [feedback, setFeedback] = React.useState<'like' | 'dislike'>()
+    // const [feedback, setFeedback] = React.useState<'like' | 'dislike'>()
     const [attemptFeedback, setAttemptFeedback] = React.useState<'like' | 'dislike' | 'same'>()
 
     const messageRef = React.useRef<HTMLDivElement>(null)
@@ -81,14 +80,14 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
       onMessageCopy?.(valueToCopy)
     }, [copy, message, onMessageCopy])
 
-    const handleFeedback = React.useCallback(
-      (liked: boolean) => {
-        setFeedback(liked ? 'like' : 'dislike')
+    // const handleFeedback = React.useCallback(
+    //   (liked: boolean) => {
+    //     setFeedback(liked ? 'like' : 'dislike')
 
-        onFeedback?.(liked ? 'like' : 'dislike')
-      },
-      [onFeedback]
-    )
+    //     onFeedback?.(liked ? 'like' : 'dislike')
+    //   },
+    //   [onFeedback]
+    // )
 
     const handleAttemptFeedback = React.useCallback(
       (feedback: 'like' | 'dislike' | 'same') => {
@@ -101,20 +100,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
 
     return (
       <div {...props} ref={ref} className={cn('flex gap-3', className)}>
-        <div className="relative flex-none">
-          {avatar ? (
-            <Avatar src={avatar} radius="full" className="bg-background" isBordered />
-          ) : (
-            <Avatar
-              isBordered
-              icon={<AvatarIcon />}
-              classNames={{
-                base: 'bg-gradient-to-br from-[#FFB457] to-[#FF705B]',
-                icon: 'text-black/80'
-              }}
-            />
-          )}
-        </div>
+        <div className="relative flex-none">{avatar}</div>
         <div className="flex w-full flex-col gap-4">
           <div
             className={cn(
@@ -123,12 +109,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               messageClassName
             )}
           >
-            <div ref={messageRef} className={'pr-10 text-small'}>
-              {isGenerating && (
-                <Skeleton className="w-3/5 rounded-lg">
-                  <div className="h-3 w-3/5 rounded-lg bg-default-200" />
-                </Skeleton>
-              )}
+            <div ref={messageRef} className={'text-small'}>
               {hasFailed ? (
                 failedMessage
               ) : typeof message === 'string' ? (
@@ -137,17 +118,6 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                 message
               )}
             </div>
-            {showFeedback && !hasFailed && (
-              <div className="absolute right-2 top-2 hidden rounded-full bg-content2 shadow-small group-hover:flex">
-                <Button isIconOnly radius="full" size="sm" variant="light" onPress={handleCopy}>
-                  {copied ? (
-                    <Icon className="text-lg text-default-600" icon="gravity-ui:check" />
-                  ) : (
-                    <Icon className="text-lg text-default-600" icon="gravity-ui:copy" />
-                  )}
-                </Button>
-              </div>
-            )}
             {attempts > 1 && !hasFailed && (
               <div className="flex w-full items-center justify-end">
                 <button
@@ -171,6 +141,19 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                 <p className="px-1 text-tiny font-medium text-default-500">
                   {currentAttempt}/{attempts}
                 </p>
+              </div>
+            )}
+            {showFeedback && (
+              <div className="flex items-center justify-between pt-3">
+                <Tooltip content="Copy">
+                  <Button isIconOnly radius="full" size="sm" variant="flat" onPress={handleCopy}>
+                    {copied ? (
+                      <Icon className="text-lg text-default-600" icon="gravity-ui:check" />
+                    ) : (
+                      <Icon className="text-lg text-default-600" icon="gravity-ui:copy" />
+                    )}
+                  </Button>
+                </Tooltip>
               </div>
             )}
           </div>
@@ -226,39 +209,6 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                     )}
                   </Button>
                 </Tooltip>
-              </div>
-            </div>
-          )}
-          {isLastMessage && (
-            <div className="flex items-center justify-between rounded-medium border-small border-default-100 px-4 py-3 shadow-small">
-              <p className="text-small text-default-600">Is this response was helpful?</p>
-              <div className="flex gap-1">
-                <Button
-                  isIconOnly
-                  radius="full"
-                  size="sm"
-                  variant="light"
-                  onPress={() => handleFeedback(true)}
-                >
-                  {feedback === 'like' ? (
-                    <Icon className="text-lg text-default-600" icon="gravity-ui:thumbs-up-fill" />
-                  ) : (
-                    <Icon className="text-lg text-default-600" icon="gravity-ui:thumbs-up" />
-                  )}
-                </Button>
-                <Button
-                  isIconOnly
-                  radius="full"
-                  size="sm"
-                  variant="light"
-                  onPress={() => handleFeedback(false)}
-                >
-                  {feedback === 'dislike' ? (
-                    <Icon className="text-lg text-default-600" icon="gravity-ui:thumbs-down-fill" />
-                  ) : (
-                    <Icon className="text-lg text-default-600" icon="gravity-ui:thumbs-down" />
-                  )}
-                </Button>
               </div>
             </div>
           )}

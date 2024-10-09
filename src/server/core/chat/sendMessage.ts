@@ -89,10 +89,15 @@ const sendMessage = async ({
   processChatStream(
     result.toDataStream(),
     async (data) => {
-      const formatted = data.split(':')
+      const subtracted = data.substring('0:'.length, data.length - 1)
+      const parsedData = JSON.parse(subtracted)
 
-      if (formatted[0] === '0') {
-        responseMessage.content += formatted[1].substring(1, formatted[1].length - 2)
+      if (typeof parsedData !== 'string') {
+        console.log('Metadata: ', parsedData)
+      }
+
+      if (typeof parsedData === 'string') {
+        responseMessage.content += parsedData
 
         actualConversations[index].messages[actualConversations[index].messages.length - 1] =
           responseMessage

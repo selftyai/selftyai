@@ -1,34 +1,45 @@
 import { Icon } from '@iconify/react'
-import { Button, Tooltip, Image, Badge, Spinner } from '@nextui-org/react'
+import {
+  Button,
+  Tooltip,
+  Image,
+  Badge,
+  Spinner,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownSection,
+  DropdownItem
+} from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 
+import { Model } from '@/shared/types/Model'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
 import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
-interface TextAreaProps {
-  regenerateActive?: boolean
-}
-
-const TextArea = memo(({ regenerateActive }: TextAreaProps) => {
+const TextArea = memo(() => {
   const { sendMessage, isGenerating } = useChat()
-  const { selectedModel } = useModels()
+  const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
 
-  const [isRegenerating, setIsRegenerating] = React.useState<boolean>(false)
+  const groupedModels = useMemo(() => {
+    return models.reduce(
+      (acc, model) => {
+        return {
+          ...acc,
+          [model.provider]: [...(acc[model.provider] || []), model]
+        }
+      },
+      {} as Record<string, Model[]>
+    )
+  }, [models])
+
   const [prompt, setPrompt] = React.useState<string>('')
   const [images, setImages] = React.useState<string[]>([])
 
   const imageRef = React.useRef<HTMLInputElement>(null)
-
-  const onRegenerate = () => {
-    setIsRegenerating(true)
-
-    setTimeout(() => {
-      setIsRegenerating(false)
-    }, 1000)
-  }
 
   const onRemoveImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index))
@@ -66,24 +77,6 @@ const TextArea = memo(({ regenerateActive }: TextAreaProps) => {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div>
-        {regenerateActive && (
-          <Button
-            isDisabled={isRegenerating}
-            size="sm"
-            startContent={
-              <Icon
-                className={cn('text-medium', isRegenerating ? 'origin-center animate-spin' : '')}
-                icon="solar:restart-linear"
-              />
-            }
-            variant="flat"
-            onPress={onRegenerate}
-          >
-            Regenerate
-          </Button>
-        )}
-      </div>
       <form
         className="flex w-full flex-col items-start rounded-medium bg-default-100 transition-colors hover:bg-default-200/70"
         onSubmit={onSubmit}
@@ -127,9 +120,7 @@ const TextArea = memo(({ regenerateActive }: TextAreaProps) => {
                 <Button
                   isIconOnly
                   color={!prompt ? 'default' : 'primary'}
-                  isDisabled={
-                    !prompt || isGenerating || isRegenerating || typeof selectedModel === 'string'
-                  }
+                  isDisabled={!prompt || isGenerating || typeof selectedModel === 'string'}
                   radius="lg"
                   size="sm"
                   variant="solid"
@@ -193,10 +184,67 @@ const TextArea = memo(({ regenerateActive }: TextAreaProps) => {
           }
         />
         <div className="flex w-full flex-wrap items-end justify-between gap-2 px-4 pb-4">
-          <p className="py-1 text-tiny text-warning-400">
-            {typeof selectedModel === 'string' ? 'Model is not selected' : null}
-          </p>
-          <p className="py-1 text-tiny text-default-400">{prompt.length}/2000</p>
+          <Dropdown className="bg-content1" placement="top-start">
+            <DropdownTrigger>
+              <Button
+                size="sm"
+                startContent={
+                  <Icon className="text-medium text-warning-500" icon="proicons:sparkle" />
+                }
+                variant="flat"
+              >
+                {typeof selectedModel === 'string' ? selectedModel : selectedModel.name}
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="models"
+              className="p-0 pt-2"
+              variant="faded"
+              onAction={(e) => selectModel(e as string)}
+              items={Object.keys(groupedModels)
+                .map((provider) => ({
+                  key: provider,
+                  models: groupedModels[provider]
+                }))
+                .filter((provider) => provider.models.length > 0)}
+              emptyContent="No models available, visit settings"
+            >
+              {(provider) => (
+                <DropdownSection
+                  classNames={{
+                    heading: 'text-tiny px-[10px]'
+                  }}
+                  title={chrome.i18n.getMessage(`${provider.key}Models`)}
+                  items={provider.models.map((model, index) => ({ ...model, index }))}
+                >
+                  {(model) => (
+                    <DropdownItem
+                      key={model.model}
+                      className="text-default-500 data-[hover=true]:text-default-500"
+                      classNames={{
+                        description: 'text-default-500 text-tiny'
+                      }}
+                      endContent={
+                        typeof selectedModel !== 'string' &&
+                        selectedModel.name === model.name && (
+                          <Icon
+                            className="text-default-foreground"
+                            height={24}
+                            icon="solar:check-circle-bold"
+                            width={24}
+                          />
+                        )
+                      }
+                    >
+                      {model.name}
+                    </DropdownItem>
+                  )}
+                </DropdownSection>
+              )}
+            </DropdownMenu>
+          </Dropdown>
+
+          {/* <p className="py-1 text-tiny text-default-400">{prompt.length}/2000</p> */}
         </div>
       </form>
     </div>
