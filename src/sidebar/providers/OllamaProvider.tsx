@@ -72,7 +72,15 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
       }
 
       const messageTypes = {
-        [ServerEndpoints.ollamaModels]: () => setModels(message.models),
+        [ServerEndpoints.ollamaModels]: () => {
+          const isModelsChanged = message.models.filter(
+            (model: Model) => !models.find((item) => item.name === model.name)
+          )
+
+          if (isModelsChanged.length) {
+            setModels(message.models)
+          }
+        },
         [ServerEndpoints.ollamaVerifyConnection]: () => validationResponse(),
         [ServerEndpoints.ollamaChangeUrl]: () => validationResponse(),
         [ServerEndpoints.ollamaDeleteModel]: () => {
@@ -125,7 +133,8 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
     setConnected,
     setBaseURL,
     baseURL,
-    setError
+    setError,
+    models
   ])
 
   useEffect(() => {

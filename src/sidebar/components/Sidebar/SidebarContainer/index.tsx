@@ -1,97 +1,35 @@
 import { Icon } from '@iconify/react'
 import {
   Button,
-  ScrollShadow,
   Listbox,
   ListboxItem,
   ListboxSection,
   Spacer,
   useDisclosure,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
   cn,
   Image
 } from '@nextui-org/react'
-import React from 'react'
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
+import React, { useMemo, useState } from 'react'
 import Markdown from 'react-markdown'
 import { useNavigate } from 'react-router-dom'
 
 import logo from '@/shared/assets/logo.svg'
+import type { Conversation } from '@/shared/types/Conversation'
+import RecentPromptDropdown from '@/sidebar/components/Sidebar/SidebarContainer/RecentPromptDropdown'
 import SidebarDrawer from '@/sidebar/components/Sidebar/SidebarDrawer'
 import { useChat } from '@/sidebar/providers/ChatProvider'
 
-function RecentPromptDropdown({
-  onDelete,
-  selected
-}: {
-  onDelete: () => void
-  selected?: boolean
-}) {
-  return (
-    <Dropdown>
-      <DropdownTrigger>
-        <Icon
-          className={cn('hidden text-default-500 group-hover:block', selected && 'block')}
-          icon="solar:menu-dots-bold"
-          width={24}
-        />
-      </DropdownTrigger>
-      <DropdownMenu
-        aria-label="Dropdown menu with icons"
-        className="py-2"
-        variant="faded"
-        onAction={(key) => {
-          if (key === 'delete') {
-            onDelete()
-          }
-        }}
-      >
-        {/* <DropdownItem
-          key="rename"
-          className="text-default-500 data-[hover=true]:text-default-500"
-          startContent={
-            <Icon className="text-default-300" height={20} icon="solar:pen-linear" width={20} />
-          }
-        >
-          Rename
-        </DropdownItem> */}
-        {/* <DropdownItem
-          key="archive"
-          className="text-default-500 data-[hover=true]:text-default-500"
-          startContent={
-            <Icon
-              className="text-default-300"
-              height={20}
-              icon="solar:folder-open-linear"
-              width={20}
-            />
-          }
-        >
-          Archive
-        </DropdownItem> */}
-        <DropdownItem
-          key="delete"
-          className="text-danger-500 data-[hover=true]:text-danger-500"
-          color="danger"
-          startContent={
-            <Icon
-              className="text-danger-500"
-              height={20}
-              icon="solar:trash-bin-minimalistic-linear"
-              width={20}
-            />
-          }
-        >
-          Delete
-        </DropdownItem>
-      </DropdownMenu>
-    </Dropdown>
-  )
+interface Section {
+  key: string
+  title: string
+  titleNode?: React.ReactNode
+  chats: Conversation[]
 }
 
-export default function Component({
+const MAX_CHATS_TO_DISPLAY = 20
+
+const Sidebar = ({
   children,
   header,
   title,
@@ -103,10 +41,122 @@ export default function Component({
   title?: string
   subTitle?: string
   classNames?: Record<string, string>
-}) {
+}) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const navigator = useNavigate()
-  const { chatId, deleteConversation, conversations, setChatId } = useChat()
+  const {
+    chatId,
+    deleteConversation,
+    conversations,
+    setChatId,
+    pinConversation,
+    unpinConversation
+  } = useChat()
+
+  const [chatsToShow, setChatsToShow] = useState(MAX_CHATS_TO_DISPLAY)
+  const [sections, showMore, onShowMore] = useMemo(() => {
+    const sections: Section[] = []
+
+    const onShowMore = () => {
+      setChatsToShow((prev) => prev + MAX_CHATS_TO_DISPLAY)
+    }
+
+    const pinnedChats = conversations.filter((chat) => chat.isPinned)
+    const unpinnedChats = conversations
+      .filter((chat) => !chat.isPinned)
+      .sort((a, b) => {
+        const lastMessageA = a.messages[a.messages.length - 1]?.createdAt
+        const lastMessageB = b.messages[b.messages.length - 1]?.createdAt
+        if (!lastMessageA || !lastMessageB) return 0
+        return new Date(lastMessageB).getTime() - new Date(lastMessageA).getTime()
+      })
+
+    if (pinnedChats.length > 0) {
+      sections.push({
+        key: 'pinned',
+        title: 'Pinned',
+        titleNode: (
+          <span className="flex items-center gap-2">
+            <Icon icon="solar:pin-linear" width={20} />
+            Pinned
+          </span>
+        ),
+        chats: pinnedChats
+      })
+    }
+
+    const chatsToDisplay = unpinnedChats.slice(0, chatsToShow)
+
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+    const sevenDaysAgoStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+    const thirtyDaysAgoStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+
+    const chatsByDateSection = {
+      today: [] as Conversation[],
+      yesterday: [] as Conversation[],
+      previous7Days: [] as Conversation[],
+      previous30Days: [] as Conversation[],
+      other: [] as Conversation[]
+    }
+
+    for (const chat of chatsToDisplay) {
+      const chatDate = new Date(chat.messages[chat.messages.length - 1]?.createdAt)
+      if (chatDate >= todayStart) {
+        chatsByDateSection.today.push(chat)
+      } else if (chatDate >= yesterdayStart) {
+        chatsByDateSection.yesterday.push(chat)
+      } else if (chatDate >= sevenDaysAgoStart) {
+        chatsByDateSection.previous7Days.push(chat)
+      } else if (chatDate >= thirtyDaysAgoStart) {
+        chatsByDateSection.previous30Days.push(chat)
+      } else {
+        chatsByDateSection.other.push(chat)
+      }
+    }
+
+    if (chatsByDateSection.today.length > 0) {
+      sections.push({
+        key: 'today',
+        title: 'Today',
+        chats: chatsByDateSection.today
+      })
+    }
+    if (chatsByDateSection.yesterday.length > 0) {
+      sections.push({
+        key: 'yesterday',
+        title: 'Yesterday',
+        chats: chatsByDateSection.yesterday
+      })
+    }
+    if (chatsByDateSection.previous7Days.length > 0) {
+      sections.push({
+        key: 'previous7Days',
+        title: 'Previous 7 Days',
+        chats: chatsByDateSection.previous7Days
+      })
+    }
+    if (chatsByDateSection.previous30Days.length > 0) {
+      sections.push({
+        key: 'previous30Days',
+        title: 'Previous 30 Days',
+        chats: chatsByDateSection.previous30Days
+      })
+    }
+    if (chatsByDateSection.other.length > 0) {
+      sections.push({
+        key: 'other',
+        title: 'Other',
+        chats: chatsByDateSection.other
+      })
+    }
+
+    const totalChatsCount = unpinnedChats.length
+    const showMore = totalChatsCount > chatsToShow
+
+    return [sections, showMore, onShowMore]
+  }, [conversations, chatsToShow])
 
   const content = (
     <div className="relative flex h-full w-72 flex-1 flex-col p-6">
@@ -121,10 +171,14 @@ export default function Component({
 
       <Spacer y={8} />
 
-      <ScrollShadow className="-mr-6 h-full max-h-full pr-6">
+      <OverlayScrollbarsComponent
+        className="-mr-6 h-full max-h-full pr-6"
+        options={{ scrollbars: { autoHide: 'scroll' } }}
+        defer
+      >
         <Button
           fullWidth
-          className="mb-6 mt-2 h-[44px] justify-start gap-3 bg-default-foreground px-3 py-[10px] text-default-50"
+          className="sticky top-0 z-10 mb-6 h-[44px] justify-start gap-3 bg-default-foreground px-3 py-[10px] text-default-50"
           startContent={
             <Icon className="text-default-50" icon="solar:chat-round-dots-linear" width={24} />
           }
@@ -138,67 +192,119 @@ export default function Component({
         </Button>
 
         <Listbox
-          aria-label="Recent chats"
+          aria-label="Chats"
           variant="flat"
           onAction={(key) => {
+            if (key === 'show-more') return onShowMore()
+
             navigator(`/${key}`)
-            onOpenChange()
+            if (isOpen) onOpenChange()
           }}
+          classNames={{
+            list: 'gap-4'
+          }}
+          items={
+            sections.length
+              ? [
+                  ...sections,
+                  {
+                    key: 'show-more',
+                    title: 'Show more',
+                    chats: []
+                  } as Section
+                ]
+              : []
+          }
+          emptyContent={
+            <div className="flex h-full items-center justify-center text-sm text-default-400">
+              No conversations
+            </div>
+          }
         >
-          <ListboxSection
-            classNames={{
-              base: 'py-0',
-              heading: 'py-0 pl-[10px] text-small text-default-400'
-            }}
-            title="Recent"
-            items={conversations}
-          >
-            {(conversation) => (
+          {(section) =>
+            section.key === 'show-more' ? (
               <ListboxItem
-                key={conversation.id}
+                key="show-more"
                 className={cn(
-                  'relative h-[44px] truncate px-[12px] py-[10px] text-default-500',
-                  chatId === conversation.id && 'bg-default-100 text-default-foreground'
+                  'h-[44px] px-[12px] py-[10px] text-default-400',
+                  !showMore && 'hidden'
                 )}
-                classNames={{
-                  title: 'truncate'
-                }}
                 endContent={
-                  <RecentPromptDropdown
-                    onDelete={() => {
-                      deleteConversation(conversation.id)
-                    }}
-                    selected={chatId === conversation.id}
+                  <Icon
+                    className="text-default-300"
+                    icon="solar:alt-arrow-down-linear"
+                    width={20}
                   />
                 }
-                textValue={conversation.title}
               >
-                <Markdown
-                  components={{
-                    p: ({ children }) => <span>{children}</span>,
-                    strong: ({ children }) => <span>{children}</span>
-                  }}
-                >
-                  {conversation.title}
-                </Markdown>
+                Show more
               </ListboxItem>
-            )}
-          </ListboxSection>
-          {/* <ListboxItem
-              key="show-more"
-              className="h-[44px] px-[12px] py-[10px] text-default-400"
-              endContent={
-                <Icon className="text-default-300" icon="solar:alt-arrow-down-linear" width={20} />
-              }
-            >
-              Show more
-            </ListboxItem> */}
+            ) : (
+              <ListboxSection
+                classNames={{
+                  base: 'py-0',
+                  heading: 'py-0 pl-[10px] text-small text-default-400'
+                }}
+                title={section.title}
+                items={section.chats}
+                key={section.key}
+              >
+                {(conversation) => (
+                  <ListboxItem
+                    key={conversation.id}
+                    className={cn(
+                      'relative h-[44px] truncate px-[12px] py-[10px] text-default-500',
+                      chatId === conversation.id && 'bg-default-100 text-default-foreground'
+                    )}
+                    classNames={{
+                      title: 'truncate'
+                    }}
+                    endContent={
+                      <RecentPromptDropdown
+                        onDelete={() => {
+                          deleteConversation(conversation.id)
+                        }}
+                        onPin={() => {
+                          pinConversation(conversation.id)
+                        }}
+                        onUnpin={() => {
+                          unpinConversation(conversation.id)
+                        }}
+                        pinned={conversation.isPinned}
+                        selected={chatId === conversation.id}
+                      />
+                    }
+                    textValue={conversation.title}
+                  >
+                    <Markdown
+                      components={{
+                        p: ({ children }) => <span>{children}</span>,
+                        strong: ({ children }) => <span>{children}</span>
+                      }}
+                    >
+                      {conversation.title}
+                    </Markdown>
+                  </ListboxItem>
+                )}
+              </ListboxSection>
+            )
+          }
         </Listbox>
-      </ScrollShadow>
+      </OverlayScrollbarsComponent>
 
       <Spacer y={8} />
 
       <div className="mt-auto flex flex-col">
+        <Button
+          className="justify-start text-small text-default-600"
+          startContent={
+            <Icon className="text-default-600" icon="solar:monitor-line-duotone" width={24} />
+          }
+          variant="light"
+          onClick={() => window.open(chrome.runtime.getURL('index.html'))}
+        >
+          Full page
+        </Button>
         <Button
           className="justify-start text-default-600"
           startContent={
@@ -233,17 +339,23 @@ export default function Component({
             classNames?.['header']
           )}
         >
-          <Button isIconOnly className="flex lg:hidden" size="sm" variant="light" onPress={onOpen}>
+          <Button
+            isIconOnly
+            className="mr-auto flex lg:hidden"
+            size="sm"
+            variant="light"
+            onPress={onOpen}
+          >
             <Icon
               className="text-default-500"
               height={24}
-              icon="solar:hamburger-menu-outline"
+              icon="solar:sidebar-minimalistic-outline"
               width={24}
             />
           </Button>
           {(title || subTitle) && (
-            <div className="w-full min-w-[120px] sm:w-auto">
-              <div className="truncate text-small font-semibold leading-5 text-foreground">
+            <div className="w-full min-w-[120px] flex-1 sm:w-auto">
+              <div className="flex items-center justify-center truncate text-small font-semibold leading-5 text-foreground">
                 <Markdown
                   components={{
                     p: ({ children }) => <span>{children}</span>,
@@ -269,3 +381,5 @@ export default function Component({
     </div>
   )
 }
+
+export default Sidebar

@@ -1,5 +1,6 @@
 import { NextUIProvider } from '@nextui-org/react'
 import { ThemeProvider } from 'next-themes'
+import 'overlayscrollbars/overlayscrollbars.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Toaster } from 'sonner'

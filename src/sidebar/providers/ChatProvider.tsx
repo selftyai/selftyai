@@ -12,7 +12,7 @@ import { useOllama } from '@/sidebar/providers/OllamaProvider'
 const ModelContext = React.createContext<
   | {
       models: Model[]
-      selectedModel: Model | 'Select model'
+      selectedModel?: Model
       selectModel: (model: string) => void
     }
   | undefined
@@ -27,7 +27,10 @@ const ChatContext = React.createContext<
       error: string
       setChatId: (chatId: string | undefined) => void
       chatId?: string
+      selectedConversation?: Conversation
       deleteConversation: (id: string) => void
+      pinConversation: (id: string) => void
+      unpinConversation: (id: string) => void
     }
   | undefined
 >(undefined)
@@ -58,12 +61,13 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   }, [ollamaModels])
 
   const [conversations, setConversations] = React.useState<Conversation[]>([])
+  const [selectedConversation, setSelectedConversation] = React.useState<Conversation>()
 
   const [chatId, setChatId] = React.useState<string>()
   const [isGenerating, setIsGenerating] = React.useState(false)
   const [messages, setMessages] = React.useState<Message[]>([])
   const [error] = React.useState('')
-  const [selectedModel, setSelectedModel] = React.useState<Model | 'Select model'>('Select model')
+  const [selectedModel, setSelectedModel] = React.useState<Model>()
 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -96,6 +100,12 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             setChatId(undefined)
             setMessages([])
           }
+        },
+        [ServerEndpoints.pinConversation]: () => {
+          setConversations(message.conversations)
+        },
+        [ServerEndpoints.unpinConversation]: () => {
+          setConversations(message.conversations)
         }
       }
 
@@ -109,22 +119,22 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   }, [addMessageListener, sendPortMessage, chatId, setConversations])
 
   React.useEffect(() => {
-    console.log('chatId changed:', chatId)
-  }, [chatId])
+    setSelectedConversation(conversations.find((c) => c.id === chatId))
+  }, [chatId, conversations])
 
   useEffect(() => {
     const conversation = conversations.find((c) => c.id === chatId)
 
     if (conversation) {
       setMessages((prev) => (prev.length === 0 ? conversation.messages : prev))
-      setSelectedModel(models.find((m) => m.model === conversation.model) || 'Select model')
+      setSelectedModel(models.find((m) => m.model === conversation.model))
     }
   }, [chatId, conversations, models, messages])
 
   const sendMessage = useCallback(
     async (message: string, images: string[] = []) => {
       const trimmedMessage = message.trim()
-      if (!trimmedMessage || typeof selectedModel === 'string') return
+      if (!trimmedMessage || !selectedModel) return
 
       setIsGenerating(true)
 
@@ -175,6 +185,20 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     [sendPortMessage]
   )
 
+  const pinConversation = useCallback(
+    (id: string) => {
+      sendPortMessage(ServerEndpoints.pinConversation, { id })
+    },
+    [sendPortMessage]
+  )
+
+  const unpinConversation = useCallback(
+    (id: string) => {
+      sendPortMessage(ServerEndpoints.unpinConversation, { id })
+    },
+    [sendPortMessage]
+  )
+
   const modelContextValue = useMemo(
     () => ({
       models,
@@ -202,7 +226,10 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       error,
       setChatId: changeChatId,
       chatId,
-      deleteConversation
+      deleteConversation,
+      pinConversation,
+      unpinConversation,
+      selectedConversation
     }),
     [
       messages,
@@ -212,7 +239,10 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       error,
       chatId,
       deleteConversation,
-      changeChatId
+      changeChatId,
+      pinConversation,
+      unpinConversation,
+      selectedConversation
     ]
   )
 

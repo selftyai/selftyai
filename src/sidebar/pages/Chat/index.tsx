@@ -1,49 +1,28 @@
 import { Icon } from '@iconify/react'
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownSection,
-  DropdownItem,
-  ScrollShadow,
-  Avatar
-} from '@nextui-org/react'
-import { useEffect, useMemo } from 'react'
+import { Card, CardHeader, CardBody, Avatar, Button } from '@nextui-org/react'
+import { useTheme } from 'next-themes'
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 import logo from '@/shared/assets/logo.svg'
-import type { Model } from '@/shared/types/Model'
-import Conversation from '@/sidebar/components/Conversation'
+import Conversation from '@/sidebar/components/Chat/Conversation'
 import SidebarContainer from '@/sidebar/components/Sidebar/SidebarContainer'
 import Textarea from '@/sidebar/components/Textarea'
-import { suggestions, icons } from '@/sidebar/pages/Chat/utils'
-import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
+import { useScrollAnchor } from '@/sidebar/hooks/useScrollAnchor'
+import { suggestions } from '@/sidebar/pages/Chat/utils'
+import { useChat } from '@/sidebar/providers/ChatProvider'
 
 const Chat = () => {
   const { chatId } = useParams()
+  const { theme } = useTheme()
   const { messages, setChatId, error, isGenerating, conversations } = useChat()
-  const { models, selectedModel, selectModel } = useModels()
+  const { scrollRef, scrollToBottom, showScrollToBottom, handleScroll } = useScrollAnchor()
 
   useEffect(() => {
     setChatId(chatId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId])
-
-  const groupedModels = useMemo(() => {
-    return models.reduce(
-      (acc, model) => {
-        return {
-          ...acc,
-          [model.provider]: [...(acc[model.provider] || []), model]
-        }
-      },
-      {} as Record<string, Model[]>
-    )
-  }, [models])
 
   return (
     <div className="h-full w-full max-w-full">
@@ -56,87 +35,44 @@ const Chat = () => {
             ? conversations.find((conversation) => conversation.id === chatId)?.title
             : undefined
         }
-        header={
-          <Dropdown className="bg-content1">
-            <DropdownTrigger>
-              <Button
-                disableAnimation
-                className="w-full min-w-[120px] items-center text-default-400 data-[hover=true]:bg-[unset]"
-                endContent={
-                  <Icon
-                    className="text-default-400"
-                    height={20}
-                    icon="solar:alt-arrow-down-linear"
-                    width={20}
-                  />
-                }
-                variant="light"
-              >
-                {typeof selectedModel === 'string' ? selectedModel : selectedModel.name}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              aria-label="models"
-              className="p-0 pt-2"
-              variant="faded"
-              onAction={(e) => selectModel(e as string)}
-              items={Object.keys(groupedModels)
-                .map((provider) => ({
-                  key: provider,
-                  models: groupedModels[provider]
-                }))
-                .filter((provider) => provider.models.length > 0)}
-              emptyContent="No models available, visit settings"
-            >
-              {(provider) => (
-                <DropdownSection
-                  classNames={{
-                    heading: 'text-tiny px-[10px]'
-                  }}
-                  title={chrome.i18n.getMessage(`${provider.key}Models`)}
-                  items={provider.models.map((model, index) => ({ ...model, index }))}
-                >
-                  {(model) => (
-                    <DropdownItem
-                      key={model.model}
-                      className="text-default-500 data-[hover=true]:text-default-500"
-                      classNames={{
-                        description: 'text-default-500 text-tiny'
-                      }}
-                      endContent={
-                        typeof selectedModel !== 'string' &&
-                        selectedModel.name === model.name && (
-                          <Icon
-                            className="text-default-foreground"
-                            height={24}
-                            icon="solar:check-circle-bold"
-                            width={24}
-                          />
-                        )
-                      }
-                      startContent={
-                        <Icon
-                          className="text-default-400"
-                          height={24}
-                          icon={icons[model.index % icons.length]}
-                          width={24}
-                        />
-                      }
-                    >
-                      {model.name}
-                    </DropdownItem>
-                  )}
-                </DropdownSection>
-              )}
-            </DropdownMenu>
-          </Dropdown>
-        }
       >
-        <div className="relative flex h-full max-h-[90dvh] flex-col px-6">
+        <div className="relative mx-auto flex h-full max-h-[90dvh] w-full flex-col px-0 sm:px-6 lg:max-w-3xl">
           {messages.length > 0 ? (
-            <ScrollShadow className="flex h-full flex-1 flex-col gap-6 overflow-y-auto p-6 pb-8">
+            <OverlayScrollbarsComponent
+              ref={scrollRef}
+              className="relative flex h-full flex-1 flex-col gap-6 overflow-y-auto pb-8 md:p-6"
+              options={{
+                scrollbars: {
+                  autoHide: 'scroll',
+                  theme: theme?.includes('dark') ? 'os-theme-light' : 'os-theme-dark'
+                },
+                overflow: { x: 'hidden', y: 'scroll' }
+              }}
+              events={{
+                scroll(_, event) {
+                  if (event.target instanceof HTMLElement) {
+                    handleScroll(event.target)
+                  }
+                },
+                updated(instance) {
+                  handleScroll(instance.elements().scrollOffsetElement)
+                }
+              }}
+              defer
+            >
               <Conversation messages={messages} isGenerating={isGenerating} error={error} />
-            </ScrollShadow>
+              {showScrollToBottom && (
+                <Button
+                  variant="flat"
+                  isIconOnly
+                  radius="full"
+                  className="fixed bottom-[27vh] left-[45vw] z-10 bg-content1 transition-opacity duration-300 lg:left-[calc(40vw_+_288px)]"
+                  onClick={scrollToBottom}
+                >
+                  <Icon icon="akar-icons:arrow-down" />
+                </Button>
+              )}
+            </OverlayScrollbarsComponent>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-10">
               <Avatar
@@ -163,9 +99,9 @@ const Chat = () => {
             </div>
           )}
 
-          <div className="mt-auto flex max-w-full flex-col gap-2">
+          <div className="mt-auto flex max-w-full flex-col gap-2 px-2.5">
             <Textarea />
-            <p className="px-2 text-center text-small font-medium leading-5 text-default-500">
+            <p className="hidden px-2 text-center text-xs font-medium leading-5 text-default-500 sm:block">
               {chrome.i18n.getMessage('disclaimer')}
             </p>
           </div>
