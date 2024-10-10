@@ -14,14 +14,11 @@ export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   status?: 'success' | 'failed'
   attempts?: number
   messageClassName?: string
-  isLastMessage?: boolean
   isGenerating?: boolean
   statusText?: JSX.Element
   messageLength?: number
   onAttemptChange?: (attempt: number) => void
   onMessageCopy?: (content: string | string[]) => void
-  onFeedback?: (feedback: 'like' | 'dislike') => void
-  onAttemptFeedback?: (feedback: 'like' | 'dislike' | 'same') => void
 }
 
 const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
@@ -36,18 +33,12 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
       status,
       onMessageCopy,
       onAttemptChange,
-      // onFeedback,
-      onAttemptFeedback,
       className,
       messageClassName,
-      // isLastMessage,
       ...props
     },
     ref
   ) => {
-    // const [feedback, setFeedback] = React.useState<'like' | 'dislike'>()
-    const [attemptFeedback, setAttemptFeedback] = React.useState<'like' | 'dislike' | 'same'>()
-
     const messageRef = React.useRef<HTMLDivElement>(null)
 
     const { copied, copy } = useClipboard()
@@ -79,24 +70,6 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
 
       onMessageCopy?.(valueToCopy)
     }, [copy, message, onMessageCopy])
-
-    // const handleFeedback = React.useCallback(
-    //   (liked: boolean) => {
-    //     setFeedback(liked ? 'like' : 'dislike')
-
-    //     onFeedback?.(liked ? 'like' : 'dislike')
-    //   },
-    //   [onFeedback]
-    // )
-
-    const handleAttemptFeedback = React.useCallback(
-      (feedback: 'like' | 'dislike' | 'same') => {
-        setAttemptFeedback(feedback)
-
-        onAttemptFeedback?.(feedback)
-      },
-      [onAttemptFeedback]
-    )
 
     return (
       <div {...props} ref={ref} className={cn('flex gap-3', className)}>
@@ -157,61 +130,6 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               </div>
             )}
           </div>
-          {showFeedback && attempts > 1 && (
-            <div className="flex items-center justify-between rounded-medium border-small border-default-100 px-4 py-3 shadow-small">
-              <p className="text-small text-default-600">Was this response better or worse?</p>
-              <div className="flex gap-1">
-                <Tooltip content="Better">
-                  <Button
-                    isIconOnly
-                    radius="full"
-                    size="sm"
-                    variant="light"
-                    onPress={() => handleAttemptFeedback('like')}
-                  >
-                    {attemptFeedback === 'like' ? (
-                      <Icon className="text-lg text-primary" icon="gravity-ui:thumbs-up-fill" />
-                    ) : (
-                      <Icon className="text-lg text-default-600" icon="gravity-ui:thumbs-up" />
-                    )}
-                  </Button>
-                </Tooltip>
-                <Tooltip content="Worse">
-                  <Button
-                    isIconOnly
-                    radius="full"
-                    size="sm"
-                    variant="light"
-                    onPress={() => handleAttemptFeedback('dislike')}
-                  >
-                    {attemptFeedback === 'dislike' ? (
-                      <Icon
-                        className="text-lg text-default-600"
-                        icon="gravity-ui:thumbs-down-fill"
-                      />
-                    ) : (
-                      <Icon className="text-lg text-default-600" icon="gravity-ui:thumbs-down" />
-                    )}
-                  </Button>
-                </Tooltip>
-                <Tooltip content="Same">
-                  <Button
-                    isIconOnly
-                    radius="full"
-                    size="sm"
-                    variant="light"
-                    onPress={() => handleAttemptFeedback('same')}
-                  >
-                    {attemptFeedback === 'same' ? (
-                      <Icon className="text-lg text-danger" icon="gravity-ui:face-sad" />
-                    ) : (
-                      <Icon className="text-lg text-default-600" icon="gravity-ui:face-sad" />
-                    )}
-                  </Button>
-                </Tooltip>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     )

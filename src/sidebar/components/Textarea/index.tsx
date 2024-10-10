@@ -27,10 +27,11 @@ const TextArea = memo(() => {
   const groupedModels = useMemo(() => {
     return models.reduce(
       (acc, model) => {
-        return {
-          ...acc,
-          [model.provider]: [...(acc[model.provider] || []), model]
+        if (!acc[model.provider]) {
+          acc[model.provider] = []
         }
+        acc[model.provider].push(model)
+        return acc
       },
       {} as Record<string, Model[]>
     )
@@ -149,8 +150,7 @@ const TextArea = memo(() => {
           onKeyDown={onKeyDown}
           onValueChange={setPrompt}
           startContent={
-            typeof selectedModel !== 'string' &&
-            selectedModel.hasVision && (
+            selectedModel?.hasVision && (
               <>
                 <input
                   ref={imageRef}
@@ -193,7 +193,7 @@ const TextArea = memo(() => {
                 }
                 variant="flat"
               >
-                {typeof selectedModel === 'string' ? selectedModel : selectedModel.name}
+                {selectedModel ? selectedModel.name : 'Select Model'}
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -225,8 +225,7 @@ const TextArea = memo(() => {
                         description: 'text-default-500 text-tiny'
                       }}
                       endContent={
-                        typeof selectedModel !== 'string' &&
-                        selectedModel.name === model.name && (
+                        selectedModel?.name === model.name && (
                           <Icon
                             className="text-default-foreground"
                             height={24}

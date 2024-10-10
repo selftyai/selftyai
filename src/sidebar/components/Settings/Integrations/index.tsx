@@ -46,7 +46,7 @@ const Integrations = ({ className, ...props }: AppearanceSettingCardProps) => {
       )
     },
     {
-      id: 'lmstudion',
+      id: 'lmstudio',
       title: 'LM Studio',
       subTitle: (
         <Link href="https://lmstudio.ai/" target="_blank">

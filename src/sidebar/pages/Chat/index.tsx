@@ -1,4 +1,4 @@
-import { Icon } from '@iconify/react/dist/iconify.js'
+import { Icon } from '@iconify/react'
 import { Card, CardHeader, CardBody, Avatar, Button } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'

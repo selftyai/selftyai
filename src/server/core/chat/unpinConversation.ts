@@ -7,19 +7,18 @@ interface GetConversationsPayload {
   id: string
 }
 
-const pinConversation = async ({ id, storage }: GetConversationsPayload) => {
+const unpinConversation = async ({ id, storage }: GetConversationsPayload) => {
   const conversations = JSON.parse(
     (await storage.getItem(ChatStorageKeys.conversations)) ?? '[]'
   ) as Conversation[]
 
-  const conversation = conversations.find((conversation) => conversation.id === id)
+  const updatedConversations = conversations.map((conversation) =>
+    conversation.id === id ? { ...conversation, isPinned: false } : conversation
+  )
 
-  if (conversation) {
-    conversation.isPinned = false
-    await storage.setItem(ChatStorageKeys.conversations, JSON.stringify(conversations))
-  }
+  await storage.setItem(ChatStorageKeys.conversations, JSON.stringify(updatedConversations))
 
-  return { conversations }
+  return { conversations: updatedConversations }
 }
 
-export default pinConversation
+export default unpinConversation

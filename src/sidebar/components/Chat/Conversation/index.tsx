@@ -25,26 +25,22 @@ const Conversation = memo(
     return (
       <div ref={ref} className="flex flex-col gap-4 px-2">
         {messages.map(({ role, content }, index, arr) => {
-          console.log(content)
           const message =
             typeof content === 'string'
               ? content
-              : [
-                  ...content
-                    .filter((part) => part.type === 'text')
-                    .map((part, partIndex) => <div key={partIndex}>{part.text}</div>),
-                  ...content
-                    .filter((part) => part.type === 'image')
-                    .map((part, partIndex) => (
-                      <div key={partIndex + 10}>
-                        <Image
-                          alt="uploaded image cover"
-                          className="size-32 rounded-small border-small border-default-200/50 object-cover"
-                          src={part.image.toString()}
-                        />
-                      </div>
-                    ))
-                ]
+              : content.map((part, partIndex) =>
+                  part.type === 'text' ? (
+                    <div key={`text-${partIndex}`}>{part.text}</div>
+                  ) : part.type === 'image' ? (
+                    <div key={`image-${partIndex}`}>
+                      <Image
+                        alt="uploaded image cover"
+                        className="size-32 rounded-small border-small border-default-200/50 object-cover"
+                        src={part.image.toString()}
+                      />
+                    </div>
+                  ) : null
+                )
 
           return (
             <MessageCard
@@ -93,7 +89,7 @@ const Conversation = memo(
         })}
         {isGenerating && !isLastMessage(messages, messages.length - 1) && (
           <div className="inline-flex items-center gap-2 text-sm">
-            {selectedModel !== 'Select model' && (
+            {selectedModel && (
               <>
                 <Avatar
                   size="sm"

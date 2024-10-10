@@ -12,7 +12,7 @@ import { useOllama } from '@/sidebar/providers/OllamaProvider'
 const ModelContext = React.createContext<
   | {
       models: Model[]
-      selectedModel: Model | 'Select model'
+      selectedModel?: Model
       selectModel: (model: string) => void
     }
   | undefined
@@ -67,7 +67,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [isGenerating, setIsGenerating] = React.useState(false)
   const [messages, setMessages] = React.useState<Message[]>([])
   const [error] = React.useState('')
-  const [selectedModel, setSelectedModel] = React.useState<Model | 'Select model'>('Select model')
+  const [selectedModel, setSelectedModel] = React.useState<Model>()
 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,14 +127,14 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
     if (conversation) {
       setMessages((prev) => (prev.length === 0 ? conversation.messages : prev))
-      setSelectedModel(models.find((m) => m.model === conversation.model) || 'Select model')
+      setSelectedModel(models.find((m) => m.model === conversation.model))
     }
   }, [chatId, conversations, models, messages])
 
   const sendMessage = useCallback(
     async (message: string, images: string[] = []) => {
       const trimmedMessage = message.trim()
-      if (!trimmedMessage || typeof selectedModel === 'string') return
+      if (!trimmedMessage || !selectedModel) return
 
       setIsGenerating(true)
 
