@@ -30,7 +30,7 @@ describe('ollamaModels', () => {
     mockOllamaService.getModels.mockResolvedValue(mockModels)
     mockOllamaService.getBaseURL.mockReturnValue(url)
 
-    mockStorage.getItem.mockResolvedValue(true)
+    mockStorage.getItem.mockResolvedValue('true')
 
     const result = await ollamaModels({ storage: mockStorage })
 
@@ -46,7 +46,7 @@ describe('ollamaModels', () => {
     mockOllamaService.getModels.mockRejectedValue(new Error(errorMessage))
     mockOllamaService.getBaseURL.mockReturnValue(url)
 
-    mockStorage.getItem.mockResolvedValue(true)
+    mockStorage.getItem.mockResolvedValue('true')
 
     const result = await ollamaModels({ storage: mockStorage })
 
