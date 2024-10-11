@@ -1,13 +1,15 @@
 import axios from 'axios'
 
-import getOllamaService from '@/shared/getOllamaService'
+import getOllamaService from '@/server/core/ollama/getOllamaService'
+import { StateStorage } from '@/server/types/Storage'
 
 interface DeleteModelPayload {
   modelTag: string
+  storage: StateStorage
 }
 
-const deleteModel = async ({ modelTag }: DeleteModelPayload) => {
-  const ollamaService = await getOllamaService()
+const deleteModel = async ({ modelTag, storage }: DeleteModelPayload) => {
+  const ollamaService = await getOllamaService(storage)
 
   try {
     const success = await ollamaService.deleteModel(modelTag)
