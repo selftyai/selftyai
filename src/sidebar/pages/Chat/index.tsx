@@ -16,7 +16,7 @@ import { useChat } from '@/sidebar/providers/ChatProvider'
 const Chat = () => {
   const { chatId } = useParams()
   const { theme } = useTheme()
-  const { messages, setChatId, error, isGenerating, conversations } = useChat()
+  const { messages, setChatId, isGenerating, conversations } = useChat()
   const { scrollRef, scrollToBottom, showScrollToBottom, handleScroll } = useScrollAnchor()
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const Chat = () => {
         }
       >
         <div className="relative mx-auto flex h-full max-h-[90dvh] w-full flex-col px-0 sm:px-6 lg:max-w-3xl">
-          {messages.length > 0 ? (
+          {messages.length > 0 || chatId ? (
             <OverlayScrollbarsComponent
               ref={scrollRef}
               className="relative flex h-full flex-1 flex-col gap-6 overflow-y-auto pb-8 md:p-6"
@@ -60,7 +60,7 @@ const Chat = () => {
               }}
               defer
             >
-              <Conversation messages={messages} isGenerating={isGenerating} error={error} />
+              <Conversation messages={messages} isGenerating={isGenerating} />
               {showScrollToBottom && (
                 <Button
                   variant="flat"
@@ -80,7 +80,7 @@ const Chat = () => {
                 size="lg"
                 radius="sm"
                 isBordered
-                className="bg-background ring-0 dark:ring-2"
+                className="bg-foreground dark:bg-background"
               />
               <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-4">
                 {suggestions.map((message) => (

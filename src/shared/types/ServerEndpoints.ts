@@ -6,11 +6,17 @@ export enum ServerEndpoints {
   sendMessage = 'sendMessage',
   pinConversation = 'pinConversation',
   unpinConversation = 'unpinConversation',
+  regenerateResponse = 'regenerateResponse',
+  continueGenerating = 'continueGenerating',
+  stop = 'stop',
 
   // Ollama
   ollamaVerifyConnection = 'ollamaVerifyConnection',
   ollamaModels = 'ollamaModels',
   ollamaPullModel = 'ollamaPullModel',
   ollamaDeleteModel = 'ollamaDeleteModel',
-  ollamaChangeUrl = 'ollamaChangeUrl'
+  ollamaChangeUrl = 'ollamaChangeUrl',
+  disableOllama = 'disableOllama',
+  enableOllama = 'enableOllama',
+  integrationStatusOllama = 'integrationStatusOllama'
 }

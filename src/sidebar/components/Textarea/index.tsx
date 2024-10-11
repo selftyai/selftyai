@@ -4,7 +4,6 @@ import {
   Tooltip,
   Image,
   Badge,
-  Spinner,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -13,6 +12,7 @@ import {
 } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import React, { memo, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { Model } from '@/shared/types/Model'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
@@ -20,7 +20,7 @@ import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
 const TextArea = memo(() => {
-  const { sendMessage, isGenerating } = useChat()
+  const { sendMessage, isGenerating, hasError, stopGenerating } = useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
 
@@ -41,6 +41,8 @@ const TextArea = memo(() => {
   const [images, setImages] = React.useState<string[]>([])
 
   const imageRef = React.useRef<HTMLInputElement>(null)
+
+  const navigator = useNavigate()
 
   const onRemoveImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index))
@@ -117,18 +119,23 @@ const TextArea = memo(() => {
           }}
           endContent={
             <div className="flex items-end gap-2">
-              <Tooltip showArrow content="Send message">
+              <Tooltip showArrow content={isGenerating ? 'Stop generating' : 'Send message'}>
                 <Button
                   isIconOnly
-                  color={!prompt ? 'default' : 'primary'}
-                  isDisabled={!prompt || isGenerating || typeof selectedModel === 'string'}
+                  color={isGenerating ? 'default' : !prompt ? 'default' : 'primary'}
+                  isDisabled={!isGenerating && (!prompt || !selectedModel || hasError)}
                   radius="lg"
                   size="sm"
                   variant="solid"
-                  type="submit"
+                  type={isGenerating ? 'button' : 'submit'}
+                  onPress={isGenerating ? stopGenerating : undefined}
                 >
                   {isGenerating ? (
-                    <Spinner size="sm" />
+                    <Icon
+                      className="text-danger [&>path]:stroke-[2px]"
+                      icon="solar:stop-bold"
+                      width={20}
+                    />
                   ) : (
                     <Icon
                       className={cn(
@@ -207,7 +214,26 @@ const TextArea = memo(() => {
                   models: groupedModels[provider]
                 }))
                 .filter((provider) => provider.models.length > 0)}
-              emptyContent="No models available, visit settings"
+              emptyContent={
+                <div className="flex flex-col gap-2 pb-2 text-center">
+                  No models available.
+                  <Button
+                    size="sm"
+                    color="default"
+                    className="text-default-600"
+                    onClick={() => navigator('/settings')}
+                    startContent={
+                      <Icon
+                        className="text-default-600"
+                        icon="solar:settings-minimalistic-line-duotone"
+                        width={16}
+                      />
+                    }
+                  >
+                    Go to settings
+                  </Button>
+                </div>
+              }
             >
               {(provider) => (
                 <DropdownSection

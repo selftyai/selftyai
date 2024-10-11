@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Button, Tooltip } from '@nextui-org/react'
+import { Button, Tooltip, Badge } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
@@ -11,14 +11,20 @@ export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   showFeedback?: boolean
   message?: React.ReactNode
   currentAttempt?: number
-  status?: 'success' | 'failed'
+  status?: string
   attempts?: number
   messageClassName?: string
   isGenerating?: boolean
   statusText?: JSX.Element
   messageLength?: number
+  metadata?: Record<string, string>
   onAttemptChange?: (attempt: number) => void
   onMessageCopy?: (content: string | string[]) => void
+  onContinueGenerating?: () => void
+  canContinue?: boolean
+  onRegenerate?: () => void
+  canRegenerate?: boolean
+  isLastMessage?: boolean
 }
 
 const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
@@ -35,6 +41,12 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
       onAttemptChange,
       className,
       messageClassName,
+      metadata,
+      onContinueGenerating,
+      canContinue,
+      onRegenerate,
+      canRegenerate,
+      isLastMessage,
       ...props
     },
     ref
@@ -43,11 +55,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
 
     const { copied, copy } = useClipboard()
 
-    const failedMessageClassName =
-      status === 'failed' ? 'bg-danger-100/50 border border-danger-100 text-foreground' : ''
-    const failedMessage = <p>{statusText}</p>
-
-    const hasFailed = status === 'failed'
+    const hasFailed = status === 'error'
 
     const handleCopy = React.useCallback(() => {
       let stringValue = ''
@@ -73,23 +81,27 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
 
     return (
       <div {...props} ref={ref} className={cn('flex gap-3', className)}>
-        <div className="relative flex-none">{avatar}</div>
+        <div className="relative flex-none">
+          <Badge
+            isOneChar
+            color="danger"
+            content={<Icon className="text-background" icon="gravity-ui:circle-exclamation-fill" />}
+            isInvisible={!hasFailed}
+            placement="bottom-right"
+            shape="circle"
+          >
+            {avatar}
+          </Badge>
+        </div>
         <div className="flex w-full flex-col gap-4">
           <div
             className={cn(
               'group relative w-full rounded-medium bg-content2 px-4 py-3 text-default-600',
-              failedMessageClassName,
               messageClassName
             )}
           >
             <div ref={messageRef} className={'text-small'}>
-              {hasFailed ? (
-                failedMessage
-              ) : typeof message === 'string' ? (
-                <Markdown message={message} />
-              ) : (
-                message
-              )}
+              {typeof message === 'string' ? <Markdown message={message} /> : message}
             </div>
             {attempts > 1 && !hasFailed && (
               <div className="flex w-full items-center justify-end">
@@ -117,8 +129,8 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               </div>
             )}
             {showFeedback && (
-              <div className="flex items-center justify-between pt-3">
-                <Tooltip content="Copy">
+              <div className="flex items-center gap-2 pt-2">
+                <Tooltip content="Copy" placement="bottom">
                   <Button isIconOnly radius="full" size="sm" variant="flat" onPress={handleCopy}>
                     {copied ? (
                       <Icon className="text-lg text-default-600" icon="gravity-ui:check" />
@@ -127,9 +139,65 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                     )}
                   </Button>
                 </Tooltip>
+                {metadata && !hasFailed && status !== 'aborted' && (
+                  <Tooltip
+                    content={
+                      <div className="flex flex-col gap-2 p-2.5">
+                        {Object.entries(metadata).map(([key, value]) => (
+                          <div key={key} className="flex gap-1">
+                            <span className="text-tiny text-default-500">{key}:</span>
+                            <span className="text-tiny text-default-600">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    }
+                    placement="top"
+                    showArrow
+                  >
+                    <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-default/40">
+                      <Icon className="text-lg text-default-600" icon="gravity-ui:circle-info" />
+                    </div>
+                  </Tooltip>
+                )}
+                {status === 'aborted' && (
+                  <Tooltip content="Continue generating" placement="bottom">
+                    <Button
+                      isIconOnly
+                      radius="full"
+                      size="sm"
+                      variant="flat"
+                      onPress={onContinueGenerating}
+                      isDisabled={!canContinue}
+                    >
+                      <Icon className="text-lg text-default-600" icon="gravity-ui:circle-play" />
+                    </Button>
+                  </Tooltip>
+                )}
+                {isLastMessage && (
+                  <Tooltip content="Regenerate" placement="bottom">
+                    <Button
+                      isIconOnly
+                      radius="full"
+                      size="sm"
+                      variant="flat"
+                      isDisabled={!canRegenerate}
+                      onPress={onRegenerate}
+                    >
+                      <Icon
+                        className="text-lg text-default-600"
+                        icon="gravity-ui:arrows-rotate-right"
+                      />
+                    </Button>
+                  </Tooltip>
+                )}
               </div>
             )}
           </div>
+          {hasFailed && (
+            <div className="group relative flex w-full flex-col gap-2 rounded-medium border border-danger-100 bg-content2 bg-danger-100/50 px-4 py-3 text-foreground sm:flex-row">
+              <div className="text-small">{statusText}</div>
+            </div>
+          )}
         </div>
       </div>
     )

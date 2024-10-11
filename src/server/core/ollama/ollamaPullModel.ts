@@ -68,8 +68,6 @@ export async function checkOngoingPulls(
 
   const uniquePullingModels = [...new Set(pullingModels)]
 
-  console.log('Checking ongoing pulls:', uniquePullingModels)
-
   await Promise.all(
     uniquePullingModels.map((modelTag) => handlePullModel({ modelTag, storage, broadcastMessage }))
   )
