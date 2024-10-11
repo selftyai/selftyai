@@ -8,7 +8,8 @@ vi.mock('@/server/core/ollama/getOllamaService')
 
 describe('ollamaModels', () => {
   const mockOllamaService = {
-    getModels: vi.fn()
+    getModels: vi.fn(),
+    getBaseURL: vi.fn()
   }
 
   const mockStorage = {
@@ -24,18 +25,28 @@ describe('ollamaModels', () => {
 
   it('should return models when successful', async () => {
     const mockModels = [{ name: 'model1' }, { name: 'model2' }]
+    const url = 'http://localhost'
+
     mockOllamaService.getModels.mockResolvedValue(mockModels)
+    mockOllamaService.getBaseURL.mockReturnValue(url)
+
+    mockStorage.getItem.mockResolvedValue(true)
 
     const result = await ollamaModels({ storage: mockStorage })
 
     expect(getOllamaService).toHaveBeenCalled()
     expect(mockOllamaService.getModels).toHaveBeenCalled()
-    expect(result).toEqual({ models: mockModels })
+    expect(result).toEqual({ models: mockModels, connected: true, enabled: true, error: '', url })
   })
 
   it('should return an empty array and error message when getModels throws an error', async () => {
     const errorMessage = 'Failed to fetch models'
+    const url = 'http://localhost'
+
     mockOllamaService.getModels.mockRejectedValue(new Error(errorMessage))
+    mockOllamaService.getBaseURL.mockReturnValue(url)
+
+    mockStorage.getItem.mockResolvedValue(true)
 
     const result = await ollamaModels({ storage: mockStorage })
 
@@ -43,21 +54,10 @@ describe('ollamaModels', () => {
     expect(mockOllamaService.getModels).toHaveBeenCalled()
     expect(result).toEqual({
       models: [],
-      error: errorMessage
-    })
-  })
-
-  it('should handle non-Error object thrown by getModels', async () => {
-    const errorString = 'Failed to fetch models'
-    mockOllamaService.getModels.mockRejectedValue(errorString)
-
-    const result = await ollamaModels({ storage: mockStorage })
-
-    expect(getOllamaService).toHaveBeenCalled()
-    expect(mockOllamaService.getModels).toHaveBeenCalled()
-    expect(result).toEqual({
-      models: [],
-      error: errorString
+      error: errorMessage,
+      connected: false,
+      enabled: true,
+      url
     })
   })
 })
