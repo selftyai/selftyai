@@ -1,9 +1,12 @@
 import * as core from '@/server/core'
 import { checkOngoingPulls } from '@/server/core/ollama/ollamaPullModel'
 import { createChromeStorage } from '@/server/utils/chromeStorage'
+import printBuildInfo from '@/shared/printBuildInfo'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
 ;(() => {
+  printBuildInfo()
+
   const browserActions = {
     chrome: () => {
       chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
@@ -30,7 +33,8 @@ const handlers = {
   [ServerEndpoints.disableOllama]: core.disableOllama,
   [ServerEndpoints.integrationStatusOllama]: core.integrationStatusOllama,
   [ServerEndpoints.regenerateResponse]: core.regenerateResponse,
-  [ServerEndpoints.stop]: () => {}
+  [ServerEndpoints.stop]: () => {},
+  [ServerEndpoints.continueGenerating]: core.continueGenerating
 }
 
 const connectedPorts: chrome.runtime.Port[] = []
@@ -59,20 +63,19 @@ chrome.runtime.onConnect.addListener((port) => {
     const { type, payload } = message
 
     const handler = handlers[type as keyof typeof handlers]
-
     if (!handler) {
-      console.error(`Unknown message type: ${type}`)
+      console.warn('[Message Handler] No handler found for message type:', type)
       return
     }
 
-    console.log(`Received message: ${type}`)
-
     try {
+      console.log(`[Message Handler] Received message with type: ${type} and payload`, payload)
+
       const response = await handler({ ...payload, storage, port, broadcastMessage })
       port.postMessage({ type, ...response })
     } catch (error: unknown) {
-      console.error(
-        `Error while handling message: ${type}`,
+      console.warn(
+        `[Message Handler] Error while handling message: ${type}`,
         error instanceof Error ? error.message : error
       )
     }

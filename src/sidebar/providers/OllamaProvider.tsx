@@ -47,41 +47,20 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removeListener = addMessageListener((message: any) => {
-      const { type } = message
-
-      console.log(`(OllamaProvider) Received message: ${type}`)
+      const { type, ...rest } = message
 
       const validationResponse = () => {
         setConnected(message.connected)
         setBaseURL(message.url)
         setEnabled(message.enabled)
         setError(message.error)
-
-        // if (message.error) {
-        //   if (message.error.includes('<LINK>')) {
-        //     setError([
-        //       <span>{message.error.substring(0, message.error.indexOf('<LINK>'))}</span>,
-        //       <span className="relative">
-        //         <a
-        //           href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
-        //           target="_blank"
-        //           className="font-medium text-default-foreground hover:underline"
-        //           rel="noreferrer"
-        //         >
-        //           {chrome.i18n.getMessage('setupOllamaOrigins')}
-        //           {'.'}
-        //         </a>
-        //       </span>
-        //     ])
-        //   } else {
-        //     setError([<p key="error">{message.error}</p>])
-        //   }
-        // }
       }
 
       const messageTypes = {
         [ServerEndpoints.ollamaModels]: () => {
-          const isModelsChanged = models.length !== message.models.length
+          const isModelsChanged =
+            models.length !== message.models.length ||
+            models.some((model, index) => model.model !== message.models[index].model)
 
           if (isModelsChanged) {
             setModels(message.models)
@@ -90,7 +69,23 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
           validationResponse()
         },
         [ServerEndpoints.ollamaVerifyConnection]: validationResponse,
-        [ServerEndpoints.ollamaChangeUrl]: validationResponse,
+        [ServerEndpoints.ollamaChangeUrl]: () => {
+          validationResponse()
+          if (message.error) {
+            const messageTypes = {
+              'Network Error': 'Connection with Ollama server is not established'
+            }
+
+            const messageError =
+              messageTypes[message.error as keyof typeof messageTypes] || (message.error as string)
+
+            toast.error(messageError, { position: 'top-center' })
+          } else {
+            toast.success('Connection with Ollama server established successfully', {
+              position: 'top-center'
+            })
+          }
+        },
         [ServerEndpoints.ollamaDeleteModel]: () => {
           if (message.error) {
             toast.error(message.error, { position: 'top-center' })
@@ -106,7 +101,7 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
           sendMessage(ServerEndpoints.ollamaModels)
         },
         [ServerEndpoints.disableOllama]: () => {
-          setEnabled(true)
+          setEnabled(false)
           sendMessage(ServerEndpoints.ollamaModels)
         },
         [ServerEndpoints.integrationStatusOllama]: () => {
@@ -141,7 +136,12 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
       }
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
-      if (messageType) messageType()
+      if (messageType) {
+        if (messageType) {
+          console.log(`[OllamaProvider] Received message: ${type} with data`, rest)
+          messageType()
+        }
+      }
     })
 
     return () => removeListener()
@@ -163,11 +163,11 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }, [sendMessage])
 
   useEffect(() => {
-    if (!enabled) {
-      return
-    }
-
     const intervalId = setInterval(() => {
+      if (!enabled) {
+        return
+      }
+
       sendMessage(ServerEndpoints.ollamaModels)
     }, OLLAMA_FETCH_INTERVAL)
 

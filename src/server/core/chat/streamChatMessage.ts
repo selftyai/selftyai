@@ -8,55 +8,39 @@ import { StateStorage } from '@/server/types/Storage'
 import { Conversation } from '@/shared/types/Conversation'
 import { createMessage } from '@/shared/types/Message'
 
-const updateStatus = async ({
-  conversation,
-  storage,
-  broadcastMessage
-}: {
-  conversation: Conversation
-  storage: StateStorage
-  broadcastMessage: (data: any) => void
-}) => {
-  broadcastMessage({
-    type: 'partialMessage',
-    payload: {
-      chatId: conversation.id,
-      messages: conversation.messages
-    }
-  })
-
-  broadcastMessage({
-    type: 'finalMessage',
-    payload: {
-      chatId: conversation.id,
-      ...(await getConversations({ storage }))
-    }
-  })
-}
-
 interface StreamChatMessageProps {
   chatId: string
   conversation: Conversation
   broadcastMessage: (data: any) => void
   storage: StateStorage
   port: chrome.runtime.Port
+  useLastMessage?: boolean
 }
 
 const streamChatMessage = async ({
   conversation,
   broadcastMessage,
   port,
-  storage
+  storage,
+  useLastMessage = false
 }: StreamChatMessageProps) => {
   const abortController = new AbortController()
 
-  const assistantMessage = createMessage({
-    id: crypto.randomUUID(),
-    role: 'assistant',
-    content: ''
-  })
+  const assistantMessage = useLastMessage
+    ? conversation.messages[conversation.messages.length - 1]
+    : createMessage({
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: ''
+      })
 
-  conversation.messages.push(assistantMessage)
+  if (!useLastMessage) {
+    conversation.messages.push(assistantMessage)
+  }
+
+  assistantMessage.error = undefined
+  assistantMessage.finishReason = undefined
+
   await saveConversation(conversation, storage)
 
   port.onMessage.addListener(async (message) => {
@@ -78,11 +62,13 @@ const streamChatMessage = async ({
     const endRequest = new Date()
 
     const startedAt = new Date()
+    let lastUpdate = Date.now()
     for await (const textPart of textStream) {
       assistantMessage.content += textPart
-      await saveConversation(conversation, storage)
 
-      try {
+      const now = Date.now()
+      if (now - lastUpdate > 100) {
+        await saveConversation(conversation, storage)
         broadcastMessage({
           type: 'partialMessage',
           payload: {
@@ -90,8 +76,7 @@ const streamChatMessage = async ({
             messages: conversation.messages
           }
         })
-      } catch (error) {
-        console.warn('Error sending partial message', error)
+        lastUpdate = now
       }
     }
     const endAt = new Date()
@@ -103,23 +88,43 @@ const streamChatMessage = async ({
     await saveConversation(conversation, storage)
   } catch (error: unknown) {
     if (error instanceof Error) {
+      assistantMessage.finishReason = 'error'
+
       if (error.message === 'network error') {
         assistantMessage.error = 'NetworkError'
       } else if (error.name === 'AbortError') {
         assistantMessage.error = 'AbortedError'
+        assistantMessage.finishReason = 'aborted'
       }
 
-      assistantMessage.finishReason = 'error'
       await saveConversation(conversation, storage)
     }
 
-    await updateStatus({
-      conversation,
-      storage,
-      broadcastMessage
+    broadcastMessage({
+      type: 'partialMessage',
+      payload: {
+        chatId: conversation.id,
+        messages: conversation.messages
+      }
+    })
+
+    broadcastMessage({
+      type: 'finalMessage',
+      payload: {
+        chatId: conversation.id,
+        ...(await getConversations({ storage }))
+      }
     })
     return false
   }
+
+  broadcastMessage({
+    type: 'partialMessage',
+    payload: {
+      chatId: conversation.id,
+      messages: conversation.messages
+    }
+  })
 
   broadcastMessage({
     type: 'finalMessage',

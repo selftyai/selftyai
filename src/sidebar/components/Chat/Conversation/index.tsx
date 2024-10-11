@@ -16,7 +16,7 @@ interface ConversationProps {
 const Conversation = memo(
   React.forwardRef<HTMLDivElement, ConversationProps>(({ messages, isGenerating }, ref) => {
     const { selectedModel } = useModels()
-    const { conversations, chatId } = useChat()
+    const { conversations, chatId, continueGenerating, regenerateResponse } = useChat()
 
     const conversation = conversations.find((conversation) => conversation.id === chatId)
 
@@ -27,13 +27,13 @@ const Conversation = memo(
     const errors = {
       NetworkError: 'A network error occurred. Please check your connection and try again.',
       AbortedError:
-        'The request was aborted. If you want to continue, click on the regenerate button.',
+        'The request was aborted. If you want to continue, click on the continue button or write a new message.',
       default: 'An error occurred. Please try again.'
     }
 
     return (
       <div ref={ref} className="flex flex-col gap-4 px-2">
-        {messages.map(({ role, content, error, finishReason }, index, arr) => {
+        {messages.map(({ role, content, error, finishReason, ...rest }, index, arr) => {
           const message =
             typeof content === 'string'
               ? content
@@ -50,6 +50,29 @@ const Conversation = memo(
                     </div>
                   ) : null
                 )
+
+          if (isGenerating && isLastMessage(messages, index) && !content.length) {
+            return (
+              <div className="inline-flex items-center gap-2 text-sm">
+                {selectedModel && (
+                  <React.Fragment>
+                    <Avatar
+                      size="sm"
+                      className="mr-2.5 bg-foreground dark:bg-background"
+                      isBordered
+                      src={logo}
+                    />
+                    {conversation?.model} is thinking
+                    <div className="mt-4 flex">
+                      <span className="circle animate-loader"></span>
+                      <span className="circle animation-delay-200 animate-loader"></span>
+                      <span className="circle animation-delay-400 animate-loader"></span>
+                    </div>
+                  </React.Fragment>
+                )}
+              </div>
+            )
+          }
 
           return (
             <MessageCard
@@ -83,7 +106,7 @@ const Conversation = memo(
                 (role === 'assistant' && index !== arr.length - 1) ||
                 (role === 'assistant' && index === arr.length - 1 && !isGenerating)
               }
-              status={finishReason === 'error' ? 'failed' : undefined}
+              status={finishReason}
               statusText={
                 error ? <>{errors[error as keyof typeof errors] || errors.default}</> : undefined
               }
@@ -93,13 +116,27 @@ const Conversation = memo(
                   position: 'top-center'
                 })
               }
+              onContinueGenerating={continueGenerating}
+              canContinue={!!selectedModel}
+              metadata={
+                {
+                  completionTokens: rest.usage?.completionTokens.toString(),
+                  promptTokens: rest.usage?.promptTokens.toString(),
+                  totalTokens: rest.usage?.totalTokens.toString(),
+                  waitTime: rest.waitingTime ? `${rest.waitingTime / 1000}s` : 'n/a',
+                  responseTime: rest.responseTime ? `${rest.responseTime / 1000}s` : 'n/a'
+                } as Record<string, string>
+              }
+              onRegenerate={regenerateResponse}
+              canRegenerate={!!selectedModel}
+              isLastMessage={isLastMessage(arr, index)}
             />
           )
         })}
         {isGenerating && !isLastMessage(messages, messages.length - 1) && (
           <div className="inline-flex items-center gap-2 text-sm">
             {selectedModel && (
-              <>
+              <React.Fragment>
                 <Avatar
                   size="sm"
                   className="mr-2.5 bg-foreground dark:bg-background"
@@ -112,7 +149,7 @@ const Conversation = memo(
                   <span className="circle animation-delay-200 animate-loader"></span>
                   <span className="circle animation-delay-400 animate-loader"></span>
                 </div>
-              </>
+              </React.Fragment>
             )}
           </div>
         )}

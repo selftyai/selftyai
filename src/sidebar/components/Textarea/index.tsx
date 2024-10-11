@@ -12,6 +12,7 @@ import {
 } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import React, { memo, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { Model } from '@/shared/types/Model'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
@@ -19,7 +20,7 @@ import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
 const TextArea = memo(() => {
-  const { sendMessage, isGenerating, hasError, regenerateResponse, stopGenerating } = useChat()
+  const { sendMessage, isGenerating, hasError, stopGenerating } = useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
 
@@ -40,6 +41,8 @@ const TextArea = memo(() => {
   const [images, setImages] = React.useState<string[]>([])
 
   const imageRef = React.useRef<HTMLInputElement>(null)
+
+  const navigator = useNavigate()
 
   const onRemoveImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index))
@@ -77,19 +80,6 @@ const TextArea = memo(() => {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {hasError && (
-        <div>
-          <Button
-            size="sm"
-            startContent={<Icon className="text-medium" icon="solar:restart-linear" />}
-            variant="flat"
-            isDisabled={!selectedModel}
-            onPress={regenerateResponse}
-          >
-            Regenerate
-          </Button>
-        </div>
-      )}
       <form
         className="flex w-full flex-col items-start rounded-medium bg-default-100 transition-colors hover:bg-default-200/70"
         onSubmit={onSubmit}
@@ -224,7 +214,26 @@ const TextArea = memo(() => {
                   models: groupedModels[provider]
                 }))
                 .filter((provider) => provider.models.length > 0)}
-              emptyContent="No models available, visit settings"
+              emptyContent={
+                <div className="flex flex-col gap-2 pb-2 text-center">
+                  No models available.
+                  <Button
+                    size="sm"
+                    color="default"
+                    className="text-default-600"
+                    onClick={() => navigator('/settings')}
+                    startContent={
+                      <Icon
+                        className="text-default-600"
+                        icon="solar:settings-minimalistic-line-duotone"
+                        width={16}
+                      />
+                    }
+                  >
+                    Go to settings
+                  </Button>
+                </div>
+              }
             >
               {(provider) => (
                 <DropdownSection

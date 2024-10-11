@@ -7,6 +7,7 @@ export enum ServerEndpoints {
   pinConversation = 'pinConversation',
   unpinConversation = 'unpinConversation',
   regenerateResponse = 'regenerateResponse',
+  continueGenerating = 'continueGenerating',
   stop = 'stop',
 
   // Ollama

@@ -1,9 +1,3 @@
-import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
+import printBuildInfo from '@/shared/printBuildInfo'
 
-console.log(
-  'Hello from content script!',
-  'endpoints',
-  ServerEndpoints,
-  'browser',
-  process.env.BROWSER
-)
+printBuildInfo()

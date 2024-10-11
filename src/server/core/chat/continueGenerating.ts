@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import generateTitle from '@/server/core/chat/generateTitle'
 import getConversations from '@/server/core/chat/getConversations'
 import saveConversation from '@/server/core/chat/saveConversation'
@@ -6,35 +7,43 @@ import type { StateStorage } from '@/server/types/Storage'
 import type { Model } from '@/shared/types/Model'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
-interface sendMessagePayload {
+interface ContinueGeneratingPayload {
   chatId: string
   model: Model
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   broadcastMessage: (data: any) => void
   storage: StateStorage
   port: chrome.runtime.Port
 }
 
-const regenerateResponse = async ({
+const continueGenerating = async ({
   chatId,
   model,
   broadcastMessage,
   storage,
   port
-}: sendMessagePayload) => {
+}: ContinueGeneratingPayload) => {
   const { conversations } = await getConversations({ storage })
-
   const conversation = conversations.find((conversation) => conversation.id === chatId)
 
   if (!conversation) {
-    console.warn('[RegenerateResponse] No conversation found for chatId:', chatId)
+    console.warn('[ContinueGenerating] No conversation found for chatId:', chatId)
     return
   }
+
+  const lastMessage = conversation.messages[conversation.messages.length - 1]
+
+  if (lastMessage?.role !== 'assistant') {
+    console.warn('[ContinueGenerating] Last message is not an assistant message:', lastMessage)
+    return
+  }
+
+  if (lastMessage?.finishReason !== 'aborted' && lastMessage?.error !== 'AbortedError') {
+    console.warn('[ContinueGenerating] Last message is not an AbortedError', lastMessage)
+    return
+  }
+
   conversation.model = model.model
   conversation.provider = model.provider
-
-  // Remove the last message (Assistant message)
-  conversation.messages.pop()
   await saveConversation(conversation, storage)
 
   broadcastMessage({
@@ -49,7 +58,8 @@ const regenerateResponse = async ({
     conversation,
     broadcastMessage,
     port,
-    storage
+    storage,
+    useLastMessage: true
   })
 
   if (conversation.title === 'New conversation' && created) {
@@ -65,4 +75,4 @@ const regenerateResponse = async ({
   }
 }
 
-export default regenerateResponse
+export default continueGenerating

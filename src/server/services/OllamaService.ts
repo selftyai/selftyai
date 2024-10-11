@@ -66,10 +66,12 @@ export class OllamaService extends BaseService {
             }
           )
           const splitModel = model.model.split(':')
+          const modelName =
+            splitModel.length > 1 && splitModel[1] === 'latest' ? splitModel[0] : model.model
 
           return {
             name: model.name,
-            model: splitModel[1] === 'latest' ? splitModel[0] : model.model,
+            model: modelName,
             provider: AIProvider.ollama,
             hasVision: modelData?.projector_info?.['clip.has_vision_encoder'] || false
           } as Model

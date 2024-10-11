@@ -46,19 +46,19 @@ const MessageMarkdown = ({ message }: { message: string }) => {
       components={{
         a({ href, children }) {
           return (
-            <Link href={href} target="_blank" size="sm">
+            <Link href={href} target="_blank" rel="noopener noreferrer" size="sm">
               {children}
             </Link>
           )
         },
         ol({ children }) {
-          return <ol className="list-inside list-disc pb-2">{children}</ol>
+          return <ol className="list-inside list-decimal pb-2">{children}</ol>
         },
         p({ children }) {
           return <p className="pb-2">{children}</p>
         },
         ul({ children }) {
-          return <ul className="list-inside list-decimal pb-2">{children}</ul>
+          return <ul className="list-inside list-disc pb-2">{children}</ul>
         },
         li({ children }) {
           return <li className="pb-1">{children}</li>

@@ -80,7 +80,7 @@ const Chat = () => {
                 size="lg"
                 radius="sm"
                 isBordered
-                className="bg-background ring-0 dark:ring-2"
+                className="bg-foreground dark:bg-background"
               />
               <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-4">
                 {suggestions.map((message) => (

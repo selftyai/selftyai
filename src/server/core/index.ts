@@ -1,3 +1,4 @@
+import continueGenerating from '@/server/core/chat/continueGenerating'
 import deleteConversation from '@/server/core/chat/deleteConversation'
 import getConversations from '@/server/core/chat/getConversations'
 import pinConversation from '@/server/core/chat/pinConversation'
@@ -27,5 +28,6 @@ export {
   enableOllama,
   disableOllama,
   integrationStatusOllama,
-  regenerateResponse
+  regenerateResponse,
+  continueGenerating
 }
