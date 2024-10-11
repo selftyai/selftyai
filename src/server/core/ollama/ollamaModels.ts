@@ -7,17 +7,37 @@ interface OllamaModelsPayload {
 
 const ollamaModels = async ({ storage }: OllamaModelsPayload) => {
   const ollamaService = await getOllamaService(storage)
+  const url = ollamaService.getBaseURL()
+
+  const ollamaEnabled = JSON.parse((await storage.getItem('ollamaEnabled')) ?? 'false') as boolean
+
+  if (!ollamaEnabled) {
+    return {
+      models: [],
+      connected: false,
+      url,
+      error: '',
+      enabled: ollamaEnabled
+    }
+  }
 
   try {
     const models = await ollamaService.getModels()
 
     return {
-      models
+      models,
+      connected: true,
+      error: '',
+      url,
+      enabled: ollamaEnabled
     }
   } catch (error: unknown) {
     return {
       models: [],
-      error: error instanceof Error ? error.message : String(error)
+      connected: false,
+      url,
+      error: error instanceof Error ? error.message : String(error),
+      enabled: ollamaEnabled
     }
   }
 }

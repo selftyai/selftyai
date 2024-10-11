@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Button, Tooltip } from '@nextui-org/react'
+import { Button, Tooltip, Badge } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
@@ -43,10 +43,6 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
 
     const { copied, copy } = useClipboard()
 
-    const failedMessageClassName =
-      status === 'failed' ? 'bg-danger-100/50 border border-danger-100 text-foreground' : ''
-    const failedMessage = <p>{statusText}</p>
-
     const hasFailed = status === 'failed'
 
     const handleCopy = React.useCallback(() => {
@@ -73,23 +69,27 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
 
     return (
       <div {...props} ref={ref} className={cn('flex gap-3', className)}>
-        <div className="relative flex-none">{avatar}</div>
+        <div className="relative flex-none">
+          <Badge
+            isOneChar
+            color="danger"
+            content={<Icon className="text-background" icon="gravity-ui:circle-exclamation-fill" />}
+            isInvisible={!hasFailed}
+            placement="bottom-right"
+            shape="circle"
+          >
+            {avatar}
+          </Badge>
+        </div>
         <div className="flex w-full flex-col gap-4">
           <div
             className={cn(
               'group relative w-full rounded-medium bg-content2 px-4 py-3 text-default-600',
-              failedMessageClassName,
               messageClassName
             )}
           >
             <div ref={messageRef} className={'text-small'}>
-              {hasFailed ? (
-                failedMessage
-              ) : typeof message === 'string' ? (
-                <Markdown message={message} />
-              ) : (
-                message
-              )}
+              {typeof message === 'string' ? <Markdown message={message} /> : message}
             </div>
             {attempts > 1 && !hasFailed && (
               <div className="flex w-full items-center justify-end">
@@ -130,6 +130,11 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               </div>
             )}
           </div>
+          {hasFailed && (
+            <div className="group relative flex w-full flex-col gap-2 rounded-medium border border-danger-100 bg-content2 bg-danger-100/50 px-4 py-3 text-foreground sm:flex-row">
+              <div className="text-small">{statusText}</div>
+            </div>
+          )}
         </div>
       </div>
     )

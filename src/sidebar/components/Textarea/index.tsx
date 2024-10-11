@@ -4,7 +4,6 @@ import {
   Tooltip,
   Image,
   Badge,
-  Spinner,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -20,7 +19,7 @@ import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
 const TextArea = memo(() => {
-  const { sendMessage, isGenerating } = useChat()
+  const { sendMessage, isGenerating, hasError, regenerateResponse, stopGenerating } = useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
 
@@ -78,6 +77,19 @@ const TextArea = memo(() => {
 
   return (
     <div className="flex w-full flex-col gap-4">
+      {hasError && (
+        <div>
+          <Button
+            size="sm"
+            startContent={<Icon className="text-medium" icon="solar:restart-linear" />}
+            variant="flat"
+            isDisabled={!selectedModel}
+            onPress={regenerateResponse}
+          >
+            Regenerate
+          </Button>
+        </div>
+      )}
       <form
         className="flex w-full flex-col items-start rounded-medium bg-default-100 transition-colors hover:bg-default-200/70"
         onSubmit={onSubmit}
@@ -117,18 +129,23 @@ const TextArea = memo(() => {
           }}
           endContent={
             <div className="flex items-end gap-2">
-              <Tooltip showArrow content="Send message">
+              <Tooltip showArrow content={isGenerating ? 'Stop generating' : 'Send message'}>
                 <Button
                   isIconOnly
-                  color={!prompt ? 'default' : 'primary'}
-                  isDisabled={!prompt || isGenerating || typeof selectedModel === 'string'}
+                  color={isGenerating ? 'default' : !prompt ? 'default' : 'primary'}
+                  isDisabled={!isGenerating && (!prompt || !selectedModel || hasError)}
                   radius="lg"
                   size="sm"
                   variant="solid"
-                  type="submit"
+                  type={isGenerating ? 'button' : 'submit'}
+                  onPress={isGenerating ? stopGenerating : undefined}
                 >
                   {isGenerating ? (
-                    <Spinner size="sm" />
+                    <Icon
+                      className="text-danger [&>path]:stroke-[2px]"
+                      icon="solar:stop-bold"
+                      width={20}
+                    />
                   ) : (
                     <Icon
                       className={cn(

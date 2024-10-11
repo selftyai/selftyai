@@ -1,23 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CoreMessage } from 'ai'
-
-import createConversation from '@/server/core/chat/createConversation'
 import generateTitle from '@/server/core/chat/generateTitle'
 import getConversations from '@/server/core/chat/getConversations'
 import saveConversation from '@/server/core/chat/saveConversation'
 import streamChatMessage from '@/server/core/chat/streamChatMessage'
-import { StateStorage } from '@/server/types/Storage'
-import { AIProvider } from '@/shared/types/AIProvider'
-import { createMessage } from '@/shared/types/Message'
+import type { StateStorage } from '@/server/types/Storage'
+import type { Model } from '@/shared/types/Model'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
 interface sendMessagePayload {
   chatId: string
-  message: CoreMessage
-  model: {
-    provider: AIProvider
-    model: string
-  }
+  model: Model
   broadcastMessage: (data: any) => void
   storage: StateStorage
   port: chrome.runtime.Port
@@ -25,7 +17,6 @@ interface sendMessagePayload {
 
 const sendMessage = async ({
   chatId,
-  message,
   model,
   broadcastMessage,
   storage,
@@ -33,24 +24,16 @@ const sendMessage = async ({
 }: sendMessagePayload) => {
   const { conversations } = await getConversations({ storage })
 
-  const conversation =
-    conversations.find((conversation) => conversation.id === chatId) ??
-    (await createConversation(
-      {
-        title: 'New conversation',
-        ...model,
-        systemMessage: ''
-      },
-      storage
-    ))
+  const conversation = conversations.find((conversation) => conversation.id === chatId)
 
-  // User message
-  conversation.messages.push(
-    createMessage({
-      id: crypto.randomUUID(),
-      ...message
-    })
-  )
+  if (!conversation) {
+    return
+  }
+  conversation.model = model.model
+  conversation.provider = model.provider
+
+  // Remove the last message (Assistant message)
+  conversation.messages.pop()
   await saveConversation(conversation, storage)
 
   broadcastMessage({

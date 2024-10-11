@@ -8,7 +8,8 @@ import {
   Avatar,
   Link,
   Modal,
-  ModalContent
+  ModalContent,
+  Switch
 } from '@nextui-org/react'
 import React from 'react'
 import { toast } from 'sonner'
@@ -19,7 +20,8 @@ import { useOllama } from '@/sidebar/providers/OllamaProvider'
 const ConfigureOllama = () => {
   const { isOpen, onOpenChange } = useDisclosure()
 
-  const { baseURL, changeBaseURL, connected, error, pullingModels } = useOllama()
+  const { baseURL, changeBaseURL, connected, pullingModels, enabled, enableOllama, disableOllama } =
+    useOllama()
 
   const [input, setInput] = React.useState(baseURL)
 
@@ -46,24 +48,18 @@ const ConfigureOllama = () => {
           <span className="text-default-700">http://127.0.0.1:11434</span>. If you have a dedicated
           server, you can change the base URL here.
         </p>
-        {connected ? (
-          <div className="relative w-full rounded-medium border border-default-100 bg-content2 bg-default-100/50 px-4 py-3 text-foreground">
-            If you are using Ollama on your local machine and want to change where models are
-            stored, you can do so by following{' '}
-            <Link
-              href="https://dev.to/hamed0406/how-to-change-place-of-saving-models-on-ollama-4ko8"
-              target="_blank"
-              className="text-sm"
-            >
-              this guide
-            </Link>
-            .
-          </div>
-        ) : (
-          <div className="relative w-full rounded-medium border border-danger-100 bg-content2 bg-danger-100/50 px-4 py-3 text-foreground">
-            {error}
-          </div>
-        )}
+        <div className="relative w-full rounded-medium border border-default-100 bg-content2 bg-default-100/50 px-4 py-3 text-foreground">
+          If you are using Ollama on your local machine and want to change where models are stored,
+          you can do so by following{' '}
+          <Link
+            href="https://dev.to/hamed0406/how-to-change-place-of-saving-models-on-ollama-4ko8"
+            target="_blank"
+            className="text-sm"
+          >
+            this guide
+          </Link>
+          .
+        </div>
         <p
           className={cn(
             'ml-auto inline-flex items-center gap-2 text-xs font-normal',
@@ -120,14 +116,23 @@ const ConfigureOllama = () => {
   return (
     <>
       <div className="flex flex-row gap-2">
-        <Button size="sm" variant="faded" onClick={onOpenChange}>
-          <Icon
-            icon={connected ? 'akar-icons:circle-check' : 'akar-icons:circle-alert'}
-            className={cn('size-3', connected ? 'text-success-500' : 'text-danger-500')}
-          />
-          Configure
-        </Button>
-        {connected && <ConfigureOllamaModels />}
+        <Switch
+          isSelected={enabled}
+          onValueChange={enabled ? disableOllama : enableOllama}
+          size="sm"
+        />
+        {enabled && (
+          <React.Fragment>
+            <Button size="sm" variant="faded" onClick={onOpenChange}>
+              <Icon
+                icon={connected ? 'akar-icons:circle-check' : 'akar-icons:circle-alert'}
+                className={cn('size-3', connected ? 'text-success-500' : 'text-danger-500')}
+              />
+              Configure
+            </Button>
+            {connected && <ConfigureOllamaModels />}
+          </React.Fragment>
+        )}
       </div>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
         <ModalContent>{content}</ModalContent>

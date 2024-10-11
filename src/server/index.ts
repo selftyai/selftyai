@@ -3,7 +3,17 @@ import { checkOngoingPulls } from '@/server/core/ollama/ollamaPullModel'
 import { createChromeStorage } from '@/server/utils/chromeStorage'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
-chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+;(() => {
+  const browserActions = {
+    chrome: () => {
+      chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+    },
+    opera: () => {}
+  }
+
+  const browserAction = browserActions[process.env.BROWSER as 'chrome' | 'opera']
+  browserAction?.()
+})()
 
 const handlers = {
   [ServerEndpoints.ollamaModels]: core.ollamaModels,
@@ -15,7 +25,12 @@ const handlers = {
   [ServerEndpoints.deleteConversation]: core.deleteConversation,
   [ServerEndpoints.ollamaChangeUrl]: core.changeBaseUrl,
   [ServerEndpoints.pinConversation]: core.pinConversation,
-  [ServerEndpoints.unpinConversation]: core.unpinConversation
+  [ServerEndpoints.unpinConversation]: core.unpinConversation,
+  [ServerEndpoints.enableOllama]: core.enableOllama,
+  [ServerEndpoints.disableOllama]: core.disableOllama,
+  [ServerEndpoints.integrationStatusOllama]: core.integrationStatusOllama,
+  [ServerEndpoints.regenerateResponse]: core.regenerateResponse,
+  [ServerEndpoints.stop]: () => {}
 }
 
 const connectedPorts: chrome.runtime.Port[] = []
@@ -53,10 +68,13 @@ chrome.runtime.onConnect.addListener((port) => {
     console.log(`Received message: ${type}`)
 
     try {
-      const response = await handler({ ...payload, storage, broadcastMessage })
+      const response = await handler({ ...payload, storage, port, broadcastMessage })
       port.postMessage({ type, ...response })
     } catch (error: unknown) {
-      port.postMessage({ type, error: error instanceof Error ? error.message : String(error) })
+      console.error(
+        `Error while handling message: ${type}`,
+        error instanceof Error ? error.message : error
+      )
     }
   })
 })

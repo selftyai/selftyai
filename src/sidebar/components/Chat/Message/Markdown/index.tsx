@@ -10,10 +10,10 @@ import CodePanel from '@/sidebar/components/Chat/Message/CodePanel'
 
 const preprocessMarkdown = (markdownText: string) => {
   const processedText = markdownText
-  // .replace(/\\\[/g, '$$')
-  // .replace(/\\\]/g, '$$')
-  // .replace(/\\\(/g, '$$')
-  // .replace(/\\\)/g, '$$')
+    .replace(/\\\[/g, '$')
+    .replace(/\\\]/g, '$')
+    .replace(/\\\(/g, '$')
+    .replace(/\\\)/g, '$')
   // .replace(/\\begin{(?!pmatrix|bmatrix)/g, '\\begin{bmatrix}')
   // .replace(/\\end{(?!pmatrix|bmatrix)/g, '\\end{bmatrix}')
   // .replace(/\\begin{bmatrix}/g, '\\begin{bmatrix}')

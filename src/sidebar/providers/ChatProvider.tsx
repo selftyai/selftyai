@@ -24,13 +24,15 @@ const ChatContext = React.createContext<
       conversations: Conversation[]
       sendMessage: (message: string, images: string[]) => Promise<void>
       isGenerating: boolean
-      error: string
       setChatId: (chatId: string | undefined) => void
       chatId?: string
       selectedConversation?: Conversation
       deleteConversation: (id: string) => void
       pinConversation: (id: string) => void
       unpinConversation: (id: string) => void
+      hasError: boolean
+      regenerateResponse: () => void
+      stopGenerating: () => void
     }
   | undefined
 >(undefined)
@@ -65,8 +67,8 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const [chatId, setChatId] = React.useState<string>()
   const [isGenerating, setIsGenerating] = React.useState(false)
+  const [hasError, setHasError] = React.useState(false)
   const [messages, setMessages] = React.useState<Message[]>([])
-  const [error] = React.useState('')
   const [selectedModel, setSelectedModel] = React.useState<Model>()
 
   React.useEffect(() => {
@@ -86,6 +88,8 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         partialMessage: () => {
           if (payload.chatId === chatId) {
             setMessages(payload.messages)
+            const lastMessage = payload.messages[payload.messages.length - 1]
+            setHasError(lastMessage.finishReason === 'error')
           }
         },
         finalMessage: () => {
@@ -127,7 +131,11 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
     if (conversation) {
       setMessages((prev) => (prev.length === 0 ? conversation.messages : prev))
+      const lastMessage = conversation.messages[conversation.messages.length - 1]
+      setHasError(lastMessage.finishReason === 'error')
       setSelectedModel(models.find((m) => m.model === conversation.model))
+    } else {
+      setHasError(false)
     }
   }, [chatId, conversations, models, messages])
 
@@ -181,6 +189,8 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const deleteConversation = useCallback(
     (id: string) => {
       sendPortMessage(ServerEndpoints.deleteConversation, { id })
+      setMessages([])
+      setChatId(undefined)
     },
     [sendPortMessage]
   )
@@ -217,32 +227,48 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     [setChatId]
   )
 
+  const regenerateResponse = useCallback(() => {
+    if (chatId) {
+      sendPortMessage(ServerEndpoints.regenerateResponse, { chatId, model: selectedModel })
+      setIsGenerating(true)
+    }
+  }, [chatId, sendPortMessage, selectedModel])
+
+  const stopGenerating = useCallback(() => {
+    console.log('Stopping generation')
+    sendPortMessage(ServerEndpoints.stop, { chatId })
+  }, [sendPortMessage, chatId])
+
   const chatContextValue = useMemo(
     () => ({
       messages,
       sendMessage,
       conversations,
       isGenerating,
-      error,
       setChatId: changeChatId,
       chatId,
       deleteConversation,
       pinConversation,
       unpinConversation,
-      selectedConversation
+      selectedConversation,
+      hasError,
+      regenerateResponse,
+      stopGenerating
     }),
     [
       messages,
       conversations,
       sendMessage,
       isGenerating,
-      error,
       chatId,
       deleteConversation,
       changeChatId,
       pinConversation,
       unpinConversation,
-      selectedConversation
+      selectedConversation,
+      hasError,
+      regenerateResponse,
+      stopGenerating
     ]
   )
 

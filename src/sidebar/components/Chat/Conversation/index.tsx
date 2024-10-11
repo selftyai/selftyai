@@ -6,25 +6,34 @@ import { toast } from 'sonner'
 import logo from '@/shared/assets/logo.svg'
 import { Message } from '@/shared/types/Message'
 import MessageCard from '@/sidebar/components/Chat/Message'
-import { useModels } from '@/sidebar/providers/ChatProvider'
+import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
 interface ConversationProps {
   messages: Message[]
-  error: string
   isGenerating: boolean
 }
 
 const Conversation = memo(
-  React.forwardRef<HTMLDivElement, ConversationProps>(({ messages, isGenerating, error }, ref) => {
+  React.forwardRef<HTMLDivElement, ConversationProps>(({ messages, isGenerating }, ref) => {
     const { selectedModel } = useModels()
+    const { conversations, chatId } = useChat()
+
+    const conversation = conversations.find((conversation) => conversation.id === chatId)
 
     const isLastMessage = (arr: CoreMessage[], index: number) => {
       return index === arr.length - 1 && arr[index].role === 'assistant'
     }
 
+    const errors = {
+      NetworkError: 'A network error occurred. Please check your connection and try again.',
+      AbortedError:
+        'The request was aborted. If you want to continue, click on the regenerate button.',
+      default: 'An error occurred. Please try again.'
+    }
+
     return (
       <div ref={ref} className="flex flex-col gap-4 px-2">
-        {messages.map(({ role, content }, index, arr) => {
+        {messages.map(({ role, content, error, finishReason }, index, arr) => {
           const message =
             typeof content === 'string'
               ? content
@@ -74,9 +83,9 @@ const Conversation = memo(
                 (role === 'assistant' && index !== arr.length - 1) ||
                 (role === 'assistant' && index === arr.length - 1 && !isGenerating)
               }
-              status={error && isLastMessage(arr, index) && !isGenerating ? 'failed' : undefined}
+              status={finishReason === 'error' ? 'failed' : undefined}
               statusText={
-                error && isLastMessage(arr, index) && !isGenerating ? <>{error}</> : undefined
+                error ? <>{errors[error as keyof typeof errors] || errors.default}</> : undefined
               }
               onMessageCopy={() =>
                 toast.success('Message copied!', {
@@ -97,7 +106,7 @@ const Conversation = memo(
                   isBordered
                   src={logo}
                 />
-                {selectedModel.model} is thinking
+                {conversation?.model} is thinking
                 <div className="mt-4 flex">
                   <span className="circle animate-loader"></span>
                   <span className="circle animation-delay-200 animate-loader"></span>
