@@ -11,7 +11,6 @@ const Settings = () => {
         classNames={{
           header: 'min-h-[40px] h-[40px] py-[12px] justify-center overflow-hidden'
         }}
-        header={<div className="ml-auto"></div>}
       >
         <div className="w-full flex-1 p-4">
           <div className="flex items-center gap-x-3">

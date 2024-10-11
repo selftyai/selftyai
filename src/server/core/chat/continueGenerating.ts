@@ -1,56 +1,49 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CoreMessage } from 'ai'
-
-import createConversation from '@/server/core/chat/createConversation'
 import generateTitle from '@/server/core/chat/generateTitle'
 import getConversations from '@/server/core/chat/getConversations'
 import saveConversation from '@/server/core/chat/saveConversation'
 import streamChatMessage from '@/server/core/chat/streamChatMessage'
-import { StateStorage } from '@/server/types/Storage'
-import { AIProvider } from '@/shared/types/AIProvider'
-import { createMessage } from '@/shared/types/Message'
+import type { StateStorage } from '@/server/types/Storage'
+import type { Model } from '@/shared/types/Model'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
-interface sendMessagePayload {
+interface ContinueGeneratingPayload {
   chatId: string
-  message: CoreMessage
-  model: {
-    provider: AIProvider
-    model: string
-  }
+  model: Model
   broadcastMessage: (data: any) => void
   storage: StateStorage
   port: chrome.runtime.Port
 }
 
-const sendMessage = async ({
+const continueGenerating = async ({
   chatId,
-  message,
   model,
   broadcastMessage,
   storage,
   port
-}: sendMessagePayload) => {
+}: ContinueGeneratingPayload) => {
   const { conversations } = await getConversations({ storage })
+  const conversation = conversations.find((conversation) => conversation.id === chatId)
 
-  const conversation =
-    conversations.find((conversation) => conversation.id === chatId) ??
-    (await createConversation(
-      {
-        title: 'New conversation',
-        ...model,
-        systemMessage: ''
-      },
-      storage
-    ))
+  if (!conversation) {
+    console.warn('[ContinueGenerating] No conversation found for chatId:', chatId)
+    return
+  }
 
-  // User message
-  conversation.messages.push(
-    createMessage({
-      id: crypto.randomUUID(),
-      ...message
-    })
-  )
+  const lastMessage = conversation.messages[conversation.messages.length - 1]
+
+  if (lastMessage?.role !== 'assistant') {
+    console.warn('[ContinueGenerating] Last message is not an assistant message:', lastMessage)
+    return
+  }
+
+  if (lastMessage?.finishReason !== 'aborted' && lastMessage?.error !== 'AbortedError') {
+    console.warn('[ContinueGenerating] Last message is not an AbortedError', lastMessage)
+    return
+  }
+
+  conversation.model = model.model
+  conversation.provider = model.provider
   await saveConversation(conversation, storage)
 
   broadcastMessage({
@@ -65,7 +58,8 @@ const sendMessage = async ({
     conversation,
     broadcastMessage,
     port,
-    storage
+    storage,
+    useLastMessage: true
   })
 
   if (conversation.title === 'New conversation' && created) {
@@ -81,4 +75,4 @@ const sendMessage = async ({
   }
 }
 
-export default sendMessage
+export default continueGenerating

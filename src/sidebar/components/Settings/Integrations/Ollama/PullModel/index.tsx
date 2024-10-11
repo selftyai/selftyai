@@ -5,16 +5,14 @@ import React from 'react'
 import { useOllama } from '@/sidebar/providers/OllamaProvider'
 
 const PullModel = () => {
-  const modelTagRef = React.useRef<HTMLInputElement>(null)
+  const [modelTag, setModelTag] = React.useState<string>('')
 
   const { pullModel, pullingModels } = useOllama()
 
   const handlePullModel = (modelTag: string) => {
     pullModel(modelTag)
 
-    if (modelTagRef.current) {
-      modelTagRef.current.value = ''
-    }
+    setModelTag('')
   }
 
   return (
@@ -48,7 +46,8 @@ const PullModel = () => {
                   className="mt-2"
                   classNames={{ inputWrapper: 'bg-default-200' }}
                   placeholder="e.g llama3.1:latest"
-                  ref={modelTagRef}
+                  value={modelTag}
+                  onChange={(e) => setModelTag(e.target.value)}
                 />
               </div>
             </div>
@@ -70,12 +69,8 @@ const PullModel = () => {
                 className="bg-default-foreground text-background"
                 radius="md"
                 size="sm"
-                disabled={!modelTagRef.current?.value}
-                onClick={() => {
-                  if (modelTagRef.current) {
-                    handlePullModel(modelTagRef.current.value)
-                  }
-                }}
+                disabled={!modelTag}
+                onClick={() => handlePullModel(modelTag)}
               >
                 Pull
               </Button>

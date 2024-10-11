@@ -30,11 +30,22 @@ export const useChromePort = () => {
     if (portRef.current) {
       try {
         portRef.current.postMessage({ type, payload })
-      } catch (error) {
-        console.error('Failed to send message:', error)
+      } catch (error: unknown) {
+        if (
+          error instanceof Error &&
+          error.message === 'Attempting to use a disconnected port object'
+        ) {
+          console.warn('[useChromePort] Port is disconnected. Reconnecting...')
+          portRef.current = chrome.runtime.connect()
+          portRef.current.onMessage.addListener((message) => {
+            messageHandlersRef.current.forEach((handler) => handler(message))
+          })
+        } else {
+          console.error('[useChromePort] Error while sending message:', error)
+        }
       }
     } else {
-      console.error('Port is not connected')
+      console.error('[useChromePort] Port is not connected')
     }
   }, [])
 

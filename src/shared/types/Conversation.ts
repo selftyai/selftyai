@@ -10,4 +10,5 @@ export type Conversation = {
   systemMessage: string
   createdAt: Date
   updatedAt: Date
+  isPinned?: boolean
 }
