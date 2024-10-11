@@ -1,15 +1,22 @@
-import ReactDOM from 'react-dom/client'
+import { createRoot } from 'react-dom/client'
 
+import App from '@/pageContent/PageOverlay'
 import printBuildInfo from '@/shared/printBuildInfo'
-
-import App from './PageOverlay'
 
 printBuildInfo()
 
-const overlayClassName = 'selftyai-overlay'
+// Create overlay container
+const container = document.createElement('div')
+container.id = 'selftyai-overlay'
+document.body.appendChild(container)
+const shadowRoot = container.attachShadow({ mode: 'open' })
 
-const overlayDiv = document.createElement('div')
-overlayDiv.className = overlayClassName
-document.body.appendChild(overlayDiv)
-const root = ReactDOM.createRoot(overlayDiv)
+// Inject styles
+const linkEl = document.createElement('link')
+linkEl.setAttribute('rel', 'stylesheet')
+linkEl.setAttribute('href', chrome.runtime.getURL('/assets/styles/overlay.css'))
+shadowRoot.appendChild(linkEl)
+
+// Render overlay
+const root = createRoot(shadowRoot)
 root.render(<App />)

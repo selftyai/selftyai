@@ -42,7 +42,7 @@ const Overlay: React.FC<OverlayProps> = ({ isVisible, onClose, children }) => {
         {children}
       </div>
     </NextUIProvider>,
-    document.body
+    document.getElementById('selftyai-overlay')!.shadowRoot!
   )
 }
 

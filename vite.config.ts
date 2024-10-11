@@ -58,8 +58,8 @@ export default defineConfig(({ mode }) => {
         name: 'build-content-script-styles',
         async writeBundle() {
           const inputCSS = 'src/shared/style/index.css'
-          const outputCSS = `dist/${browser}/assets/contentScript.css`
-          const tailwindConfig = 'src/pageContent/PageOverlay/tailwind.page-overlay.config.js'
+          const outputCSS = `dist/${browser}/assets/styles/overlay.css`
+          const tailwindConfig = 'tailwind.overlay.config.js'
 
           const css = readFileSync(inputCSS, 'utf8')
 
@@ -70,8 +70,6 @@ export default defineConfig(({ mode }) => {
           })
 
           writeFileSync(outputCSS, result.css)
-
-          console.log(`Successfully built CSS: ${outputCSS}`)
         }
       }
     ],

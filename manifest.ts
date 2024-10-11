@@ -21,7 +21,6 @@ const commonManifest = {
   content_scripts: [
     {
       matches: ['https://*/*', 'http://*/*'],
-      css: ['assets/contentScript.css'],
       js: ['contentScript.js']
     }
   ],
@@ -30,6 +29,10 @@ const commonManifest = {
   web_accessible_resources: [
     {
       resources: ['icons/*'],
+      matches: ['<all_urls>']
+    },
+    {
+      resources: ['assets/styles/overlay.css'],
       matches: ['<all_urls>']
     }
   ]
