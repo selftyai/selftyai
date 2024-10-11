@@ -1,10 +1,13 @@
 import { Tab, Tabs } from '@nextui-org/react'
+import { useSearchParams } from 'react-router-dom'
 
 import AppearanceSetting from '@/sidebar/components/Settings/AppearanceSetting'
 import Integrations from '@/sidebar/components/Settings/Integrations'
 import SidebarContainer from '@/sidebar/components/Sidebar/SidebarContainer'
 
 const Settings = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+
   return (
     <div className="flex h-full max-h-[100dvh] w-full max-w-full flex-col">
       <SidebarContainer
@@ -26,6 +29,11 @@ const Settings = () => {
             }}
             radius="full"
             variant="underlined"
+            selectedKey={searchParams.get('tab') || 'appearance'}
+            onSelectionChange={(key) => {
+              searchParams.set('tab', key as string)
+              setSearchParams(searchParams)
+            }}
           >
             <Tab key="appearance" title="Appearance">
               <AppearanceSetting />

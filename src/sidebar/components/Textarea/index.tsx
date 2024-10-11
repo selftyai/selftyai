@@ -221,7 +221,7 @@ const TextArea = memo(() => {
                     size="sm"
                     color="default"
                     className="text-default-600"
-                    onClick={() => navigator('/settings')}
+                    onClick={() => navigator('/settings?tab=integrations')}
                     startContent={
                       <Icon
                         className="text-default-600"
