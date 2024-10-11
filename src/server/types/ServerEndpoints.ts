@@ -4,6 +4,7 @@ export enum ServerEndpoints {
   getConversations = 'getConversations',
   deleteConversation = 'deleteConversation',
   sendMessage = 'sendMessage',
+  setMessageContext = 'setMessageContext',
 
   // Ollama
   ollamaVerifyConnection = 'ollamaVerifyConnection',

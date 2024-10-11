@@ -23,15 +23,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
       console.log('Received message:', message)
     })
 
-    console.log(text)
-
-    return () => {
-      removeListener()
-    }
+    return () => removeListener()
   }, [addMessageListener, text])
 
   const handleSendMessage = () => {
     sendMessage(ServerEndpoints.sidePanelHandlerer, { action: SidePanelAction.OPEN })
+    sendMessage(ServerEndpoints.setMessageContext, { context: text })
   }
 
   const handleSendMessageClose = () => {

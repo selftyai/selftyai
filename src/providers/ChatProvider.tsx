@@ -64,6 +64,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [messages, setMessages] = React.useState<Message[]>([])
   const [error] = React.useState('')
   const [selectedModel, setSelectedModel] = React.useState<Model | 'Select model'>('Select model')
+  const [, setMessageContext] = React.useState<string>()
 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -96,6 +97,10 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             setChatId(undefined)
             setMessages([])
           }
+        },
+        setMessageContext: () => {
+          setMessageContext(payload)
+          console.log(payload)
         }
       }
 

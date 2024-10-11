@@ -13,7 +13,8 @@ const handlers = {
   [ServerEndpoints.sendMessage]: core.sendMessage,
   [ServerEndpoints.deleteConversation]: core.deleteConversation,
   [ServerEndpoints.ollamaChangeUrl]: core.changeBaseUrl,
-  [ServerEndpoints.sidePanelHandlerer]: core.sidePanelHandlerer
+  [ServerEndpoints.sidePanelHandlerer]: core.sidePanelHandlerer,
+  [ServerEndpoints.setMessageContext]: core.setMessageContext
 }
 
 const connectedPorts: chrome.runtime.Port[] = []
