@@ -2,11 +2,11 @@ import { Icon } from '@iconify/react/dist/iconify.js'
 import { Button, Image } from '@nextui-org/react'
 import React, { useEffect } from 'react'
 
-import logo from '@/assets/logo.svg'
-import Tooltip from '@/components/PageOverlay/CustomTooltip'
-import { useChromePort } from '@/hooks/useChromePort'
-import { ServerEndpoints } from '@/server/types/ServerEndpoints'
+import Tooltip from '@/pageContent/PageOverlay/CustomTooltip'
 import { SidePanelAction } from '@/server/types/sidePanel/SidePanelActions'
+import logo from '@/shared/assets/logo.svg'
+import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
+import { useChromePort } from '@/sidebar/hooks/useChromePort'
 
 interface ContextMenuProps {
   left: number
@@ -53,7 +53,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
           className="border-none text-base"
           onClick={handleSendMessage}
         >
-          <Image width={35} height={30} src={logo} removeWrapper />
+          <Image width={35} height={35} src={logo} removeWrapper />
         </Button>
       </Tooltip>
       <Tooltip content={chrome.i18n.getMessage('tooltip_copy')}>

@@ -1,7 +1,10 @@
 import react from '@vitejs/plugin-react'
+import autoprefixer from 'autoprefixer'
 import { build } from 'esbuild'
-import { writeFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
+import postcss from 'postcss'
+import tailwindcss from 'tailwindcss'
 import { defineConfig } from 'vite'
 
 import createManifest from './manifest'
@@ -35,7 +38,7 @@ export default defineConfig(({ mode }) => {
         name: 'build-content-script',
         async writeBundle() {
           await build({
-            entryPoints: ['src/pageContent/contentScript.ts'],
+            entryPoints: ['src/pageContent/contentScript.tsx'],
             bundle: true,
             outfile: `dist/${browser}/contentScript.js`,
             format: 'iife',
@@ -43,11 +46,32 @@ export default defineConfig(({ mode }) => {
             target: 'es2020',
             loader: {
               '.ts': 'ts',
-              '.tsx': 'tsx'
+              '.tsx': 'tsx',
+              '.svg': 'dataurl'
             },
             tsconfig: 'tsconfig.app.json',
             define
           })
+        }
+      },
+      {
+        name: 'build-content-script-styles',
+        async writeBundle() {
+          const inputCSS = 'src/shared/style/index.css'
+          const outputCSS = `dist/${browser}/assets/contentScript.css`
+          const tailwindConfig = 'src/pageContent/PageOverlay/tailwind.page-overlay.config.js'
+
+          const css = readFileSync(inputCSS, 'utf8')
+
+          // Run PostCSS with Tailwind CSS and Autoprefixer
+          const result = await postcss([tailwindcss(tailwindConfig), autoprefixer]).process(css, {
+            from: inputCSS,
+            to: outputCSS
+          })
+
+          writeFileSync(outputCSS, result.css)
+
+          console.log(`Successfully built CSS: ${outputCSS}`)
         }
       }
     ],
@@ -85,27 +109,3 @@ export default defineConfig(({ mode }) => {
     define
   }
 })
-
-// func for build css for context menu and content script
-// function buildProject() {
-//   try {
-//     console.log('Building contentScript...')
-//     execSync('vite build --config vite.contentScript-config.ts --mode development', {
-//       stdio: 'inherit'
-//     })
-//     console.log('ContentScript build completed.')
-//   } catch (error) {
-//     console.error('Error during ContentScript build:', error)
-//   }
-
-//   try {
-//     console.log('Building Tailwind CSS...')
-//     execSync(
-//       'tailwindcss -c ./src/components/PageOverlay/tailwind.page-overlay.config.js -i ./src/style/index.css -o ./dist/assets/output.css --minify',
-//       { stdio: 'inherit' }
-//     )
-//     console.log('Tailwind CSS build completed.')
-//   } catch (error) {
-//     console.error('Error during Tailwind CSS build:', error)
-//   }
-// }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import ContextMenu from '@/components/PageOverlay/ContextMenu'
-import Overlay from '@/components/PageOverlay/Overlay'
+import ContextMenu from '@/pageContent/PageOverlay/ContextMenu'
+import Overlay from '@/pageContent/PageOverlay/Overlay'
 
 const App = () => {
   const [isOverlayVisible, setIsOverlayVisible] = useState(false)
