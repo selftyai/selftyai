@@ -96,7 +96,7 @@ export const groupConversations = (
   if (pinnedConversations.length > 0) {
     sections.push({
       key: 'pinned',
-      title: 'Pinned',
+      title: i18next.t('pinned'),
       titleNode: (
         <span className="flex items-center gap-2 font-medium text-default-700">
           <Icon icon="solar:pin-bold-duotone" width={24} />
