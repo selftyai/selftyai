@@ -3,6 +3,7 @@ import { Card, CardHeader, CardBody, Avatar, Button } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
 import logo from '@/shared/assets/logo.svg'
@@ -18,6 +19,9 @@ const Chat = () => {
   const { theme } = useTheme()
   const { messages, setChatId, isGenerating, conversations } = useChat()
   const { scrollRef, scrollToBottom, showScrollToBottom, handleScroll } = useScrollAnchor()
+  const { t } = useTranslation()
+
+  console.log('Test translation', t('welcome'))
 
   useEffect(() => {
     setChatId(chatId)

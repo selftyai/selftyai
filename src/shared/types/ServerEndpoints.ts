@@ -18,5 +18,9 @@ export enum ServerEndpoints {
   ollamaChangeUrl = 'ollamaChangeUrl',
   disableOllama = 'disableOllama',
   enableOllama = 'enableOllama',
-  integrationStatusOllama = 'integrationStatusOllama'
+  integrationStatusOllama = 'integrationStatusOllama',
+
+  // Internalization
+  getCurrentLanguage = 'getCurrentLanguage',
+  changeLanguage = 'changeLanguage'
 }

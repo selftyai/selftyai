@@ -64,20 +64,56 @@ chrome.runtime.onConnect.addListener((port) => {
 
     const handler = handlers[type as keyof typeof handlers]
     if (!handler) {
-      console.warn('[Message Handler] No handler found for message type:', type)
+      console.warn('[Connect Message Handler] No handler found for message type:', type)
       return
     }
 
     try {
-      console.log(`[Message Handler] Received message with type: ${type} and payload`, payload)
+      console.log(
+        `[Connect Message Handler] Received message with type: ${type} and payload`,
+        payload
+      )
 
       const response = await handler({ ...payload, storage, port, broadcastMessage })
       port.postMessage({ type, ...response })
     } catch (error: unknown) {
       console.warn(
-        `[Message Handler] Error while handling message: ${type}`,
+        `[Connect Message Handler] Error while handling message: ${type}`,
         error instanceof Error ? error.message : error
       )
     }
   })
+})
+
+const messageHandlers = {
+  [ServerEndpoints.getCurrentLanguage]: core.getCurrentLanguage,
+  [ServerEndpoints.changeLanguage]: core.changeLanguage
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  const { type, payload } = message
+
+  const syncStorage = createChromeStorage('sync')
+
+  const handler = messageHandlers[type as keyof typeof messageHandlers]
+  if (!handler) {
+    console.warn(`[${sender.id}][Message Handler] No handler found for message type:`, type)
+    return
+  }
+
+  console.log(
+    `[${sender.id}][Message Handler] Received message with type: ${type} and payload`,
+    payload
+  )
+
+  handler({ payload, syncStorage }).then((response) => {
+    console.log(
+      `[${sender.id}][Message Handler] Sending response for message type: ${type}`,
+      response
+    )
+
+    sendResponse(response)
+  })
+
+  return true
 })
