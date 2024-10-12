@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react'
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, cn } from '@nextui-org/react'
+import { useTranslation } from 'react-i18next'
 
 interface RecentPromptDropdownProps {
   onDelete: () => void
@@ -16,6 +17,8 @@ const RecentPromptDropdown = ({
   selected,
   pinned
 }: RecentPromptDropdownProps) => {
+  const { t } = useTranslation()
+
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -57,7 +60,7 @@ const RecentPromptDropdown = ({
               <Icon className="text-default-300" height={20} icon="solar:pin-linear" width={20} />
             }
           >
-            Unpin
+            {t('unpin')}
           </DropdownItem>
         ) : (
           <DropdownItem
@@ -67,7 +70,7 @@ const RecentPromptDropdown = ({
               <Icon className="text-default-300" height={20} icon="solar:pin-linear" width={20} />
             }
           >
-            Pin
+            {t('pin')}
           </DropdownItem>
         )}
         <DropdownItem
@@ -83,7 +86,7 @@ const RecentPromptDropdown = ({
             />
           }
         >
-          Delete
+          {t('delete')}
         </DropdownItem>
       </DropdownMenu>
     </Dropdown>

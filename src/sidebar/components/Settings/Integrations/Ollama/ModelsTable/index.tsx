@@ -1,5 +1,4 @@
 import { Icon } from '@iconify/react'
-import type { ChipProps } from '@nextui-org/react'
 import {
   Button,
   Input,
@@ -15,32 +14,30 @@ import {
   TableCell,
   Card,
   CardBody,
-  Chip
+  Chip,
+  Tooltip
 } from '@nextui-org/react'
 import { SearchIcon } from '@nextui-org/shared-icons'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Model } from '@/shared/types/Model'
 
 interface ModelsTableProps {
   className?: string
   models: Model[]
-  onModelDelete: (model: Model) => Promise<void>
-}
-const statusColorMap: Record<string, ChipProps['color']> = {
-  active: 'success',
-  inactive: 'danger'
+  onModelDelete: (model: Model) => void
 }
 
 const columns = [
   { name: 'NAME', uid: 'name', sortable: true },
-  { name: 'HAS VISION', uid: 'vision', sortable: true },
   { name: 'ACTIONS', uid: 'actions' }
 ]
 
 const ModelsTable = React.forwardRef<HTMLDivElement, ModelsTableProps>(
   ({ models, onModelDelete }) => {
     const [filterValue, setFilterValue] = React.useState('')
+    const { t } = useTranslation()
 
     const hasSearchFilter = Boolean(filterValue)
 
@@ -53,60 +50,68 @@ const ModelsTable = React.forwardRef<HTMLDivElement, ModelsTableProps>(
         )
       }
 
-      return filteredUsers
+      return filteredUsers.sort((a, b) => a.name.localeCompare(b.name))
     }, [filterValue, hasSearchFilter, models])
 
-    const renderCell = React.useCallback((model: Model, columnKey: React.Key) => {
-      const cellValue = model[columnKey as keyof Model]
+    const renderCell = React.useCallback(
+      (model: Model, columnKey: React.Key) => {
+        const cellValue = model[columnKey as keyof Model]
 
-      switch (columnKey) {
-        case 'name':
-          return (
-            <div className="flex flex-col">
-              <p className="text-bold text-small capitalize text-default-500">{cellValue}</p>
-            </div>
-          )
-        case 'vision':
-          return (
-            <Chip
-              className="capitalize"
-              color={statusColorMap[model.hasVision ? 'active' : 'inactive']}
-              size="sm"
-              variant="flat"
-            >
-              {model.hasVision ? 'Has vision' : 'No vision'}
-            </Chip>
-          )
-        case 'actions':
-          return (
-            <div className="relative flex items-center justify-end gap-2">
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <Icon className="h-6 w-6 text-default-500" icon="solar:menu-dots-bold" />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  onAction={async (key) => {
-                    switch (key) {
-                      case 'delete':
-                        await onModelDelete(model)
-                        break
+        const [name, tag] = model.name.split(':')
 
-                      default:
-                        break
-                    }
-                  }}
+        switch (columnKey) {
+          case 'name':
+            return (
+              <div className="flex flex-row items-center gap-2.5">
+                <p className="text-bold text-small text-default-500">{name}</p>
+                <Chip
+                  className="gap-1.5"
+                  color="primary"
+                  size="sm"
+                  radius="sm"
+                  variant="flat"
+                  startContent={<Icon icon="ph:tag-simple" width={16} />}
                 >
-                  <DropdownItem key="delete">Delete</DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </div>
-          )
-        default:
-          return cellValue
-      }
-    }, [])
+                  {tag}
+                </Chip>
+                {model.hasVision && (
+                  <Tooltip content={t('settings.integrations.ollama.hasVision')} placement="top">
+                    <Chip color="success" size="sm" variant="flat" radius="sm">
+                      <Icon icon="solar:eye-linear" width={16} />
+                    </Chip>
+                  </Tooltip>
+                )}
+              </div>
+            )
+          case 'actions':
+            return (
+              <div className="relative flex items-center justify-end gap-2">
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button isIconOnly size="sm" variant="light">
+                      <Icon className="h-6 w-6 text-default-500" icon="solar:menu-dots-bold" />
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    onAction={async (key) => {
+                      const actions = {
+                        delete: onModelDelete
+                      }
+
+                      actions[key as keyof typeof actions](model)
+                    }}
+                  >
+                    <DropdownItem key="delete">{t('delete')}</DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
+            )
+          default:
+            return cellValue
+        }
+      },
+      [onModelDelete, t]
+    )
 
     const onSearchChange = React.useCallback((value?: string) => {
       if (value) {
@@ -127,7 +132,7 @@ const ModelsTable = React.forwardRef<HTMLDivElement, ModelsTableProps>(
             <Input
               isClearable
               className="w-full"
-              placeholder="Search by tag name..."
+              placeholder={t('settings.integrations.ollama.search')}
               startContent={<SearchIcon />}
               value={filterValue}
               onClear={() => onClear()}
@@ -136,10 +141,10 @@ const ModelsTable = React.forwardRef<HTMLDivElement, ModelsTableProps>(
           </div>
         </div>
       )
-    }, [filterValue, onSearchChange, onClear])
+    }, [filterValue, onSearchChange, onClear, t])
 
     return (
-      <Card className={'border border-default-200 bg-transparent'} shadow="none">
+      <Card className="border border-default-200 bg-transparent" shadow="none">
         <CardBody>
           <Table
             hideHeader
@@ -167,7 +172,10 @@ const ModelsTable = React.forwardRef<HTMLDivElement, ModelsTableProps>(
                 </TableColumn>
               )}
             </TableHeader>
-            <TableBody emptyContent={'No models found'} items={filteredItems}>
+            <TableBody
+              emptyContent={t('settings.integrations.ollama.noModels')}
+              items={filteredItems}
+            >
               {(item) => (
                 <TableRow key={item.name}>
                   {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}

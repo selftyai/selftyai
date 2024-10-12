@@ -1,4 +1,169 @@
 {
-  "welcome": "Welcome",
-  "language": "Language"
+  "extensionName": "Selfty AI",
+  "disclaimer": "LLM's can make mistakes. Check important info.",
+  "prompts": [
+    {
+      "id": "prompt1",
+      "text": "Help me write a blog post",
+      "icon": "solar:pen-2-bold",
+      "color": "text-primary-700"
+    },
+    {
+      "id": "prompt2",
+      "text": "Analyze data from a survey",
+      "icon": "solar:chart-bold-duotone",
+      "color": "text-danger-600"
+    },
+    {
+      "id": "prompt3",
+      "text": "Create a presentation on AI and ML",
+      "icon": "solar:presentation-graph-bold",
+      "color": "text-warning-600"
+    },
+    {
+      "id": "prompt4",
+      "text": "Write code for a web application",
+      "icon": "solar:code-2-bold",
+      "color": "text-success-600"
+    }
+  ],
+  "selectModel": "Select model",
+  "noModelsAvailable": "No models available <SettingsLink>Go to settings</SettingsLink>",
+  "ollama": "Ollama",
+  "promptPlaceholder": "Enter a prompt here",
+  "promptButton": "Generate",
+  "stopButton": "Stop",
+  "continueButton": "Continue generating",
+  "regenerateButton": "Regenerate",
+  "copyButton": "Copy",
+  "addImage": "Add image",
+  "errors": {
+    "NetworkError": "A network error occurred. Please check your connection and try again.",
+    "AbortedError": "The request was aborted. If you want to continue, click on the continue button or write a new message.",
+    "default": "An error occurred. Please try again.",
+    "ollamaOriginError": "Ollama is not accessible from the current origin. Please check the CORS.",
+    "ollamaConnectionError": "Ollama is not connected. Please check your base URL and try again. If you don't use dedicated server, verify you have installed Ollama on your local machine."
+  },
+  "generatingResponse": "{{ model }} is thinking <Loader />",
+  "responseMetadata": {
+    "completionTokens": {
+      "label": "Completion tokens",
+      "tooltip": "The number of tokens the model has generated.",
+      "unit": "{{ value }} tokens"
+    },
+    "promptTokens": {
+      "label": "Prompt tokens",
+      "tooltip": "The number of tokens in the prompt.",
+      "unit": "{{ value }} tokens"
+    },
+    "totalTokens": {
+      "label": "Total tokens",
+      "tooltip": "The total number of tokens (prompt + completion).",
+      "unit": "{{ value }} tokens"
+    },
+    "waitTime": {
+      "label": "Wait time",
+      "tooltip": "The time it took to connect to the model and start generating a response.",
+      "unit": "{{ value }} seconds"
+    },
+    "responseTime": {
+      "label": "Response time",
+      "tooltip": "The time it took to generate the response.",
+      "unit": "{{ value }} seconds"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": {
+      "title": "Appearance",
+      "theme": {
+        "label": "Theme",
+        "description": "Select the theme for the extension.",
+        "options": {
+          "light": "Light",
+          "dark": "Dark"
+        }
+      }
+    },
+    "integrations": {
+      "title": "Integrations",
+      "ollama": {
+        "title": "Ollama",
+        "website": "ollama.com",
+        "description": "Ollama is a powerful AI tool that allows you to run LLM models on your own machine.",
+        "corsTopic": "Set Up Cross-Origin Access for Ollama to work properly. Follow the <Link>guide</Link> if you are not setup it yet.",
+        "modelsLocationTopic": "If you are using Ollama on your local machine and want to change where models are stored, you can do so by following <Link>this guide</Link>.",
+        "configurations": {
+          "title": "Configurations",
+          "baseURL": {
+            "label": "Base URL",
+            "description": "By default, the base URL is set to <strong>http://127.0.0.1:11434</strong>. If you have a dedicated server, you can change the base URL here.",
+            "required": "Base URL is required"
+          },
+          "saveAndVerify": "Save & verify"
+        },
+        "models": {
+          "title": "Manage models",
+          "button": "Models",
+          "pullModel": {
+            "description": "Pull model from Ollama library",
+            "library": "Library",
+            "modelTag": "Model tag",
+            "pull": "Pull",
+            "placeholder": "e.g llama3.2:latest, gemma2 etc."
+          }
+        },
+        "hasVision": "This model has vision capabilities.",
+        "noModels": "No models found.",
+        "search": "Search by tag name...",
+        "connected": "Connection with Ollama server established successfully",
+        "disconnected": "Connection with Ollama server is not established"
+      },
+      "groq": {
+        "title": "Groq",
+        "website": "groq.com",
+        "description": "Use groq models to generate responses. Use your API key to get started."
+      },
+      "lmStudio": {
+        "title": "LM Studio",
+        "website": "lmstudio.ai",
+        "description": "Use LM Studio models to generate responses. Use your API key to get started."
+      },
+      "aimlapi": {
+        "title": "AI/ML API",
+        "website": "aimlapi.com",
+        "description": "Generate AI responses with AI/ML. Use your API key to get started."
+      },
+      "openai": {
+        "title": "OpenAI",
+        "website": "platform.openai.com",
+        "description": "Generate AI responses with OpenAI. Use your API key to get started."
+      },
+      "anthropic": {
+        "title": "Anthropic",
+        "website": "anthropic.com/api",
+        "description": "Generate AI responses with Anthropic. Use your API key to get started."
+      }
+    }
+  },
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "cancel": "Cancel",
+  "configure": "Configure",
+  "delete": "Delete",
+  "comingSoon": "Coming soon",
+  "unpin": "Unpin",
+  "pin": "Pin",
+  "newChat": "New chat",
+  "pinned": "Pinned",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "previous7Days": "Previous 7 days",
+  "previous30Days": "Previous 30 days",
+  "other": "More than 30 days ago",
+  "noConversations": "No conversations",
+  "showMore": "Show more",
+  "fullPage": "Full page",
+  "copied": "Copied!",
+  "copy": "Copy"
 }

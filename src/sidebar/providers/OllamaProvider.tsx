@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Model } from '@/shared/types/Model'
@@ -36,6 +37,7 @@ const OLLAMA_FETCH_INTERVAL = 5000 // 5 seconds
 
 const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { sendMessage, addMessageListener } = useChromePort()
+  const { t } = useTranslation()
 
   const [models, setModels] = React.useState<Model[]>([])
   const [connected, setConnected] = React.useState(false)
@@ -73,7 +75,7 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
           validationResponse()
           if (message.error) {
             const messageTypes = {
-              'Network Error': 'Connection with Ollama server is not established'
+              'Network Error': t('settings.integrations.ollama.disconnected')
             }
 
             const messageError =
@@ -81,7 +83,7 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
             toast.error(messageError, { position: 'top-center' })
           } else {
-            toast.success('Connection with Ollama server established successfully', {
+            toast.success(t('settings.integrations.ollama.connected'), {
               position: 'top-center'
             })
           }
@@ -155,7 +157,8 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
     setBaseURL,
     baseURL,
     setError,
-    models
+    models,
+    t
   ])
 
   useEffect(() => {
