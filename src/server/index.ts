@@ -98,6 +98,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const handler = messageHandlers[type as keyof typeof messageHandlers]
   if (!handler) {
     console.warn(`[${sender.id}][Message Handler] No handler found for message type:`, type)
+    sendResponse({ error: 'No handler found for message type' })
     return
   }
 
