@@ -2,6 +2,7 @@ import { RadioGroup } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ThemeCustomRadio } from '@/sidebar/components/ThemeSwitcher'
 
@@ -11,14 +12,17 @@ interface AppearanceSettingCardProps {
 
 const AppearanceSetting = React.forwardRef<HTMLDivElement, AppearanceSettingCardProps>(
   ({ className, ...props }, ref) => {
+    const { t } = useTranslation()
     const { theme, setTheme } = useTheme()
 
     return (
       <div ref={ref} className={cn('p-2', className)} {...props}>
         <div>
-          <p className="text-base font-medium text-default-700">Theme</p>
+          <p className="text-base font-medium text-default-700">
+            {t('settings.appearance.theme.label')}
+          </p>
           <p className="mt-1 text-sm font-normal text-default-400">
-            Change the appearance of the web.
+            {t('settings.appearance.theme.description')}
           </p>
           <RadioGroup
             classNames={{
@@ -31,10 +35,10 @@ const AppearanceSetting = React.forwardRef<HTMLDivElement, AppearanceSettingCard
             defaultValue={theme}
           >
             <ThemeCustomRadio value="light" variant="light">
-              Light
+              {t('settings.appearance.theme.options.light')}
             </ThemeCustomRadio>
             <ThemeCustomRadio value="dark" variant="dark">
-              Dark
+              {t('settings.appearance.theme.options.dark')}
             </ThemeCustomRadio>
           </RadioGroup>
         </div>

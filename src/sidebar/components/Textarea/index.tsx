@@ -11,7 +11,8 @@ import {
   DropdownItem
 } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
-import React, { memo, useMemo } from 'react'
+import React, { memo, useEffect, useMemo } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { Model } from '@/shared/types/Model'
@@ -19,10 +20,15 @@ import PromptInput from '@/sidebar/components/Textarea/PromptInput'
 import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
-const TextArea = memo(() => {
+interface TextAreaProps {
+  selectedPrompt?: string
+}
+
+const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
   const { sendMessage, isGenerating, hasError, stopGenerating } = useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
+  const { t } = useTranslation()
 
   const groupedModels = useMemo(() => {
     return models.reduce(
@@ -78,6 +84,12 @@ const TextArea = memo(() => {
     }
   }
 
+  useEffect(() => {
+    if (selectedPrompt) {
+      setPrompt(selectedPrompt)
+    }
+  }, [selectedPrompt])
+
   return (
     <div className="flex w-full flex-col gap-4">
       <form
@@ -119,7 +131,7 @@ const TextArea = memo(() => {
           }}
           endContent={
             <div className="flex items-end gap-2">
-              <Tooltip showArrow content={isGenerating ? 'Stop generating' : 'Send message'}>
+              <Tooltip showArrow content={t(isGenerating ? 'stopButton' : 'promptButton')}>
                 <Button
                   isIconOnly
                   color={isGenerating ? 'default' : !prompt ? 'default' : 'primary'}
@@ -167,7 +179,7 @@ const TextArea = memo(() => {
                   multiple
                   onChange={onImageChange}
                 />
-                <Tooltip showArrow content="Add Image">
+                <Tooltip showArrow content={t('addImage')}>
                   <Button
                     isIconOnly
                     radius="full"
@@ -200,7 +212,7 @@ const TextArea = memo(() => {
                 }
                 variant="flat"
               >
-                {selectedModel ? selectedModel.name : 'Select Model'}
+                {selectedModel ? selectedModel.name : t('selectModel')}
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -216,22 +228,26 @@ const TextArea = memo(() => {
                 .filter((provider) => provider.models.length > 0)}
               emptyContent={
                 <div className="flex flex-col gap-2 pb-2 text-center">
-                  No models available.
-                  <Button
-                    size="sm"
-                    color="default"
-                    className="text-default-600"
-                    onClick={() => navigator('/settings?tab=integrations')}
-                    startContent={
-                      <Icon
-                        className="text-default-600"
-                        icon="solar:settings-minimalistic-line-duotone"
-                        width={16}
-                      />
-                    }
-                  >
-                    Go to settings
-                  </Button>
+                  <Trans
+                    i18nKey="noModelsAvailable"
+                    components={{
+                      SettingsLink: (
+                        <Button
+                          size="sm"
+                          color="default"
+                          className="text-default-600"
+                          onClick={() => navigator('/settings?tab=integrations')}
+                          startContent={
+                            <Icon
+                              className="text-default-600"
+                              icon="solar:settings-minimalistic-line-duotone"
+                              width={16}
+                            />
+                          }
+                        />
+                      )
+                    }}
+                  />
                 </div>
               }
             >
@@ -240,7 +256,7 @@ const TextArea = memo(() => {
                   classNames={{
                     heading: 'text-tiny px-[10px]'
                   }}
-                  title={chrome.i18n.getMessage(`${provider.key}Models`)}
+                  title={t(provider.key)}
                   items={provider.models.map((model, index) => ({ ...model, index }))}
                 >
                   {(model) => (

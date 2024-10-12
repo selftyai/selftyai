@@ -18,7 +18,8 @@ export default defineConfig(({ mode }) => {
   }
 
   const define = {
-    'process.env.BROWSER': JSON.stringify(browser)
+    'process.env.BROWSER': JSON.stringify(browser),
+    'process.env.NODE_ENV': JSON.stringify(buildMode)
   }
 
   return {
