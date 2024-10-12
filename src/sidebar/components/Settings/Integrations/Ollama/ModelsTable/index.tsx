@@ -93,7 +93,7 @@ const ModelsTable = React.forwardRef<HTMLDivElement, ModelsTableProps>(
                     </Button>
                   </DropdownTrigger>
                   <DropdownMenu
-                    onAction={async (key) => {
+                    onAction={(key) => {
                       const actions = {
                         delete: onModelDelete
                       }
