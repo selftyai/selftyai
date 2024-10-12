@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
         name: 'build-content-script',
         async writeBundle() {
           await build({
-            entryPoints: ['src/pageContent/contentScript.tsx'],
+            entryPoints: ['src/pageContent/index.tsx'],
             bundle: true,
             outfile: `dist/${browser}/contentScript.js`,
             format: 'iife',
@@ -63,7 +63,6 @@ export default defineConfig(({ mode }) => {
 
           const css = readFileSync(inputCSS, 'utf8')
 
-          // Run PostCSS with Tailwind CSS and Autoprefixer
           const result = await postcss([tailwindcss(tailwindConfig), autoprefixer]).process(css, {
             from: inputCSS,
             to: outputCSS
