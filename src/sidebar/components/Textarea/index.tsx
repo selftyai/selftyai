@@ -15,6 +15,7 @@ import React, { memo, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { Model } from '@/shared/types/Model'
+import ContextField from '@/sidebar/components/Textarea/ContextField'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
 import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
@@ -85,6 +86,7 @@ const TextArea = memo(() => {
         onSubmit={onSubmit}
         ref={formRef}
       >
+        <ContextField />
         <div className="group flex gap-2 px-4 pt-4">
           {images.map((image, index) => (
             <Badge

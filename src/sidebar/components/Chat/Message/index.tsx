@@ -10,6 +10,7 @@ export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   avatar?: React.ReactNode
   showFeedback?: boolean
   message?: React.ReactNode
+  messageContext?: string
   currentAttempt?: number
   status?: string
   attempts?: number
@@ -32,6 +33,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
     {
       avatar,
       message,
+      messageContext,
       statusText,
       showFeedback,
       attempts = 1,
@@ -100,6 +102,14 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               messageClassName
             )}
           >
+            {messageContext && (
+              <div className="mb-2 w-full rounded-lg bg-content2">
+                <div className="flex items-center justify-end gap-3 p-2">
+                  <Icon icon="mage:l-arrow-down-right" className="mx-2 h-8 min-w-4" />
+                  <span className="line-clamp-2 flex-1 text-xs">{messageContext}</span>
+                </div>
+              </div>
+            )}
             <div ref={messageRef} className={'text-small'}>
               {typeof message === 'string' ? <Markdown message={message} /> : message}
             </div>

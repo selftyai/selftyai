@@ -37,7 +37,7 @@ const Tooltip: React.FC<TooltipProps> = ({ children, content, position = 'top' }
         {visible && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div
-              className={`absolute z-10 whitespace-nowrap rounded-md bg-background px-2 py-1 text-foreground ${positionClasses[position]}`}
+              className={`absolute z-10 whitespace-nowrap rounded-md bg-background px-3 py-2 text-foreground ${positionClasses[position]}`}
             >
               {content}
             </div>

@@ -5,7 +5,7 @@ interface setMessageContextPayload {
 }
 
 const setMessageContext = async ({ context, broadcastMessage }: setMessageContextPayload) => {
-  broadcastMessage({ type: 'setMessageContext', payload: context })
+  broadcastMessage({ type: 'setMessageContext', payload: JSON.stringify(context) })
 }
 
 export default setMessageContext

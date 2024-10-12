@@ -28,6 +28,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
 
   const handleSendMessage = () => {
     sendMessage(ServerEndpoints.sidePanelHandlerer, { action: SidePanelAction.OPEN })
+
     sendMessage(ServerEndpoints.setMessageContext, { context: text })
   }
 
