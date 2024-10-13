@@ -9,8 +9,6 @@ export type Message = CoreMessage & {
   usage?: LanguageModelUsage
   error?: string
   finishReason?: string
-  context?: string
-  userMessage?: string
 }
 
 export function createMessage(message: Omit<Message, 'createdAt' | 'updatedAt'>): Message {

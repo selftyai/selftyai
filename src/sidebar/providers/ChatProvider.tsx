@@ -163,8 +163,8 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       setIsGenerating(true)
 
       const messageWithContext = messageContext
-        ? `Based on the current context:"${messageContext.trim()}" and user's message: "${trimmedMessage}" generate a response.`
-        : trimmedMessage
+        ? `Here is the user's context and message. Use the information inside the context tag as background knowledge, and respond based on the user's input inside the message tag. <context>${messageContext.trim()}</context><message>${trimmedMessage}</message>`
+        : `Here is the user's message. Respond based on the input inside the message tag. <message>${trimmedMessage}</message>`
 
       const createMessageObject = (content: string) =>
         ({
@@ -175,15 +175,12 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           ]
         }) as CoreMessage
 
-      const messageObject = createMessageObject(trimmedMessage)
-      const messageObjectWithContext = createMessageObject(messageWithContext)
+      const messageObject = createMessageObject(messageWithContext)
 
       setMessages((prev) => [
         ...prev,
         {
           ...messageObject,
-          context: messageContext,
-          userMessage: trimmedMessage,
           id: 'temp',
           createdAt: new Date(),
           updatedAt: new Date()
@@ -192,8 +189,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
       sendPortMessage(ServerEndpoints.sendMessage, {
         chatId,
-        message: messageObjectWithContext,
-        context: messageContext,
+        message: messageObject,
         userMessage: trimmedMessage,
         model: {
           provider: selectedModel.provider,

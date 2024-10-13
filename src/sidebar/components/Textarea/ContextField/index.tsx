@@ -1,16 +1,18 @@
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { Button } from '@nextui-org/react'
 
-import { useChat } from '@/sidebar/providers/ChatProvider'
+interface ContextFieldProps {
+  messageContext?: string
+  setMessageContext: (context: string | undefined) => void
+}
 
-const ContextField = () => {
-  const { messageContext, setMessageContext } = useChat()
+const ContextField = ({ messageContext, setMessageContext }: ContextFieldProps) => {
   return (
     messageContext && (
       <div className="w-full p-2 pb-0">
         <div className="flex gap-2 rounded rounded-b-md rounded-t-lg bg-content3 p-2">
           <Icon icon="mage:l-arrow-down-right" className="mx-2 h-8 min-w-4" />
-          <span className="line-clamp-2 flex-1 text-xs">{messageContext}</span>
+          <span className="line-clamp-2 flex-1 break-words text-xs">{messageContext}</span>
           <Button
             isIconOnly
             onClick={() => setMessageContext(undefined)}

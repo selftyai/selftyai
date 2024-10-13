@@ -4,6 +4,7 @@ import { cn } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
 
+import ContextField from '@/sidebar/components/Chat/Message/ContextField'
 import Markdown from '@/sidebar/components/Chat/Message/Markdown'
 
 export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -102,14 +103,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               messageClassName
             )}
           >
-            {messageContext && (
-              <div className="mb-2 w-full rounded-lg bg-content2">
-                <div className="flex items-center justify-end gap-3 p-2">
-                  <Icon icon="mage:l-arrow-down-right" className="mx-2 h-8 min-w-4" />
-                  <span className="line-clamp-2 flex-1 text-xs">{messageContext}</span>
-                </div>
-              </div>
-            )}
+            <ContextField messageContext={messageContext} />
             <div ref={messageRef} className={'text-small'}>
               {typeof message === 'string' ? <Markdown message={message} /> : message}
             </div>

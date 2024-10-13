@@ -16,6 +16,7 @@ const App = () => {
   useEffect(() => {
     const handleMouseUp = (event: MouseEvent) => {
       const selection = window.getSelection()
+      console.log(selection, selection?.toString())
       if (selection && selection.rangeCount > 0) {
         const text = selection.toString()
         const scrollY = window.scrollY || document.documentElement.scrollTop

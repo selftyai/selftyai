@@ -21,7 +21,8 @@ import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
 const TextArea = memo(() => {
-  const { sendMessage, isGenerating, hasError, stopGenerating } = useChat()
+  const { sendMessage, isGenerating, hasError, stopGenerating, messageContext, setMessageContext } =
+    useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
 
@@ -86,7 +87,7 @@ const TextArea = memo(() => {
         onSubmit={onSubmit}
         ref={formRef}
       >
-        <ContextField />
+        <ContextField messageContext={messageContext} setMessageContext={setMessageContext} />
         <div className="group flex gap-2 px-4 pt-4">
           {images.map((image, index) => (
             <Badge

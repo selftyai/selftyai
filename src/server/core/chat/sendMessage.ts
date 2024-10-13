@@ -14,8 +14,6 @@ import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 interface sendMessagePayload {
   chatId: string
   message: CoreMessage
-  context: string
-  userMessage: string
   model: {
     provider: AIProvider
     model: string
@@ -28,8 +26,6 @@ interface sendMessagePayload {
 const sendMessage = async ({
   chatId,
   message,
-  context,
-  userMessage,
   model,
   broadcastMessage,
   storage,
@@ -52,8 +48,6 @@ const sendMessage = async ({
   conversation.messages.push(
     createMessage({
       id: crypto.randomUUID(),
-      context,
-      userMessage,
       ...message
     })
   )
