@@ -1,10 +1,24 @@
 import { CoreMessage, generateText } from 'ai'
 
 import getProvider from '@/server/core/chat/getProvider'
-import { Conversation } from '@/shared/types/Conversation'
+import { db } from '@/shared/db'
 
-const generateTitle = async (conversation: Conversation): Promise<string> => {
-  const provider = getProvider(conversation.provider)
+const generateTitle = async (conversationId: number): Promise<boolean> => {
+  const conversation = await db.conversations.where({ id: conversationId }).first()
+
+  if (!conversation) {
+    console.warn('[generateTitle] Conversation not found:', conversationId)
+    return false
+  }
+
+  const model = await db.models.where({ id: conversation.modelId }).first()
+
+  if (!model) {
+    console.warn('[generateTitle] Model not found:', conversation.modelId)
+    return false
+  }
+
+  const provider = getProvider(model.provider)
 
   const prompt = `
     Given the user's prompt, generate a concise and engaging chat title that captures the main idea. The title should:
@@ -15,23 +29,28 @@ const generateTitle = async (conversation: Conversation): Promise<string> => {
     User's Prompt:
   `.trim()
 
-  const message = {
-    ...conversation.messages[0],
-    content:
-      typeof conversation.messages[0].content === 'string'
-        ? `${prompt} ${conversation.messages[0].content}`
-        : `${prompt} ${conversation.messages[0].content
-            .filter((part) => part.type === 'text')
-            .map((part) => part.text)
-            .join(' ')}`.trim()
+  const message = await db.messages.where({ conversationId, role: 'user' }).first()
+
+  if (!message) {
+    console.warn('[generateTitle] User message not found:', conversationId)
+    return false
+  }
+
+  const messageData = {
+    role: 'user',
+    content: `${prompt} ${message.content}`
   } as CoreMessage
 
   const result = await generateText({
-    model: provider(conversation.model),
-    messages: [message]
+    model: provider(model.model),
+    messages: [messageData]
   })
 
-  return result.text.length > 50 ? result.text.substring(0, 47) + '...' : result.text
+  await db.conversations.update(conversationId, {
+    title: result.text.length > 50 ? result.text.substring(0, 47) + '...' : result.text
+  })
+
+  return true
 }
 
 export default generateTitle

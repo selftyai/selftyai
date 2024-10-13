@@ -1,6 +1,8 @@
 import * as core from '@/server/core'
+import monitorModels from '@/server/core/ollama/monitorModels'
 import { checkOngoingPulls } from '@/server/core/ollama/ollamaPullModel'
 import { createChromeStorage } from '@/server/utils/chromeStorage'
+import { db } from '@/shared/db'
 import printBuildInfo from '@/shared/printBuildInfo'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
@@ -16,22 +18,36 @@ import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
   const browserAction = browserActions[process.env.BROWSER as 'chrome' | 'opera']
   browserAction?.()
+
+  // Abort ongoing conversations on startup
+  db.conversations.toArray().then((conversations) => {
+    const ongoingConversations = conversations.filter((conversation) => conversation.generating)
+
+    ongoingConversations.forEach(async (conversation) => {
+      const message = await db.messages.where({ conversationId: conversation.id }).last()
+
+      if (!message?.id || !conversation?.id) {
+        return
+      }
+
+      await db.messages.update(message.id, {
+        error: 'AbortedError',
+        finishReason: 'aborted'
+      })
+
+      await db.conversations.update(conversation.id, {
+        generating: false
+      })
+    })
+  })
 })()
 
 const handlers = {
-  [ServerEndpoints.ollamaModels]: core.ollamaModels,
+  [ServerEndpoints.ollamaModels]: () => {},
   [ServerEndpoints.ollamaVerifyConnection]: core.ollamaVerifyConnection,
   [ServerEndpoints.ollamaPullModel]: core.ollamaPullModel,
   [ServerEndpoints.ollamaDeleteModel]: core.deleteModel,
-  [ServerEndpoints.getConversations]: core.getConversations,
   [ServerEndpoints.sendMessage]: core.sendMessage,
-  [ServerEndpoints.deleteConversation]: core.deleteConversation,
-  [ServerEndpoints.ollamaChangeUrl]: core.changeBaseUrl,
-  [ServerEndpoints.pinConversation]: core.pinConversation,
-  [ServerEndpoints.unpinConversation]: core.unpinConversation,
-  [ServerEndpoints.enableOllama]: core.enableOllama,
-  [ServerEndpoints.disableOllama]: core.disableOllama,
-  [ServerEndpoints.integrationStatusOllama]: core.integrationStatusOllama,
   [ServerEndpoints.regenerateResponse]: core.regenerateResponse,
   [ServerEndpoints.stop]: () => {},
   [ServerEndpoints.continueGenerating]: core.continueGenerating
@@ -47,7 +63,8 @@ function broadcastMessage(message: any) {
   })
 }
 
-checkOngoingPulls(broadcastMessage, storage)
+checkOngoingPulls(broadcastMessage)
+setInterval(monitorModels, 1000 * 5)
 
 chrome.runtime.onConnect.addListener((port) => {
   connectedPorts.push(port)

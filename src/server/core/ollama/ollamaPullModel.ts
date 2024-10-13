@@ -1,55 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import getOllamaService from '@/server/core/ollama/getOllamaService'
-import { StateStorage } from '@/server/types/Storage'
-import { OllamaStorageKeys } from '@/server/types/ollama/OllamaStoragsKeys'
 import { streamingFetch } from '@/server/utils/stream'
+import { db } from '@/shared/db'
 import { ModelPullingStatus } from '@/shared/types/ollama/ModelPullingStatus'
 
 interface PullModelPayload {
   modelTag: string
-  storage: StateStorage
   broadcastMessage: (data: any) => void
 }
 
-export const handlePullModel = async ({
-  modelTag,
-  storage,
-  broadcastMessage
-}: PullModelPayload) => {
-  const ollamaService = await getOllamaService(storage)
-
-  const pullingModels = JSON.parse(
-    (await storage.getItem(OllamaStorageKeys.pullingModels)) ?? '[]'
-  ) as string[]
+export const handlePullModel = async ({ modelTag, broadcastMessage }: PullModelPayload) => {
+  const ollamaService = await getOllamaService()
 
   try {
     const generator = streamingFetch(() => ollamaService.pullModel(modelTag))
 
-    await storage.setItem(
-      OllamaStorageKeys.pullingModels,
-      JSON.stringify([...pullingModels, modelTag])
-    )
+    const model = await db.ollamaPullingModels.where({ modelTag }).first()
 
-    broadcastMessage({ type: 'modelPullStart', modelTag })
+    const modelId =
+      model && model.id
+        ? model.id
+        : await db.ollamaPullingModels.add({ modelTag, status: 'pulling manifest' })
 
     for await (const model of generator) {
       const modelPullingStatus = model as ModelPullingStatus
-      modelPullingStatus.modelTag = modelTag
 
       if (modelPullingStatus.status === 'success') {
-        const updatedPullingModels = pullingModels.filter((m) => m !== modelTag)
-        await storage.setItem(OllamaStorageKeys.pullingModels, JSON.stringify(updatedPullingModels))
+        await db.ollamaPullingModels.delete(modelId)
         broadcastMessage({ type: 'modelPullSuccess', modelTag })
         return
       }
 
-      broadcastMessage({ type: 'modelPullStatus', status: modelPullingStatus })
+      await db.ollamaPullingModels.update(modelId, { status: JSON.stringify(modelPullingStatus) })
     }
   } catch (error) {
-    console.error(`Error pulling model ${modelTag}:`, error)
+    console.warn(`[ollamaPullModel] Error pulling model ${modelTag}:`, error)
+    await db.ollamaPullingModels.where({ modelTag }).delete()
 
-    const updatedPullingModels = pullingModels.filter((m) => m !== modelTag)
-    await storage.setItem(OllamaStorageKeys.pullingModels, JSON.stringify(updatedPullingModels))
     broadcastMessage({
       type: 'modelPullError',
       modelTag,
@@ -58,17 +45,10 @@ export const handlePullModel = async ({
   }
 }
 
-export async function checkOngoingPulls(
-  broadcastMessage: (data: any) => void,
-  storage: StateStorage
-) {
-  const pullingModels = JSON.parse(
-    (await storage.getItem(OllamaStorageKeys.pullingModels)) ?? '[]'
-  ) as string[]
-
-  const uniquePullingModels = [...new Set(pullingModels)]
+export async function checkOngoingPulls(broadcastMessage: (data: any) => void) {
+  const pullingModels = await db.ollamaPullingModels.toArray()
 
   await Promise.all(
-    uniquePullingModels.map((modelTag) => handlePullModel({ modelTag, storage, broadcastMessage }))
+    pullingModels.map((model) => handlePullModel({ modelTag: model.modelTag, broadcastMessage }))
   )
 }

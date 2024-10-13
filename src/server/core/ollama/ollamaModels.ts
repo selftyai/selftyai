@@ -1,45 +1,38 @@
 import getOllamaService from '@/server/core/ollama/getOllamaService'
-import type { StateStorage } from '@/server/types/Storage'
-import { OllamaStorageKeys } from '@/server/types/ollama/OllamaStoragsKeys'
+import { db } from '@/shared/db'
 
-interface OllamaModelsPayload {
-  storage: StateStorage
-}
+const ollamaModels = async () => {
+  const service = await getOllamaService()
 
-const ollamaModels = async ({ storage }: OllamaModelsPayload) => {
-  const ollamaService = await getOllamaService(storage)
-  const url = ollamaService.getBaseURL()
+  const integration = await db.integrations.get({ name: 'ollama' })
 
-  const ollamaEnabled =
-    ((await storage.getItem(OllamaStorageKeys.ollamaEnabled)) ?? 'false') === 'true'
-
-  if (!ollamaEnabled) {
+  if (!integration || !integration?.active) {
     return {
       models: [],
       connected: false,
-      url,
+      url: integration?.baseURL,
       error: '',
-      enabled: ollamaEnabled
+      enabled: false
     }
   }
 
   try {
-    const models = await ollamaService.getModels()
+    const models = await service.getModels()
 
     return {
       models,
       connected: true,
       error: '',
-      url,
-      enabled: ollamaEnabled
+      url: integration.baseURL,
+      enabled: integration.active
     }
   } catch (error: unknown) {
     return {
       models: [],
       connected: false,
-      url,
+      url: integration.baseURL,
       error: error instanceof Error ? error.message : String(error),
-      enabled: ollamaEnabled
+      enabled: integration.active
     }
   }
 }

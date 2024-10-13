@@ -15,7 +15,8 @@ import React, { memo, useEffect, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import { Model } from '@/shared/types/Model'
+import { File } from '@/shared/db/models/File'
+import { Model } from '@/shared/db/models/Model'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
 import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
@@ -25,10 +26,13 @@ interface TextAreaProps {
 }
 
 const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
-  const { sendMessage, isGenerating, hasError, stopGenerating } = useChat()
+  const { sendMessage, messages, selectedConversation, stopGenerating } = useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
   const { t } = useTranslation()
+
+  const hasError = messages ? messages[messages.length - 1]?.error === 'error' : false
+  const isGenerating = selectedConversation?.generating
 
   const groupedModels = useMemo(() => {
     return models.reduce(
@@ -44,7 +48,7 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
   }, [models])
 
   const [prompt, setPrompt] = React.useState<string>('')
-  const [images, setImages] = React.useState<string[]>([])
+  const [images, setImages] = React.useState<Omit<File, 'conversationId' | 'messageId'>[]>([])
 
   const imageRef = React.useRef<HTMLInputElement>(null)
 
@@ -74,7 +78,14 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
         const reader = new FileReader()
 
         reader.onload = () => {
-          setImages((prev) => [...prev, reader.result as string])
+          setImages((prev) => [
+            ...prev,
+            {
+              name: file.name,
+              type: 'image',
+              data: reader.result as string
+            }
+          ])
         }
 
         reader.readAsDataURL(file)
@@ -118,7 +129,7 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
               <Image
                 alt="uploaded image cover"
                 className="size-14 rounded-small border-small border-default-200/50 object-cover"
-                src={image}
+                src={image.data}
               />
             </Badge>
           ))}
@@ -169,7 +180,7 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
           onKeyDown={onKeyDown}
           onValueChange={setPrompt}
           startContent={
-            selectedModel?.hasVision && (
+            selectedModel?.vision && (
               <>
                 <input
                   ref={imageRef}

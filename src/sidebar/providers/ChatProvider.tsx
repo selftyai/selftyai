@@ -1,13 +1,19 @@
 /* eslint-disable react-refresh/only-export-components */
-import { CoreMessage, ImagePart } from 'ai'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import React, { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 
-import type { Conversation } from '@/shared/types/Conversation'
-import type { Message } from '@/shared/types/Message'
-import type { Model } from '@/shared/types/Model'
+import { db } from '@/shared/db'
+import { File } from '@/shared/db/models/File'
+import type { Model } from '@/shared/db/models/Model'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 import { useChromePort } from '@/sidebar/hooks/useChromePort'
 import { useOllama } from '@/sidebar/providers/OllamaProvider'
+import { ConversationWithLastMessage } from '@/sidebar/types/ConversationWithLastMessage'
+import { ConversationWithModel } from '@/sidebar/types/ConversationWithModel'
+import { MessageWithFiles } from '@/sidebar/types/MessageWithFiles'
 
 const ModelContext = React.createContext<
   | {
@@ -20,21 +26,19 @@ const ModelContext = React.createContext<
 
 const ChatContext = React.createContext<
   | {
-      messages: Message[]
-      conversations: Conversation[]
-      sendMessage: (message: string, images: string[]) => Promise<void>
-      isGenerating: boolean
-      setChatId: (chatId: string | undefined) => void
-      chatId?: string
-      selectedConversation?: Conversation
-      deleteConversation: (id: string) => void
-      pinConversation: (id: string) => void
-      unpinConversation: (id: string) => void
-      hasError: boolean
+      conversations?: ConversationWithLastMessage[]
+      selectedConversation?: ConversationWithModel
+      messages?: MessageWithFiles[]
+      sendMessage: (
+        message: string,
+        images: Omit<File, 'conversationId' | 'messageId'>[]
+      ) => Promise<void>
+      deleteConversation: (id?: number) => Promise<void>
+      pinConversation: (id?: number) => Promise<void>
+      unpinConversation: (id?: number) => Promise<void>
       regenerateResponse: () => void
       stopGenerating: () => void
       continueGenerating: () => void
-      error?: string
     }
   | undefined
 >(undefined)
@@ -58,132 +62,101 @@ export const useChat = () => {
 const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { sendMessage: sendPortMessage, addMessageListener } = useChromePort()
 
+  const { t } = useTranslation()
+
+  const { conversationId } = useParams()
+  const navigator = useNavigate()
+
   const { models: ollamaModels } = useOllama()
 
   const models = useMemo<Model[]>(() => {
-    return ollamaModels
+    return [...(ollamaModels ?? [])]
   }, [ollamaModels])
 
-  const [conversations, setConversations] = React.useState<Conversation[]>([])
-  const [selectedConversation, setSelectedConversation] = React.useState<Conversation>()
+  const selectedConversation = useLiveQuery(async () => {
+    if (!conversationId) return undefined
 
-  const [chatId, setChatId] = React.useState<string>()
-  const [isGenerating, setIsGenerating] = React.useState(false)
-  const [hasError, setHasError] = React.useState(false)
-  const [error, setError] = React.useState<string>()
-  const [messages, setMessages] = React.useState<Message[]>([])
+    const data = await db.conversations.where({ id: Number(conversationId) }).first()
+
+    if (!data) {
+      navigator('/')
+      return undefined
+    }
+
+    const model = await db.models.get(data.modelId)
+
+    return { ...data, model }
+  }, [conversationId])
+
+  const messages = useLiveQuery(async () => {
+    if (!conversationId) return []
+
+    const messages = await db.messages.where({ conversationId: Number(conversationId) }).toArray()
+    const files = await db.files.where({ conversationId: Number(conversationId) }).toArray()
+
+    const messagesWithFiles: MessageWithFiles[] = messages.map((message) => {
+      return {
+        ...message,
+        files: files.filter((file) => file.messageId === message.id)
+      }
+    })
+
+    return messagesWithFiles
+  }, [conversationId])
+
+  const conversations = useLiveQuery(async () => {
+    const conversations = await db.conversations.toArray()
+
+    const conversationsWithLastMessage: ConversationWithLastMessage[] = await Promise.all(
+      conversations.map(async (conversation) => {
+        const lastMessage = await db.messages.where({ conversationId: conversation.id }).last()
+
+        return {
+          ...conversation,
+          lastMessageAt: lastMessage?.updatedAt
+        }
+      })
+    )
+
+    return conversationsWithLastMessage
+  }, [])
+
   const [selectedModel, setSelectedModel] = React.useState<Model>()
 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removeListener = addMessageListener((message: any) => {
-      const { type, payload, ...rest } = message
+      const { type, conversationId } = message
 
       const messageTypes = {
-        getConversations: () => setConversations(message.conversations),
-        selectConversation: () => {
-          setConversations(message.conversations)
-          setChatId(message.conversationId)
-          setMessages(message.messages)
-        },
-        partialMessage: () => {
-          if (payload.chatId === chatId) {
-            setMessages(payload.messages)
-            const lastMessage = payload.messages[payload.messages.length - 1]
-            setHasError(lastMessage.finishReason === 'error')
-            setError(lastMessage.error)
-          }
-        },
-        finalMessage: () => {
-          setConversations(payload.conversations)
-          if (payload.chatId === chatId) {
-            setIsGenerating(false)
-          }
-        },
-        deleteConversation: () => {
-          setConversations(message.conversations)
-          if (chatId === payload.id) {
-            setChatId(undefined)
-            setMessages([])
-          }
-        },
-        [ServerEndpoints.pinConversation]: () => {
-          setConversations(message.conversations)
-        },
-        [ServerEndpoints.unpinConversation]: () => {
-          setConversations(message.conversations)
-        }
+        selectConversation: () => navigator(`/${conversationId}`)
       }
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
 
       if (messageType) {
-        console.log(`[ChatProvider] Received message: ${type} with data`, {
-          payload,
-          ...rest
-        })
+        console.log(`[ChatProvider] Received message: ${type}`)
         messageType()
       }
     })
 
-    sendPortMessage(ServerEndpoints.getConversations)
-
     return () => removeListener()
-  }, [addMessageListener, sendPortMessage, chatId, setConversations])
-
-  React.useEffect(() => {
-    setSelectedConversation(conversations.find((c) => c.id === chatId))
-  }, [chatId, conversations])
-
-  useEffect(() => {
-    const conversation = conversations.find((c) => c.id === chatId)
-
-    if (conversation) {
-      setMessages((prev) => (prev.length === 0 ? conversation.messages : prev))
-      const lastMessage = conversation.messages[conversation.messages.length - 1]
-      setHasError(lastMessage.finishReason === 'error')
-      setError(lastMessage.error)
-      setSelectedModel(models.find((m) => m.model === conversation.model))
-    } else {
-      setHasError(false)
-    }
-  }, [chatId, conversations, models, messages])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addMessageListener, sendPortMessage])
 
   const sendMessage = useCallback(
-    async (message: string, images: string[] = []) => {
+    async (message: string, images: Omit<File, 'conversationId' | 'messageId'>[] = []) => {
       const trimmedMessage = message.trim()
-      if (!trimmedMessage || !selectedModel) return
-
-      setIsGenerating(true)
-
-      const messageObject = {
-        role: 'user',
-        content: [
-          { type: 'text', text: trimmedMessage },
-          ...images.map((image) => ({ type: 'image', image }) as ImagePart)
-        ]
-      } as CoreMessage
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...messageObject,
-          id: 'temp',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        } as Message
-      ])
+      if (!trimmedMessage || !selectedModel?.id) return
 
       sendPortMessage(ServerEndpoints.sendMessage, {
-        chatId,
-        message: messageObject,
-        model: {
-          provider: selectedModel.provider,
-          model: selectedModel.model
-        }
+        conversationId: selectedConversation?.id,
+        modelId: selectedModel.id,
+        message: trimmedMessage,
+        files: images
       })
     },
-    [chatId, selectedModel, sendPortMessage]
+    [selectedModel, sendPortMessage, selectedConversation]
   )
 
   const selectModel = useCallback(
@@ -197,26 +170,47 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   )
 
   const deleteConversation = useCallback(
-    (id: string) => {
-      sendPortMessage(ServerEndpoints.deleteConversation, { id })
-      setMessages([])
-      setChatId(undefined)
+    async (id?: number) => {
+      if (!id) return
+
+      await db.files.where({ conversationId: id }).delete()
+      await db.messages.where({ conversationId: id }).delete()
+      await db.conversations.delete(id)
+
+      if (selectedConversation?.id === id) {
+        navigator('/')
+      }
+
+      toast.success('Conversation deleted successfully')
     },
-    [sendPortMessage]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sendPortMessage, selectedConversation]
   )
 
   const pinConversation = useCallback(
-    (id: string) => {
-      sendPortMessage(ServerEndpoints.pinConversation, { id })
+    async (id?: number) => {
+      if (!id) return
+
+      await db.conversations.update(id, { pinned: true })
+
+      toast.success(t('pinnedConversation'), {
+        position: 'top-center'
+      })
     },
-    [sendPortMessage]
+    [t]
   )
 
   const unpinConversation = useCallback(
-    (id: string) => {
-      sendPortMessage(ServerEndpoints.unpinConversation, { id })
+    async (id?: number) => {
+      if (!id) return
+
+      await db.conversations.update(id, { pinned: false })
+
+      toast.success(t('unpinnedConversation'), {
+        position: 'top-center'
+      })
     },
-    [sendPortMessage]
+    [t]
   )
 
   const modelContextValue = useMemo(
@@ -228,69 +222,56 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     [models, selectedModel, selectModel]
   )
 
-  const changeChatId = useCallback(
-    (newChatId: string | undefined) => {
-      setChatId(newChatId)
-      setMessages([])
-      setIsGenerating(false)
-    },
-    [setChatId]
-  )
-
   const regenerateResponse = useCallback(() => {
-    if (!chatId || !selectedModel) return
+    if (!selectedConversation?.id || !selectedModel?.id) return
 
-    sendPortMessage(ServerEndpoints.regenerateResponse, { chatId, model: selectedModel })
-    setIsGenerating(true)
-  }, [chatId, sendPortMessage, selectedModel])
+    sendPortMessage(ServerEndpoints.regenerateResponse, {
+      conversationId: selectedConversation.id,
+      modelId: selectedModel.id
+    })
+  }, [sendPortMessage, selectedModel, selectedConversation])
 
   const continueGenerating = useCallback(() => {
-    if (!chatId || !selectedModel) return
+    if (!selectedConversation?.id || !selectedModel?.id) return
 
-    sendPortMessage(ServerEndpoints.continueGenerating, { chatId, model: selectedModel })
-    setIsGenerating(true)
-  }, [chatId, sendPortMessage, selectedModel])
+    sendPortMessage(ServerEndpoints.continueGenerating, {
+      conversationId: selectedConversation?.id,
+      modelId: selectedModel.id
+    })
+  }, [selectedConversation, sendPortMessage, selectedModel])
 
   const stopGenerating = useCallback(() => {
-    if (!chatId) return
+    if (!selectedConversation) return
 
-    sendPortMessage(ServerEndpoints.stop, { chatId })
-  }, [sendPortMessage, chatId])
+    sendPortMessage(ServerEndpoints.stop, { conversationId: selectedConversation?.id })
+  }, [sendPortMessage, selectedConversation])
 
   const chatContextValue = useMemo(
     () => ({
       messages,
       sendMessage,
       conversations,
-      isGenerating,
-      setChatId: changeChatId,
-      chatId,
+      conversationId,
       deleteConversation,
       pinConversation,
       unpinConversation,
       selectedConversation,
-      hasError,
       regenerateResponse,
       stopGenerating,
-      continueGenerating,
-      error
+      continueGenerating
     }),
     [
       messages,
       conversations,
       sendMessage,
-      isGenerating,
-      chatId,
+      conversationId,
       deleteConversation,
-      changeChatId,
       pinConversation,
       unpinConversation,
       selectedConversation,
-      hasError,
       regenerateResponse,
       stopGenerating,
-      continueGenerating,
-      error
+      continueGenerating
     ]
   )
 

@@ -2,9 +2,8 @@ import { Icon } from '@iconify/react'
 import { Card, CardHeader, CardBody, Avatar, Button } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
 
 import logo from '@/shared/assets/logo.svg'
 import Conversation from '@/sidebar/components/Chat/Conversation'
@@ -16,9 +15,8 @@ import { useChat } from '@/sidebar/providers/ChatProvider'
 const Chat = () => {
   const [prompt, setPrompt] = useState<string>()
 
-  const { chatId } = useParams()
   const { theme } = useTheme()
-  const { messages, setChatId, isGenerating, conversations } = useChat()
+  const { messages, selectedConversation } = useChat()
   const { scrollRef, scrollToBottom, showScrollToBottom, handleScroll } = useScrollAnchor()
   const { t } = useTranslation()
 
@@ -29,25 +27,16 @@ const Chat = () => {
     color: string
   }[]
 
-  useEffect(() => {
-    setChatId(chatId)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatId])
-
   return (
     <div className="h-full w-full max-w-full">
       <SidebarContainer
         classNames={{
           header: 'min-h-[40px] h-[40px] py-[12px] justify-center overflow-hidden'
         }}
-        title={
-          chatId
-            ? conversations.find((conversation) => conversation.id === chatId)?.title
-            : undefined
-        }
+        title={selectedConversation?.title}
       >
         <div className="relative mx-auto flex h-full max-h-[90dvh] w-full flex-col px-0 sm:px-6 lg:max-w-3xl">
-          {messages.length > 0 || chatId ? (
+          {selectedConversation ? (
             <OverlayScrollbarsComponent
               ref={scrollRef}
               className="relative flex h-full flex-1 flex-col gap-6 overflow-y-auto pb-8 md:p-6"
@@ -70,7 +59,10 @@ const Chat = () => {
               }}
               defer
             >
-              <Conversation messages={messages} isGenerating={isGenerating} />
+              <Conversation
+                messages={messages}
+                isGenerating={selectedConversation?.generating || false}
+              />
               {showScrollToBottom && (
                 <Button
                   variant="flat"

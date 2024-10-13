@@ -4,11 +4,9 @@ import { useTranslation } from 'react-i18next'
 
 import ModelsTable from '@/sidebar/components/Settings/Integrations/Ollama/ModelsTable'
 import PullModel from '@/sidebar/components/Settings/Integrations/Ollama/PullModel'
-import { useOllama } from '@/sidebar/providers/OllamaProvider'
 
 const ConfigureOllamaModels = () => {
   const { isOpen, onOpenChange } = useDisclosure()
-  const { deleteModel, models } = useOllama()
   const { t } = useTranslation()
 
   const content = (
@@ -26,7 +24,7 @@ const ConfigureOllamaModels = () => {
       </div>
       <PullModel />
       <Spacer y={4} />
-      <ModelsTable models={models} onModelDelete={async (model) => deleteModel(model.model)} />
+      <ModelsTable />
     </div>
   )
 

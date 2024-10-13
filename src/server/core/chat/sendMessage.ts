@@ -1,84 +1,78 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CoreMessage } from 'ai'
-
-import createConversation from '@/server/core/chat/createConversation'
 import generateTitle from '@/server/core/chat/generateTitle'
-import getConversations from '@/server/core/chat/getConversations'
-import saveConversation from '@/server/core/chat/saveConversation'
 import streamChatMessage from '@/server/core/chat/streamChatMessage'
-import { StateStorage } from '@/server/types/Storage'
-import { AIProvider } from '@/shared/types/AIProvider'
-import { createMessage } from '@/shared/types/Message'
-import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
+import { db } from '@/shared/db'
+import { File } from '@/shared/db/models/File'
 
 interface sendMessagePayload {
-  chatId: string
-  message: CoreMessage
-  model: {
-    provider: AIProvider
-    model: string
-  }
+  conversationId?: number
+  modelId: number
+  message: string
+  files: Omit<File, 'conversationId' | 'messageId'>[]
   broadcastMessage: (data: any) => void
-  storage: StateStorage
   port: chrome.runtime.Port
 }
 
 const sendMessage = async ({
-  chatId,
+  conversationId: chatId,
   message,
-  model,
+  modelId,
+  files,
   broadcastMessage,
-  storage,
   port
 }: sendMessagePayload) => {
-  const { conversations } = await getConversations({ storage })
+  const conversationId = chatId
+    ? ((await db.conversations.where({ id: chatId }).first())?.id ??
+      (await db.conversations.add({
+        title: 'New chat',
+        systemMessage: '',
+        modelId
+      })))
+    : await db.conversations.add({
+        title: 'New chat',
+        systemMessage: '',
+        modelId
+      })
 
-  const conversation =
-    conversations.find((conversation) => conversation.id === chatId) ??
-    (await createConversation(
-      {
-        title: 'New conversation',
-        ...model,
-        systemMessage: ''
-      },
-      storage
-    ))
+  // Update the model ID of the conversation
+  await db.conversations.where({ id: conversationId }).modify({
+    modelId
+  })
 
-  // User message
-  conversation.messages.push(
-    createMessage({
-      id: crypto.randomUUID(),
-      ...message
-    })
-  )
-  await saveConversation(conversation, storage)
+  // Add user message to the database
+  const messageId = await db.messages.add({
+    conversationId,
+    modelId,
+    role: 'user',
+    content: message
+  })
+
+  if (files.length > 0) {
+    await db.files.bulkAdd(
+      files.map((data) => ({
+        conversationId,
+        messageId,
+        ...data
+      }))
+    )
+  }
 
   broadcastMessage({
     type: 'selectConversation',
-    conversationId: conversation.id,
-    ...(await getConversations({ storage })),
-    messages: conversation.messages
+    conversationId
   })
 
   const created = await streamChatMessage({
-    chatId,
-    conversation,
-    broadcastMessage,
+    conversationId,
     port,
-    storage
+    modelId
   })
 
-  if (conversation.title === 'New conversation' && created) {
-    const title = await generateTitle(conversation)
-
-    conversation.title = title
-    await saveConversation(conversation, storage)
-
-    broadcastMessage({
-      type: ServerEndpoints.getConversations,
-      ...(await getConversations({ storage }))
-    })
+  if (!created) {
+    return
   }
+
+  await generateTitle(conversationId)
 }
 
 export default sendMessage

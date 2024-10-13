@@ -1,33 +1,28 @@
 import { Icon } from '@iconify/react'
 import i18next from 'i18next'
 
-import type { Conversation } from '@/shared/types/Conversation'
+import { ConversationWithLastMessage } from '@/sidebar/types/ConversationWithLastMessage'
 
 export type Section = {
   key: string
   title: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   titleNode: any
-  conversations: Conversation[]
-}
-
-function getLastMessageDate(conversation: Conversation): Date | null {
-  const lastMessage = conversation.messages[conversation.messages.length - 1]
-  return lastMessage ? new Date(lastMessage.createdAt) : null
+  conversations: ConversationWithLastMessage[]
 }
 
 export const groupConversations = (
-  conversations: Conversation[],
+  conversations: ConversationWithLastMessage[],
   conversationsToShow: number
 ): Section[] => {
   const sections: Section[] = []
 
-  const pinnedConversations = conversations.filter((conversation) => conversation.isPinned)
-  const unpinnedConversations = conversations.filter((conversation) => !conversation.isPinned)
+  const pinnedConversations = conversations.filter((conversation) => conversation.pinned)
+  const unpinnedConversations = conversations.filter((conversation) => !conversation.pinned)
 
   unpinnedConversations.sort((a, b) => {
-    const dateA = getLastMessageDate(a)
-    const dateB = getLastMessageDate(b)
+    const dateA = new Date(a?.lastMessageAt || new Date())
+    const dateB = new Date(b?.lastMessageAt || new Date())
     return (dateB ? dateB.getTime() : 0) - (dateA ? dateA.getTime() : 0)
   })
 
@@ -76,15 +71,14 @@ export const groupConversations = (
 
   const chatsByDateSection = dateSections.reduce(
     (acc, { key }) => {
-      acc[key] = [] as Conversation[]
+      acc[key] = [] as ConversationWithLastMessage[]
       return acc
     },
-    {} as { [key: string]: Conversation[] }
+    {} as { [key: string]: ConversationWithLastMessage[] }
   )
 
   conversationsToDisplay.forEach((chat) => {
-    const chatDate = getLastMessageDate(chat)
-    const section = chatDate && dateSections.find(({ matches }) => matches(chatDate))
+    const section = dateSections.find(({ matches }) => matches(chat?.lastMessageAt || null))
 
     if (!section) {
       return

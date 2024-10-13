@@ -39,10 +39,9 @@ const Sidebar = ({
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const navigator = useNavigate()
   const {
-    chatId,
-    deleteConversation,
+    selectedConversation,
     conversations,
-    setChatId,
+    deleteConversation,
     pinConversation,
     unpinConversation
   } = useChat()
@@ -54,9 +53,9 @@ const Sidebar = ({
       setChatsToShow((prev) => prev + MAX_CHATS_TO_DISPLAY)
     }
 
-    const sections = groupConversations(conversations, chatsToShow)
+    const sections = conversations ? groupConversations(conversations, chatsToShow) : []
 
-    const totalChatsCount = conversations.length
+    const totalChatsCount = conversations?.length ?? 0
     const showMore = totalChatsCount > chatsToShow
 
     return [sections, showMore, onShowMore]
@@ -88,7 +87,7 @@ const Sidebar = ({
           }
           onClick={() => {
             navigator('/')
-            setChatId(undefined)
+            // setChatId(undefined)
             if (isOpen) onOpenChange()
           }}
         >
@@ -156,21 +155,22 @@ const Sidebar = ({
               >
                 {(conversation) => (
                   <ListboxItem
-                    key={conversation.id}
+                    key={`${conversation.id}`}
                     className={cn(
                       'relative h-[44px] truncate px-[12px] py-[10px] text-default-500',
-                      chatId === conversation.id && 'bg-default-100 text-default-foreground'
+                      selectedConversation?.id === conversation.id &&
+                        'bg-default-100 text-default-foreground'
                     )}
                     classNames={{
                       title: 'truncate'
                     }}
                     endContent={
                       <RecentPromptDropdown
-                        onDelete={() => deleteConversation(conversation.id)}
-                        onPin={() => pinConversation(conversation.id)}
-                        onUnpin={() => unpinConversation(conversation.id)}
-                        pinned={conversation.isPinned}
-                        selected={chatId === conversation.id}
+                        onDelete={async () => deleteConversation(conversation!.id)}
+                        onPin={async () => pinConversation(conversation!.id)}
+                        onUnpin={async () => unpinConversation(conversation!.id)}
+                        pinned={conversation.pinned}
+                        selected={selectedConversation?.id === conversation.id}
                       />
                     }
                     textValue={conversation.title}
