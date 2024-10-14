@@ -58,19 +58,18 @@
    ```
 
 3. **Make build version**:<br>
-   Here's two possible version to build for now `chrome` or `opera`
    ```bash
-   npm run build:<opera|chrome>
+   npm run build
    ```
 
 4. **Navigate to Chrome Extensions**:
-   - Open `Chrome` or `Opera` and go to `chrome://extensions/`
+   - Open `Chrome` and go to `chrome://extensions/`
   
 5. **Enable Developer Mode**:
    - Toggle the `Developer mode` switch on the top right.
   
 6. **Load Unpacked Extension**:
-   - Click  `Load unpacked` and select the `dist/<chrome|opera>` build folder from previous stages.
+   - Click  `Load unpacked` and select the `dist` folder from previous stages.
 
 ## 📝 Usage
 
