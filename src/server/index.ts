@@ -7,15 +7,7 @@ import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 ;(() => {
   printBuildInfo()
 
-  const browserActions = {
-    chrome: () => {
-      chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
-    },
-    opera: () => {}
-  }
-
-  const browserAction = browserActions[process.env.BROWSER as 'chrome' | 'opera']
-  browserAction?.()
+  chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
 })()
 
 const handlers = {
