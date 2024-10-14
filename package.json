@@ -4,10 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev:chrome": "vite build --watch --mode development:chrome",
-    "dev:opera": "vite build --watch --mode development:opera",
-    "build:chrome": "tsc -b && vite build --mode production:chrome",
-    "build:opera": "tsc -b && vite build --mode production:opera",
+    "dev": "vite build --watch --mode development",
+    "build": "tsc -b && vite build --mode production",
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test": "vitest",
