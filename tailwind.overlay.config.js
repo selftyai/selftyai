@@ -1,8 +1,8 @@
 import remToPx from 'tailwindcss-rem-to-px'
-import { scopedPreflightStyles, isolateInsideOfContainer } from 'tailwindcss-scoped-preflight'
 
 const { nextui } = require('@nextui-org/react')
 
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     './src/pageContent/**/*.{js,ts,jsx,tsx}',
@@ -12,11 +12,5 @@ module.exports = {
     extend: {}
   },
   darkMode: 'class',
-  plugins: [
-    remToPx(),
-    scopedPreflightStyles({
-      isolationStrategy: isolateInsideOfContainer('.selftyai-overlay')
-    }),
-    nextui()
-  ]
+  plugins: [remToPx(), nextui()]
 }

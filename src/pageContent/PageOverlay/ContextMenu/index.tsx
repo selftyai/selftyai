@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { Button, Image } from '@nextui-org/react'
+import { Tooltip as NextTooltip } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React, { useEffect } from 'react'
 
@@ -34,7 +35,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
 
   return (
     <div
-      className="z-[10000] flex items-center justify-center gap-2 rounded-lg bg-background p-1 dark"
+      className="z-[10000] flex items-center justify-center gap-2 rounded-lg bg-background p-1"
       style={{
         position: 'absolute',
         left: `${left}px`,
@@ -42,7 +43,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
       }}
       onClick={onClose}
     >
-      <Tooltip content={chrome.i18n.getMessage('tooltip_askAI')}>
+      <Tooltip content="Ask AI">
         <Button
           isIconOnly
           size="sm"
@@ -53,7 +54,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
           <Image width={35} height={35} src={logo} removeWrapper />
         </Button>
       </Tooltip>
-      <Tooltip content={copied ? 'Copied!' : chrome.i18n.getMessage('tooltip_copy')}>
+      <NextTooltip content={copied ? 'Copied!' : 'Copy'}>
         <Button
           isIconOnly
           size="sm"
@@ -63,7 +64,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
         >
           <Icon icon="akar-icons:copy" />
         </Button>
-      </Tooltip>
+      </NextTooltip>
       <Tooltip content="Highlight the area">
         <Button isIconOnly size="sm" variant="light" className="border-none text-base">
           <Icon icon="fluent:copy-select-20-filled" />

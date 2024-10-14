@@ -1,9 +1,6 @@
 import { createRoot } from 'react-dom/client'
 
 import App from '@/pageContent/PageOverlay'
-import printBuildInfo from '@/shared/printBuildInfo'
-
-printBuildInfo()
 
 // Create overlay container
 const container = document.createElement('div')
@@ -14,7 +11,7 @@ const shadowRoot = container.attachShadow({ mode: 'open' })
 // Inject styles
 const linkEl = document.createElement('link')
 linkEl.setAttribute('rel', 'stylesheet')
-linkEl.setAttribute('href', chrome.runtime.getURL('/assets/styles/overlay.css'))
+linkEl.setAttribute('href', chrome.runtime.getURL('assets/styles/overlay.css'))
 shadowRoot.appendChild(linkEl)
 
 // Render overlay

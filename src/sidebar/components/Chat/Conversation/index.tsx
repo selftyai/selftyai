@@ -1,6 +1,7 @@
 import { Avatar, AvatarIcon, Image } from '@nextui-org/react'
 import type { CoreMessage } from 'ai'
 import React, { memo } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import logo from '@/shared/assets/logo.svg'
@@ -16,6 +17,7 @@ interface ConversationProps {
 
 const Conversation = memo(
   React.forwardRef<HTMLDivElement, ConversationProps>(({ messages, isGenerating }, ref) => {
+    const { t } = useTranslation()
     const { selectedModel } = useModels()
     const { conversations, chatId, continueGenerating, regenerateResponse } = useChat()
 
@@ -26,10 +28,9 @@ const Conversation = memo(
     }
 
     const errors = {
-      NetworkError: 'A network error occurred. Please check your connection and try again.',
-      AbortedError:
-        'The request was aborted. If you want to continue, click on the continue button or write a new message.',
-      default: 'An error occurred. Please try again.'
+      NetworkError: t('errors.NetworkError'),
+      AbortedError: t('errors.AbortedError'),
+      default: t('errors.default')
     }
     console.log(messages)
     return (
@@ -74,12 +75,19 @@ const Conversation = memo(
                       isBordered
                       src={logo}
                     />
-                    {conversation?.model} is thinking
-                    <div className="mt-4 flex">
-                      <span className="circle animate-loader"></span>
-                      <span className="circle animation-delay-200 animate-loader"></span>
-                      <span className="circle animation-delay-400 animate-loader"></span>
-                    </div>
+                    <Trans
+                      i18nKey="generatingResponse"
+                      values={{ model: selectedModel?.model }}
+                      components={{
+                        Loader: (
+                          <div className="mt-4 flex">
+                            <span className="circle animate-loader"></span>
+                            <span className="circle animation-delay-200 animate-loader"></span>
+                            <span className="circle animation-delay-400 animate-loader"></span>
+                          </div>
+                        )
+                      }}
+                    />
                   </React.Fragment>
                 )}
               </div>
@@ -136,8 +144,8 @@ const Conversation = memo(
                   completionTokens: rest.usage?.completionTokens.toString(),
                   promptTokens: rest.usage?.promptTokens.toString(),
                   totalTokens: rest.usage?.totalTokens.toString(),
-                  waitTime: rest.waitingTime ? `${rest.waitingTime / 1000}s` : 'n/a',
-                  responseTime: rest.responseTime ? `${rest.responseTime / 1000}s` : 'n/a'
+                  waitTime: rest.waitingTime ? `${rest.waitingTime / 1000}` : 0,
+                  responseTime: rest.responseTime ? `${rest.responseTime / 1000}` : 0
                 } as Record<string, string>
               }
               onRegenerate={regenerateResponse}
@@ -148,7 +156,7 @@ const Conversation = memo(
         })}
         {isGenerating && !isLastMessage(messages, messages.length - 1) && (
           <div className="inline-flex items-center gap-2 text-sm">
-            {selectedModel && (
+            {conversation && (
               <React.Fragment>
                 <Avatar
                   size="sm"
@@ -156,12 +164,19 @@ const Conversation = memo(
                   isBordered
                   src={logo}
                 />
-                {conversation?.model} is thinking
-                <div className="mt-4 flex">
-                  <span className="circle animate-loader"></span>
-                  <span className="circle animation-delay-200 animate-loader"></span>
-                  <span className="circle animation-delay-400 animate-loader"></span>
-                </div>
+                <Trans
+                  i18nKey="generatingResponse"
+                  values={{ model: conversation?.model }}
+                  components={{
+                    Loader: (
+                      <div className="mt-4 flex">
+                        <span className="circle animate-loader"></span>
+                        <span className="circle animation-delay-200 animate-loader"></span>
+                        <span className="circle animation-delay-400 animate-loader"></span>
+                      </div>
+                    )
+                  }}
+                />
               </React.Fragment>
             )}
           </div>

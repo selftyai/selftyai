@@ -1,4 +1,5 @@
 import { NextUIProvider } from '@nextui-org/react'
+import { ThemeProvider } from 'next-themes'
 import React, { useEffect } from 'react'
 
 interface OverlayProps {
@@ -26,20 +27,22 @@ const Overlay: React.FC<OverlayProps> = ({ isVisible, onClose, children }) => {
 
   return (
     <NextUIProvider>
-      <div
-        className="overlay"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 9999,
-          pointerEvents: isVisible ? 'auto' : 'none'
-        }}
-      >
-        {children}
-      </div>
+      <ThemeProvider attribute="class" defaultTheme="dark">
+        <div
+          className="overlay"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 9999,
+            pointerEvents: isVisible ? 'auto' : 'none'
+          }}
+        >
+          {children}
+        </div>
+      </ThemeProvider>
     </NextUIProvider>
   )
 }

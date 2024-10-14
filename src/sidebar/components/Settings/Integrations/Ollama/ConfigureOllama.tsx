@@ -12,12 +12,14 @@ import {
   Switch
 } from '@nextui-org/react'
 import React from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 
 import ConfigureOllamaModels from '@/sidebar/components/Settings/Integrations/Ollama/ConfigureOllamaModels'
 import { useOllama } from '@/sidebar/providers/OllamaProvider'
 
 const ConfigureOllama = () => {
   const { isOpen, onOpenChange } = useDisclosure()
+  const { t } = useTranslation()
 
   const {
     baseURL,
@@ -41,46 +43,50 @@ const ConfigureOllama = () => {
             icon={<Icon width="32" height="32" icon="simple-icons:ollama" />}
           />
         </div>
-        <span className="text-base font-medium leading-6 text-foreground">Ollama settings</span>
+        <span className="text-base font-medium leading-6 text-foreground">
+          {t('settings.integrations.ollama.configurations.title')}
+        </span>
       </div>
 
       <Spacer y={8} />
 
       <div className="mb-2 flex flex-col gap-3">
         <div className="relative w-full rounded-medium border border-warning-100 bg-content2 bg-warning-100/50 px-4 py-3 text-foreground">
-          Set Up Cross-Origin Access for Ollama to work properly. Follow the{' '}
-          <Link
-            href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
-            target="_blank"
-            className="text-xs font-medium text-default-foreground hover:underline"
-          >
-            guide
-          </Link>{' '}
-          if you are not setup it yet.
+          <Trans
+            i18nKey="settings.integrations.ollama.corsTopic"
+            components={{
+              Link: (
+                <Link
+                  href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
+                  target="_blank"
+                  className="text-xs font-medium text-default-foreground hover:underline"
+                />
+              )
+            }}
+          />
         </div>
 
         <div className="relative w-full rounded-medium border border-default-100 bg-content2 bg-default-100/50 px-4 py-3 text-foreground">
-          If you are using Ollama on your local machine and want to change where models are stored,
-          you can do so by following{' '}
-          <Link
-            href="https://dev.to/hamed0406/how-to-change-place-of-saving-models-on-ollama-4ko8"
-            target="_blank"
-            className="text-xs font-medium text-default-foreground hover:underline"
-          >
-            this guide
-          </Link>
-          .
+          <Trans
+            i18nKey="settings.integrations.ollama.modelsLocationTopic"
+            components={{
+              Link: (
+                <Link
+                  href="https://dev.to/hamed0406/how-to-change-place-of-saving-models-on-ollama-4ko8"
+                  target="_blank"
+                  className="text-xs font-medium text-default-foreground hover:underline"
+                />
+              )
+            }}
+          />
         </div>
 
         {error && (
           <div className="relative w-full rounded-medium border border-danger-100 bg-content2 bg-danger-100/50 px-4 py-3 text-foreground">
             {error === 'ollamaOriginError' ? (
-              <span>Ollama is not accessible from the current origin. Please check the CORS.</span>
+              <span>{t('errors.ollamaOriginError')}</span>
             ) : error === 'ollamaConnectionError' ? (
-              <span>
-                Ollama is not connected. Please check your base URL and try again. If you don't use
-                dedicated server, verify you have installed Ollama on your local machine.
-              </span>
+              <span>{t('errors.ollamaConnectionError')}</span>
             ) : (
               <span>{error}</span>
             )}
@@ -90,12 +96,16 @@ const ConfigureOllama = () => {
 
       <div className="mb-5 flex flex-col gap-2">
         <p className="text-base font-medium text-default-700">
-          Base URL <span className="text-red-500">*</span>
+          {t('settings.integrations.ollama.configurations.baseURL.label')}
+          <span className="text-red-500">*</span>
         </p>
         <p className="text-sm font-normal text-default-400">
-          By default, the base URL is set to{' '}
-          <span className="text-default-700">http://127.0.0.1:11434</span>. If you have a dedicated
-          server, you can change the base URL here.
+          <Trans
+            i18nKey="settings.integrations.ollama.configurations.baseURL.description"
+            components={{
+              strong: <span className="text-default-700" />
+            }}
+          />
         </p>
         <p
           className={cn(
@@ -107,7 +117,7 @@ const ConfigureOllama = () => {
             icon={connected ? 'akar-icons:circle-check' : 'akar-icons:circle-alert'}
             className="h-3 w-3"
           />
-          {connected ? 'Connected' : 'Disconnected'}
+          {t(connected ? 'connected' : 'disconnected')}
         </p>
         <Input
           className="mt-2"
@@ -118,7 +128,7 @@ const ConfigureOllama = () => {
           placeholder=""
           validate={(value) => {
             if (!value) {
-              return 'Base URL is required'
+              return t('settings.integrations.ollama.configurations.baseURL.required')
             }
             return ''
           }}
@@ -126,7 +136,7 @@ const ConfigureOllama = () => {
 
         <div className="ml-auto mt-1 flex flex-row gap-2">
           <Button radius="md" size="sm" color="default" onClick={onOpenChange}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             className="bg-default-foreground text-background"
@@ -134,11 +144,9 @@ const ConfigureOllama = () => {
             size="sm"
             color="secondary"
             isDisabled={!input.length || pullingModels.length > 0 || input === baseURL}
-            onClick={() => {
-              changeBaseURL(input)
-            }}
+            onClick={() => changeBaseURL(input)}
           >
-            Save & Verify
+            {t('settings.integrations.ollama.configurations.saveAndVerify')}
           </Button>
         </div>
       </div>
@@ -160,7 +168,7 @@ const ConfigureOllama = () => {
                 icon={connected ? 'akar-icons:circle-check' : 'akar-icons:circle-alert'}
                 className={cn('size-3', connected ? 'text-success-500' : 'text-danger-500')}
               />
-              Configure
+              {t('configure')}
             </Button>
             {connected && <ConfigureOllamaModels />}
           </React.Fragment>

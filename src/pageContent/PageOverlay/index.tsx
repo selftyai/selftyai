@@ -23,11 +23,11 @@ const App = () => {
       const selection = window.getSelection()
 
       if (selection && selection.rangeCount > 0) {
-        const text = selection.toString()
+        const text = selection.toString().trim()
 
         const scrollY = window.scrollY || document.documentElement.scrollTop
 
-        if (text.trim().length > 0 && text !== selectedText && !isOverlayVisible) {
+        if (text.length > 0 && text !== selectedText && !isOverlayVisible) {
           const { clientX: left, clientY: top } = event
 
           setSelectedText(text)

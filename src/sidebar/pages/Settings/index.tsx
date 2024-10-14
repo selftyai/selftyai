@@ -1,10 +1,15 @@
 import { Tab, Tabs } from '@nextui-org/react'
+import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 
 import AppearanceSetting from '@/sidebar/components/Settings/AppearanceSetting'
 import Integrations from '@/sidebar/components/Settings/Integrations'
 import SidebarContainer from '@/sidebar/components/Sidebar/SidebarContainer'
 
 const Settings = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { t } = useTranslation()
+
   return (
     <div className="flex h-full max-h-[100dvh] w-full max-w-full flex-col">
       <SidebarContainer
@@ -14,7 +19,9 @@ const Settings = () => {
       >
         <div className="w-full flex-1 p-4">
           <div className="flex items-center gap-x-3">
-            <h1 className="text-3xl font-bold leading-9 text-default-foreground">Settings</h1>
+            <h1 className="text-3xl font-bold leading-9 text-default-foreground">
+              {t('settings.title')}
+            </h1>
           </div>
           <Tabs
             aria-label="Navigation Tabs"
@@ -26,11 +33,16 @@ const Settings = () => {
             }}
             radius="full"
             variant="underlined"
+            selectedKey={searchParams.get('tab') || 'appearance'}
+            onSelectionChange={(key) => {
+              searchParams.set('tab', key as string)
+              setSearchParams(searchParams)
+            }}
           >
-            <Tab key="appearance" title="Appearance">
+            <Tab key="appearance" title={t('settings.appearance.title')}>
               <AppearanceSetting />
             </Tab>
-            <Tab key="integrations" title="Integrations">
+            <Tab key="integrations" title={t('settings.integrations.title')}>
               <Integrations className="max-h-[75dvh]" />
             </Tab>
           </Tabs>
