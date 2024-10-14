@@ -5,10 +5,12 @@ import type { OllamaTagsResponse } from '@/server/types/ollama/OllamaTagsRespons
 import type { ShowOllamaModel } from '@/server/types/ollama/ShowOllamaModel'
 import { AIProvider } from '@/shared/types/AIProvider'
 import type { Model } from '@/shared/types/Model'
+import { OllamaErrorEnum } from '@/shared/types/ollama/OllamaErrorEnum'
 
 export class OllamaService extends BaseService {
   private static instance: OllamaService | null = null
   private ollamaText = 'Ollama is running'
+  private fetchedModels: Model[] = []
 
   private constructor() {
     super()
@@ -23,32 +25,6 @@ export class OllamaService extends BaseService {
   }
 
   /**
-   * Verify the origin of the Ollama service
-   * @param url The base URL for the Ollama service. If not provided, the base URL set in the service will be used.
-   * @returns True if the origin is valid, false otherwise
-   */
-  private async verifyOllamaOrigin(baseURL: string): Promise<boolean> {
-    try {
-      await axios.post(`${baseURL}/api/show`, {
-        name: ''
-      })
-
-      throw new Error('Unexpected error while verifying Ollama origin')
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 403) {
-          return false
-        }
-
-        return true
-      }
-
-      console.error('Error while verifying Ollama origin', error)
-      return false
-    }
-  }
-
-  /**
    * Verify the connection to the Ollama service
    * @param url The base URL for the Ollama service. If not provided, the base URL set in the service will be used.
    * @returns True if the connection is successful, false otherwise
@@ -57,24 +33,10 @@ export class OllamaService extends BaseService {
   public async verifyConnection(url?: string): Promise<boolean> {
     const urlToVerify = url || this.baseURL
 
-    try {
-      const response = await axios.get(urlToVerify)
+    const response = await axios.get(urlToVerify)
 
-      if (response.data !== this.ollamaText) {
-        throw new Error(chrome.i18n.getMessage('ollamaConnectionError'))
-      }
-
-      const isOllamaOrigin = await this.verifyOllamaOrigin(urlToVerify)
-
-      if (!isOllamaOrigin) {
-        throw new Error(chrome.i18n.getMessage('ollamaOriginError'))
-      }
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(chrome.i18n.getMessage('ollamaConnectionError'))
-      }
-
-      throw error
+    if (response.status !== 200 || response.data !== this.ollamaText) {
+      throw new Error(OllamaErrorEnum.ollamaConnectionError)
     }
 
     return true
@@ -86,30 +48,52 @@ export class OllamaService extends BaseService {
    * @throws {Error} If the connection is not successful
    */
   public async getModels(): Promise<Model[]> {
-    this.verifyConnection()
+    try {
+      const { data } = await axios.get<OllamaTagsResponse>(`${this.baseURL}/api/tags`)
 
-    const { models } = (await axios.get<OllamaTagsResponse>(`${this.baseURL}/api/tags`)).data
+      const { models } = data
 
-    const detailedModels = await Promise.all(
-      models.map(async (model) => {
-        const modelData = (
-          await axios.post<ShowOllamaModel>(`${this.baseURL}/api/show`, {
-            name: model.name
-          })
-        ).data
+      const modelsToFetch = models.filter(
+        (model) => !this.fetchedModels.some((fetchedModel) => fetchedModel.name === model.name)
+      )
 
-        const modelWithTag = model.model.split(':')
+      const detailedModels = await Promise.all(
+        modelsToFetch.map(async (model) => {
+          const { data: modelData } = await axios.post<ShowOllamaModel>(
+            `${this.baseURL}/api/show`,
+            {
+              name: model.name
+            }
+          )
+          const splitModel = model.model.split(':')
+          const modelName =
+            splitModel.length > 1 && splitModel[1] === 'latest' ? splitModel[0] : model.model
 
-        return {
-          name: model.name,
-          model: modelWithTag[1] === 'latest' ? modelWithTag[0] : model.model,
-          provider: AIProvider.ollama,
-          hasVision: modelData?.projector_info?.['clip.has_vision_encoder'] || false
-        } as Model
-      })
-    )
+          return {
+            name: model.name,
+            model: modelName,
+            provider: AIProvider.ollama,
+            hasVision: modelData?.projector_info?.['clip.has_vision_encoder'] || false
+          } as Model
+        })
+      )
 
-    return detailedModels
+      this.fetchedModels.push(...detailedModels)
+
+      return this.fetchedModels
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error('Error getting Ollama models', error.response?.status)
+
+        if (error.response?.status === 403) {
+          throw new Error(OllamaErrorEnum.ollamaOriginError)
+        }
+
+        throw new Error(OllamaErrorEnum.ollamaConnectionError)
+      }
+
+      throw error
+    }
   }
 
   /**
@@ -127,6 +111,10 @@ export class OllamaService extends BaseService {
       },
       body: JSON.stringify({ name: modelTag })
     })
+
+    if (response.status === 403) {
+      throw new Error(OllamaErrorEnum.ollamaOriginError)
+    }
 
     return response
   }

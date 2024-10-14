@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { streamText, CoreMessage } from 'ai'
+import { CoreMessage } from 'ai'
 
 import createConversation from '@/server/core/chat/createConversation'
+import generateTitle from '@/server/core/chat/generateTitle'
 import getConversations from '@/server/core/chat/getConversations'
-import getProvider from '@/server/core/chat/getProvider'
-import { ChatStorageKeys } from '@/server/types/chat/ChatStorageKeys'
+import saveConversation from '@/server/core/chat/saveConversation'
+import streamChatMessage from '@/server/core/chat/streamChatMessage'
+import { StateStorage } from '@/server/types/Storage'
 import { AIProvider } from '@/shared/types/AIProvider'
-import { Message } from '@/shared/types/Message'
-import { createChromeStorage } from '@/utils/storage'
-import { processChatStream } from '@/utils/stream'
-
-import generateTitle from './generateTitle'
+import { createMessage } from '@/shared/types/Message'
+import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
 interface sendMessagePayload {
   chatId: string
@@ -20,111 +19,66 @@ interface sendMessagePayload {
     model: string
   }
   broadcastMessage: (data: any) => void
+  storage: StateStorage
+  port: chrome.runtime.Port
 }
 
-const sendMessage = async ({ chatId, message, model, broadcastMessage }: sendMessagePayload) => {
-  const storage = createChromeStorage('local')
-
-  const { conversations } = await getConversations()
+const sendMessage = async ({
+  chatId,
+  message,
+  model,
+  broadcastMessage,
+  storage,
+  port
+}: sendMessagePayload) => {
+  const { conversations } = await getConversations({ storage })
 
   const conversation =
     conversations.find((conversation) => conversation.id === chatId) ??
-    (await createConversation({
-      title: 'New conversation',
-      ...model,
-      systemMessage: ''
-    }))
+    (await createConversation(
+      {
+        title: 'New conversation',
+        ...model,
+        systemMessage: ''
+      },
+      storage
+    ))
 
-  const { conversations: actualConversations } = await getConversations()
-
-  const index = actualConversations.findIndex((c) => c.id === conversation.id)
-
-  if (index === -1) {
-    throw new Error('Conversation not found')
-  }
-
-  const messageToSendSave = {
-    id: crypto.randomUUID(),
-    ...message,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  } as Message
-
-  actualConversations[index].messages.push(messageToSendSave)
+  // User message
+  conversation.messages.push(
+    createMessage({
+      id: crypto.randomUUID(),
+      ...message
+    })
+  )
+  await saveConversation(conversation, storage)
 
   broadcastMessage({
     type: 'selectConversation',
-    conversationId: actualConversations[index].id,
-    conversations: actualConversations,
-    messages: actualConversations[index].messages
+    conversationId: conversation.id,
+    ...(await getConversations({ storage })),
+    messages: conversation.messages
   })
 
-  const provider = getProvider(conversation.provider)
-
-  const result = await streamText({
-    model: provider(conversation.model),
-    system: actualConversations[index].systemMessage,
-    messages: actualConversations[index].messages
+  const created = await streamChatMessage({
+    chatId,
+    conversation,
+    broadcastMessage,
+    port,
+    storage
   })
 
-  const responseMessage = {
-    id: crypto.randomUUID(),
-    role: 'assistant',
-    content: '',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  } as Message
-  actualConversations[index].messages.push(responseMessage)
+  if (conversation.title === 'New conversation' && created) {
+    const title = await generateTitle(conversation)
 
-  await storage.setItem(ChatStorageKeys.conversations, JSON.stringify(actualConversations))
+    conversation.title = title
+    await saveConversation(conversation, storage)
 
-  processChatStream(
-    result.toDataStream(),
-    async (data) => {
-      const formatted = data.split(':')
-
-      if (formatted[0] === '0') {
-        responseMessage.content += formatted[1].substring(1, formatted[1].length - 2)
-
-        actualConversations[index].messages[actualConversations[index].messages.length - 1] =
-          responseMessage
-        await storage.setItem(ChatStorageKeys.conversations, JSON.stringify(actualConversations))
-
-        try {
-          broadcastMessage({
-            type: 'partialMessage',
-            payload: {
-              chatId: conversation.id,
-              messages: actualConversations[index].messages
-            }
-          })
-        } catch (error) {
-          console.error('Error sending partial message', error)
-        }
-      }
-    },
-    async () => {
-      broadcastMessage({
-        type: 'finalMessage',
-        payload: {
-          chatId: conversation.id,
-          conversations: (await getConversations()).conversations
-        }
-      })
-
-      if (conversation.title === 'New conversation') {
-        const title = await generateTitle(actualConversations[index])
-
-        actualConversations[index].title = title
-        await storage.setItem(ChatStorageKeys.conversations, JSON.stringify(actualConversations))
-
-        broadcastMessage({
-          type: 'getConversations',
-          conversations: actualConversations
-        })
-      }
-    }
-  )
+    broadcastMessage({
+      type: ServerEndpoints.getConversations,
+      ...(await getConversations({ storage }))
+    })
+  }
 }
 
 export default sendMessage

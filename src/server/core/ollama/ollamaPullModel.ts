@@ -1,18 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import getOllamaService from '@/server/core/ollama/getOllamaService'
+import { StateStorage } from '@/server/types/Storage'
 import { OllamaStorageKeys } from '@/server/types/ollama/OllamaStoragsKeys'
-import getOllamaService from '@/shared/getOllamaService'
+import { streamingFetch } from '@/server/utils/stream'
 import { ModelPullingStatus } from '@/shared/types/ollama/ModelPullingStatus'
-import { createChromeStorage } from '@/utils/storage'
-import { streamingFetch } from '@/utils/stream'
 
 interface PullModelPayload {
   modelTag: string
+  storage: StateStorage
   broadcastMessage: (data: any) => void
 }
 
-export const handlePullModel = async ({ modelTag, broadcastMessage }: PullModelPayload) => {
-  const ollamaService = await getOllamaService()
-  const storage = createChromeStorage('local')
+export const handlePullModel = async ({
+  modelTag,
+  storage,
+  broadcastMessage
+}: PullModelPayload) => {
+  const ollamaService = await getOllamaService(storage)
 
   const pullingModels = JSON.parse(
     (await storage.getItem(OllamaStorageKeys.pullingModels)) ?? '[]'
@@ -54,13 +58,17 @@ export const handlePullModel = async ({ modelTag, broadcastMessage }: PullModelP
   }
 }
 
-export async function checkOngoingPulls(broadcastMessage: (data: any) => void) {
-  const storage = createChromeStorage('local')
+export async function checkOngoingPulls(
+  broadcastMessage: (data: any) => void,
+  storage: StateStorage
+) {
   const pullingModels = JSON.parse(
     (await storage.getItem(OllamaStorageKeys.pullingModels)) ?? '[]'
   ) as string[]
 
-  for (const modelTag of pullingModels) {
-    handlePullModel({ modelTag, broadcastMessage })
-  }
+  const uniquePullingModels = [...new Set(pullingModels)]
+
+  await Promise.all(
+    uniquePullingModels.map((modelTag) => handlePullModel({ modelTag, storage, broadcastMessage }))
+  )
 }
