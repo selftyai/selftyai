@@ -7,7 +7,7 @@
 -->
 
 <img
-  src="https://github.com/user-attachments/assets/3cd3be93-5eaf-4050-9a5b-2bcd68f216af"
+  src="https://selftyai.com/logo.png"
   alt="SelftyAI Logo"
   width="200"
   height="200"
