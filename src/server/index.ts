@@ -7,9 +7,7 @@ import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 ;(() => {
   printBuildInfo()
 
-  if (chrome.sidePanel) {
-    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
-  }
+  chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
 })()
 
 const handlers = {
