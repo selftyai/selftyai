@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { Button, Image } from '@nextui-org/react'
+import { useClipboard } from '@nextui-org/use-clipboard'
 import React, { useEffect } from 'react'
 
 import Tooltip from '@/pageContent/PageOverlay/CustomTooltip'
@@ -17,14 +18,13 @@ interface ContextMenuProps {
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) => {
   const { sendMessage, addMessageListener } = useChromePort()
+  const { copied, copy } = useClipboard()
 
   useEffect(() => {
-    const removeListener = addMessageListener((message: string) => {
-      console.log('Received message:', message)
-    })
+    const removeListener = addMessageListener(() => {})
 
     return () => removeListener()
-  }, [addMessageListener, text])
+  }, [addMessageListener, sendMessage, text])
 
   const handleSendMessage = () => {
     sendMessage(ServerEndpoints.sidePanelHandlerer, { action: SidePanelAction.OPEN })
@@ -32,13 +32,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
     sendMessage(ServerEndpoints.setMessageContext, { context: text })
   }
 
-  const handleSendMessageClose = () => {
-    sendMessage(ServerEndpoints.sidePanelHandlerer, { action: SidePanelAction.CLOSE })
-  }
-
   return (
     <div
-      className="z-[10000] flex items-center justify-center gap-1 rounded-lg bg-background p-1 dark"
+      className="z-[10000] flex items-center justify-center gap-2 rounded-lg bg-background p-1 dark"
       style={{
         position: 'absolute',
         left: `${left}px`,
@@ -57,25 +53,20 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
           <Image width={35} height={35} src={logo} removeWrapper />
         </Button>
       </Tooltip>
-      <Tooltip content={chrome.i18n.getMessage('tooltip_copy')}>
+      <Tooltip content={copied ? 'Copied!' : chrome.i18n.getMessage('tooltip_copy')}>
         <Button
           isIconOnly
           size="sm"
           variant="light"
           className="border-none text-base"
-          onClick={handleSendMessageClose}
+          onClick={() => copy(text)}
         >
           <Icon icon="akar-icons:copy" />
         </Button>
       </Tooltip>
-      <Tooltip content={chrome.i18n.getMessage('tooltip_improveWriting')}>
+      <Tooltip content="Highlight the area">
         <Button isIconOnly size="sm" variant="light" className="border-none text-base">
-          <Icon icon="mingcute:quill-pen-ai-line" />
-        </Button>
-      </Tooltip>
-      <Tooltip content={chrome.i18n.getMessage('tooltip_continueWriting')}>
-        <Button isIconOnly size="sm" variant="light" className="border-none text-base">
-          <Icon icon="f7:pencil-outline" />
+          <Icon icon="fluent:copy-select-20-filled" />
         </Button>
       </Tooltip>
 

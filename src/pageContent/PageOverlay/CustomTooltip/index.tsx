@@ -27,11 +27,7 @@ const Tooltip: React.FC<TooltipProps> = ({ children, content, position = 'top' }
   }
 
   return (
-    <div
-      className="relative inline-block"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {children}
       <AnimatePresence>
         {visible && (

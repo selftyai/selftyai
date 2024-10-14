@@ -1,6 +1,5 @@
 import { NextUIProvider } from '@nextui-org/react'
 import React, { useEffect } from 'react'
-import ReactDOM from 'react-dom'
 
 interface OverlayProps {
   isVisible: boolean
@@ -25,7 +24,7 @@ const Overlay: React.FC<OverlayProps> = ({ isVisible, onClose, children }) => {
     }
   }, [isVisible, onClose])
 
-  return ReactDOM.createPortal(
+  return (
     <NextUIProvider>
       <div
         className="overlay"
@@ -41,8 +40,7 @@ const Overlay: React.FC<OverlayProps> = ({ isVisible, onClose, children }) => {
       >
         {children}
       </div>
-    </NextUIProvider>,
-    document.getElementById('selftyai-overlay')!.shadowRoot!
+    </NextUIProvider>
   )
 }
 

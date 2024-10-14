@@ -11,20 +11,27 @@ const App = () => {
   const closeOverlay = () => {
     setIsOverlayVisible(false)
     setSelectedText(null)
+    window.getSelection()?.empty()
   }
 
   useEffect(() => {
     const handleMouseUp = (event: MouseEvent) => {
+      if (event.button === 2) {
+        return
+      }
+
       const selection = window.getSelection()
-      console.log(selection, selection?.toString())
+
       if (selection && selection.rangeCount > 0) {
         const text = selection.toString()
+
         const scrollY = window.scrollY || document.documentElement.scrollTop
 
-        if (text.length > 0 && !isOverlayVisible) {
+        if (text.trim().length > 0 && text !== selectedText && !isOverlayVisible) {
           const { clientX: left, clientY: top } = event
+
           setSelectedText(text)
-          setMenuPosition({ left: left, top: top + scrollY })
+          setMenuPosition({ left, top: top + scrollY })
           setIsOverlayVisible(true)
         }
       }
@@ -43,7 +50,7 @@ const App = () => {
       document.removeEventListener('mouseup', handleMouseUp)
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isOverlayVisible])
+  }, [isOverlayVisible, selectedText])
 
   return (
     <Overlay isVisible={isOverlayVisible} onClose={closeOverlay}>
