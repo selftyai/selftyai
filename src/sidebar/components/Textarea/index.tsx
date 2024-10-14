@@ -4,7 +4,6 @@ import {
   Tooltip,
   Image,
   Badge,
-  Spinner,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -12,17 +11,24 @@ import {
   DropdownItem
 } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
-import React, { memo, useMemo } from 'react'
+import React, { memo, useEffect, useMemo } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import { Model } from '@/shared/types/Model'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
 import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
-const TextArea = memo(() => {
-  const { sendMessage, isGenerating } = useChat()
+interface TextAreaProps {
+  selectedPrompt?: string
+}
+
+const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
+  const { sendMessage, isGenerating, hasError, stopGenerating } = useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
+  const { t } = useTranslation()
 
   const groupedModels = useMemo(() => {
     return models.reduce(
@@ -41,6 +47,8 @@ const TextArea = memo(() => {
   const [images, setImages] = React.useState<string[]>([])
 
   const imageRef = React.useRef<HTMLInputElement>(null)
+
+  const navigator = useNavigate()
 
   const onRemoveImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index))
@@ -75,6 +83,12 @@ const TextArea = memo(() => {
       e.target.value = ''
     }
   }
+
+  useEffect(() => {
+    if (selectedPrompt) {
+      setPrompt(selectedPrompt)
+    }
+  }, [selectedPrompt])
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -117,18 +131,23 @@ const TextArea = memo(() => {
           }}
           endContent={
             <div className="flex items-end gap-2">
-              <Tooltip showArrow content="Send message">
+              <Tooltip showArrow content={t(isGenerating ? 'stopButton' : 'promptButton')}>
                 <Button
                   isIconOnly
-                  color={!prompt ? 'default' : 'primary'}
-                  isDisabled={!prompt || isGenerating || typeof selectedModel === 'string'}
+                  color={isGenerating ? 'default' : !prompt ? 'default' : 'primary'}
+                  isDisabled={!isGenerating && (!prompt || !selectedModel || hasError)}
                   radius="lg"
                   size="sm"
                   variant="solid"
-                  type="submit"
+                  type={isGenerating ? 'button' : 'submit'}
+                  onPress={isGenerating ? stopGenerating : undefined}
                 >
                   {isGenerating ? (
-                    <Spinner size="sm" />
+                    <Icon
+                      className="text-danger [&>path]:stroke-[2px]"
+                      icon="solar:stop-bold"
+                      width={20}
+                    />
                   ) : (
                     <Icon
                       className={cn(
@@ -160,7 +179,7 @@ const TextArea = memo(() => {
                   multiple
                   onChange={onImageChange}
                 />
-                <Tooltip showArrow content="Add Image">
+                <Tooltip showArrow content={t('addImage')}>
                   <Button
                     isIconOnly
                     radius="full"
@@ -193,7 +212,7 @@ const TextArea = memo(() => {
                 }
                 variant="flat"
               >
-                {selectedModel ? selectedModel.name : 'Select Model'}
+                {selectedModel ? selectedModel.name : t('selectModel')}
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -207,14 +226,37 @@ const TextArea = memo(() => {
                   models: groupedModels[provider]
                 }))
                 .filter((provider) => provider.models.length > 0)}
-              emptyContent="No models available, visit settings"
+              emptyContent={
+                <div className="flex flex-col gap-2 pb-2 text-center">
+                  <Trans
+                    i18nKey="noModelsAvailable"
+                    components={{
+                      SettingsLink: (
+                        <Button
+                          size="sm"
+                          color="default"
+                          className="text-default-600"
+                          onClick={() => navigator('/settings?tab=integrations')}
+                          startContent={
+                            <Icon
+                              className="text-default-600"
+                              icon="solar:settings-minimalistic-line-duotone"
+                              width={16}
+                            />
+                          }
+                        />
+                      )
+                    }}
+                  />
+                </div>
+              }
             >
               {(provider) => (
                 <DropdownSection
                   classNames={{
                     heading: 'text-tiny px-[10px]'
                   }}
-                  title={chrome.i18n.getMessage(`${provider.key}Models`)}
+                  title={t(provider.key)}
                   items={provider.models.map((model, index) => ({ ...model, index }))}
                 >
                   {(model) => (

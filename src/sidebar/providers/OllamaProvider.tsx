@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Model } from '@/shared/types/Model'
@@ -13,9 +14,12 @@ const OllamaContext = React.createContext<
       connected: boolean
       error: JSX.Element[] | string
       baseURL: string
+      enabled: boolean
       deleteModel: (modelTag: string) => void
       pullModel: (modelTag: string) => void
       changeBaseURL: (url: string) => void
+      enableOllama: () => void
+      disableOllama: () => void
     }
   | undefined
 >(undefined)
@@ -29,60 +33,61 @@ export const useOllama = () => {
   return context
 }
 
+const OLLAMA_FETCH_INTERVAL = 5000 // 5 seconds
+
 const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { sendMessage, addMessageListener } = useChromePort()
+  const { t } = useTranslation()
 
   const [models, setModels] = React.useState<Model[]>([])
   const [connected, setConnected] = React.useState(false)
   const [pullingModels, setPullingModels] = React.useState<ModelPullingStatus[]>([])
   const [error, setError] = React.useState<JSX.Element[] | string>('')
   const [baseURL, setBaseURL] = React.useState('http://localhost:11434')
+  const [enabled, setEnabled] = React.useState(false)
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removeListener = addMessageListener((message: any) => {
-      const { type } = message
-
-      console.log(`(OllamaProvider) Received message: ${type}`)
+      const { type, ...rest } = message
 
       const validationResponse = () => {
         setConnected(message.connected)
         setBaseURL(message.url)
-
-        if (message.error) {
-          if (message.error.includes('<LINK>')) {
-            setError([
-              <span>{message.error.substring(0, message.error.indexOf('<LINK>'))}</span>,
-              <span className="relative">
-                <a
-                  href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
-                  target="_blank"
-                  className="font-medium text-default-foreground hover:underline"
-                  rel="noreferrer"
-                >
-                  {chrome.i18n.getMessage('setupOllamaOrigins')}
-                  {'.'}
-                </a>
-              </span>
-            ])
-          } else {
-            setError([<p key="error">{message.error}</p>])
-          }
-        }
+        setEnabled(message.enabled)
+        setError(message.error)
       }
 
       const messageTypes = {
         [ServerEndpoints.ollamaModels]: () => {
-          const isModelsChanged = message.models.filter(
-            (model: Model) => !models.find((item) => item.name === model.name)
-          )
+          const isModelsChanged =
+            models.length !== message.models.length ||
+            models.some((model, index) => model.model !== message.models[index].model)
 
-          if (isModelsChanged.length) {
+          if (isModelsChanged) {
             setModels(message.models)
           }
+
+          validationResponse()
         },
-        [ServerEndpoints.ollamaVerifyConnection]: () => validationResponse(),
-        [ServerEndpoints.ollamaChangeUrl]: () => validationResponse(),
+        [ServerEndpoints.ollamaVerifyConnection]: validationResponse,
+        [ServerEndpoints.ollamaChangeUrl]: () => {
+          validationResponse()
+          if (message.error) {
+            const messageTypes = {
+              'Network Error': t('settings.integrations.ollama.disconnected')
+            }
+
+            const messageError =
+              messageTypes[message.error as keyof typeof messageTypes] || (message.error as string)
+
+            toast.error(messageError, { position: 'top-center' })
+          } else {
+            toast.success(t('settings.integrations.ollama.connected'), {
+              position: 'top-center'
+            })
+          }
+        },
         [ServerEndpoints.ollamaDeleteModel]: () => {
           if (message.error) {
             toast.error(message.error, { position: 'top-center' })
@@ -92,6 +97,18 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
           toast.success(`Model ${message.modelTag} deleted successfully`, {
             position: 'top-center'
           })
+        },
+        [ServerEndpoints.enableOllama]: () => {
+          setEnabled(true)
+          sendMessage(ServerEndpoints.ollamaModels)
+        },
+        [ServerEndpoints.disableOllama]: () => {
+          setEnabled(false)
+          sendMessage(ServerEndpoints.ollamaModels)
+        },
+        [ServerEndpoints.integrationStatusOllama]: () => {
+          sendMessage(ServerEndpoints.ollamaModels)
+          setEnabled(message.enabled)
         },
         modelPullStatus: () => {
           const updatedPullingModels = pullingModels.map((item) =>
@@ -113,6 +130,7 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
             (item) => item.modelTag !== message.modelTag
           )
           setPullingModels(updatedPullingModels)
+          sendMessage(ServerEndpoints.ollamaModels)
           toast.success(`Model ${message.modelTag} has been pulled successfully`, {
             position: 'top-center'
           })
@@ -120,7 +138,12 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
       }
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
-      if (messageType) messageType()
+      if (messageType) {
+        if (messageType) {
+          console.log(`[OllamaProvider] Received message: ${type} with data`, rest)
+          messageType()
+        }
+      }
     })
 
     return () => removeListener()
@@ -134,22 +157,25 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
     setBaseURL,
     baseURL,
     setError,
-    models
+    models,
+    t
   ])
 
   useEffect(() => {
-    sendMessage(ServerEndpoints.ollamaVerifyConnection)
-    sendMessage(ServerEndpoints.ollamaModels)
+    sendMessage(ServerEndpoints.integrationStatusOllama)
   }, [sendMessage])
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      sendMessage(ServerEndpoints.ollamaVerifyConnection)
+      if (!enabled) {
+        return
+      }
+
       sendMessage(ServerEndpoints.ollamaModels)
-    }, 5000)
+    }, OLLAMA_FETCH_INTERVAL)
 
     return () => clearInterval(intervalId)
-  }, [sendMessage])
+  }, [sendMessage, enabled])
 
   const deleteModel = useCallback(
     (modelTag: string) => {
@@ -183,6 +209,14 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
     [sendMessage, setBaseURL]
   )
 
+  const enableOllama = useCallback(() => {
+    sendMessage(ServerEndpoints.enableOllama)
+  }, [sendMessage])
+
+  const disableOllama = useCallback(() => {
+    sendMessage(ServerEndpoints.disableOllama)
+  }, [sendMessage])
+
   return (
     <OllamaContext.Provider
       value={{
@@ -193,7 +227,10 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
         models,
         connected,
         pullingModels,
-        error
+        error,
+        enabled,
+        enableOllama,
+        disableOllama
       }}
     >
       {children}

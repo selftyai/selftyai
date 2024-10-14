@@ -24,13 +24,17 @@ const ChatContext = React.createContext<
       conversations: Conversation[]
       sendMessage: (message: string, images: string[]) => Promise<void>
       isGenerating: boolean
-      error: string
       setChatId: (chatId: string | undefined) => void
       chatId?: string
       selectedConversation?: Conversation
       deleteConversation: (id: string) => void
       pinConversation: (id: string) => void
       unpinConversation: (id: string) => void
+      hasError: boolean
+      regenerateResponse: () => void
+      stopGenerating: () => void
+      continueGenerating: () => void
+      error?: string
     }
   | undefined
 >(undefined)
@@ -65,16 +69,15 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const [chatId, setChatId] = React.useState<string>()
   const [isGenerating, setIsGenerating] = React.useState(false)
+  const [hasError, setHasError] = React.useState(false)
+  const [error, setError] = React.useState<string>()
   const [messages, setMessages] = React.useState<Message[]>([])
-  const [error] = React.useState('')
   const [selectedModel, setSelectedModel] = React.useState<Model>()
 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removeListener = addMessageListener((message: any) => {
-      const { type, payload } = message
-
-      console.log(`(ChatProvider) Received message: ${type}`)
+      const { type, payload, ...rest } = message
 
       const messageTypes = {
         getConversations: () => setConversations(message.conversations),
@@ -86,6 +89,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         partialMessage: () => {
           if (payload.chatId === chatId) {
             setMessages(payload.messages)
+            const lastMessage = payload.messages[payload.messages.length - 1]
+            setHasError(lastMessage.finishReason === 'error')
+            setError(lastMessage.error)
           }
         },
         finalMessage: () => {
@@ -110,7 +116,14 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       }
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
-      if (messageType) messageType()
+
+      if (messageType) {
+        console.log(`[ChatProvider] Received message: ${type} with data`, {
+          payload,
+          ...rest
+        })
+        messageType()
+      }
     })
 
     sendPortMessage(ServerEndpoints.getConversations)
@@ -127,7 +140,12 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
     if (conversation) {
       setMessages((prev) => (prev.length === 0 ? conversation.messages : prev))
+      const lastMessage = conversation.messages[conversation.messages.length - 1]
+      setHasError(lastMessage.finishReason === 'error')
+      setError(lastMessage.error)
       setSelectedModel(models.find((m) => m.model === conversation.model))
+    } else {
+      setHasError(false)
     }
   }, [chatId, conversations, models, messages])
 
@@ -181,6 +199,8 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const deleteConversation = useCallback(
     (id: string) => {
       sendPortMessage(ServerEndpoints.deleteConversation, { id })
+      setMessages([])
+      setChatId(undefined)
     },
     [sendPortMessage]
   )
@@ -217,32 +237,60 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     [setChatId]
   )
 
+  const regenerateResponse = useCallback(() => {
+    if (!chatId || !selectedModel) return
+
+    sendPortMessage(ServerEndpoints.regenerateResponse, { chatId, model: selectedModel })
+    setIsGenerating(true)
+  }, [chatId, sendPortMessage, selectedModel])
+
+  const continueGenerating = useCallback(() => {
+    if (!chatId || !selectedModel) return
+
+    sendPortMessage(ServerEndpoints.continueGenerating, { chatId, model: selectedModel })
+    setIsGenerating(true)
+  }, [chatId, sendPortMessage, selectedModel])
+
+  const stopGenerating = useCallback(() => {
+    if (!chatId) return
+
+    sendPortMessage(ServerEndpoints.stop, { chatId })
+  }, [sendPortMessage, chatId])
+
   const chatContextValue = useMemo(
     () => ({
       messages,
       sendMessage,
       conversations,
       isGenerating,
-      error,
       setChatId: changeChatId,
       chatId,
       deleteConversation,
       pinConversation,
       unpinConversation,
-      selectedConversation
+      selectedConversation,
+      hasError,
+      regenerateResponse,
+      stopGenerating,
+      continueGenerating,
+      error
     }),
     [
       messages,
       conversations,
       sendMessage,
       isGenerating,
-      error,
       chatId,
       deleteConversation,
       changeChatId,
       pinConversation,
       unpinConversation,
-      selectedConversation
+      selectedConversation,
+      hasError,
+      regenerateResponse,
+      stopGenerating,
+      continueGenerating,
+      error
     ]
   )
 

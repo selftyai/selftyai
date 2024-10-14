@@ -2,7 +2,8 @@ import { Icon } from '@iconify/react'
 import { Card, CardHeader, CardBody, Avatar, Button } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
 import logo from '@/shared/assets/logo.svg'
@@ -10,14 +11,23 @@ import Conversation from '@/sidebar/components/Chat/Conversation'
 import SidebarContainer from '@/sidebar/components/Sidebar/SidebarContainer'
 import Textarea from '@/sidebar/components/Textarea'
 import { useScrollAnchor } from '@/sidebar/hooks/useScrollAnchor'
-import { suggestions } from '@/sidebar/pages/Chat/utils'
 import { useChat } from '@/sidebar/providers/ChatProvider'
 
 const Chat = () => {
+  const [prompt, setPrompt] = useState<string>()
+
   const { chatId } = useParams()
   const { theme } = useTheme()
-  const { messages, setChatId, error, isGenerating, conversations } = useChat()
+  const { messages, setChatId, isGenerating, conversations } = useChat()
   const { scrollRef, scrollToBottom, showScrollToBottom, handleScroll } = useScrollAnchor()
+  const { t } = useTranslation()
+
+  const prompts = t('prompts', { returnObjects: true }) as {
+    id: string
+    text: string
+    icon: string
+    color: string
+  }[]
 
   useEffect(() => {
     setChatId(chatId)
@@ -37,7 +47,7 @@ const Chat = () => {
         }
       >
         <div className="relative mx-auto flex h-full max-h-[90dvh] w-full flex-col px-0 sm:px-6 lg:max-w-3xl">
-          {messages.length > 0 ? (
+          {messages.length > 0 || chatId ? (
             <OverlayScrollbarsComponent
               ref={scrollRef}
               className="relative flex h-full flex-1 flex-col gap-6 overflow-y-auto pb-8 md:p-6"
@@ -60,7 +70,7 @@ const Chat = () => {
               }}
               defer
             >
-              <Conversation messages={messages} isGenerating={isGenerating} error={error} />
+              <Conversation messages={messages} isGenerating={isGenerating} />
               {showScrollToBottom && (
                 <Button
                   variant="flat"
@@ -80,19 +90,23 @@ const Chat = () => {
                 size="lg"
                 radius="sm"
                 isBordered
-                className="bg-background ring-0 dark:ring-2"
+                className="bg-foreground dark:bg-background"
               />
               <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-                {suggestions.map((message) => (
+                {prompts.map((message) => (
                   <Card
-                    key={message.key}
-                    className="h-auto bg-default-100 px-[20px] py-[16px]"
+                    key={message.id}
+                    className="h-auto cursor-pointer bg-default-100 px-[20px] py-[16px] hover:bg-default-100/80"
                     shadow="none"
+                    isPressable
+                    onPress={() => {
+                      setPrompt(message.text)
+                    }}
                   >
-                    <CardHeader className="p-0 pb-[9px]">{message.icon}</CardHeader>
-                    <CardBody className="p-0 text-small text-default-400">
-                      {message.description}
-                    </CardBody>
+                    <CardHeader className="p-0 pb-[9px]">
+                      {<Icon className={message.color} icon={message.icon} width={24} />}
+                    </CardHeader>
+                    <CardBody className="p-0 text-small text-default-400">{message.text}</CardBody>
                   </Card>
                 ))}
               </div>
@@ -100,9 +114,9 @@ const Chat = () => {
           )}
 
           <div className="mt-auto flex max-w-full flex-col gap-2 px-2.5">
-            <Textarea />
+            <Textarea selectedPrompt={prompt} />
             <p className="hidden px-2 text-center text-xs font-medium leading-5 text-default-500 sm:block">
-              {chrome.i18n.getMessage('disclaimer')}
+              {t('disclaimer')}
             </p>
           </div>
         </div>

@@ -1,1 +1,3 @@
-console.log('Hello from content script!')
+import printBuildInfo from '@/shared/printBuildInfo'
+
+printBuildInfo()
