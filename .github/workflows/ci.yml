@@ -25,7 +25,7 @@ jobs:
           node-version: 20.9.0
 
       - name: Cache node modules
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node_modules-v1-${{ hashFiles('package-lock.json') }}
@@ -58,7 +58,7 @@ jobs:
           node-version: 20.9.0
 
       - name: Cache node modules
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node_modules-v1-${{ hashFiles('package-lock.json') }}
