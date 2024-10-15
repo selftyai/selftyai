@@ -9,16 +9,8 @@ import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 ;(() => {
   printBuildInfo()
 
-  const browserActions = {
-    chrome: () => {
-      chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
-    },
-    opera: () => {}
-  }
-
-  const browserAction = browserActions[process.env.BROWSER as 'chrome' | 'opera']
-  browserAction?.()
-
+  chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
+  
   // Abort ongoing conversations on startup
   db.conversations.toArray().then((conversations) => {
     const ongoingConversations = conversations.filter((conversation) => conversation.generating)

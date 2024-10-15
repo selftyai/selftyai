@@ -1,44 +1,26 @@
 import react from '@vitejs/plugin-react'
 import { build } from 'esbuild'
-import { writeFileSync } from 'fs'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
 
-import createManifest from './manifest'
-
-const SUPPORTED_BROWSERS = ['chrome', 'opera']
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const [buildMode, browser] = mode.split(':')
-  const isDevelopment = buildMode === 'development'
-
-  if (!SUPPORTED_BROWSERS.includes(browser)) {
-    throw new Error(`Unsupported browser: ${browser}`)
-  }
+  const isDevelopment = mode === 'development'
 
   const define = {
-    'process.env.BROWSER': JSON.stringify(browser),
-    'process.env.NODE_ENV': JSON.stringify(buildMode)
+    'process.env.NODE_ENV': JSON.stringify(mode)
   }
 
   return {
     plugins: [
       react(),
       {
-        name: 'generate-manifest',
-        writeBundle() {
-          const manifest = createManifest(browser)
-          writeFileSync(`dist/${browser}/manifest.json`, JSON.stringify(manifest, null, 2))
-        }
-      },
-      {
         name: 'build-content-script',
         async writeBundle() {
           await build({
             entryPoints: ['src/pageContent/contentScript.ts'],
             bundle: true,
-            outfile: `dist/${browser}/contentScript.js`,
+            outfile: `dist/contentScript.js`,
             format: 'iife',
             minify: true,
             target: 'es2020',
@@ -53,7 +35,7 @@ export default defineConfig(({ mode }) => {
       }
     ],
     build: {
-      outDir: `dist/${browser}`,
+      outDir: `dist`,
       minify: isDevelopment ? false : 'esbuild',
       rollupOptions: {
         input: {
