@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { File } from '@/shared/db/models/File'
 import { Model } from '@/shared/db/models/Model'
+import ContextField from '@/sidebar/components/Textarea/ContextField'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
 import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
@@ -26,7 +27,7 @@ interface TextAreaProps {
 }
 
 const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
-  const { sendMessage, messages, selectedConversation, stopGenerating } = useChat()
+  const { sendMessage, messages, selectedConversation, stopGenerating, messageContext, setMessageContext } = useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
   const { t } = useTranslation()
@@ -108,6 +109,7 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
         onSubmit={onSubmit}
         ref={formRef}
       >
+        <ContextField messageContext={messageContext} setMessageContext={setMessageContext} />
         <div className="group flex gap-2 px-4 pt-4">
           {images.map((image, index) => (
             <Badge

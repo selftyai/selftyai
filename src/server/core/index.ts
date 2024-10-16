@@ -7,6 +7,7 @@ import deleteModel from '@/server/core/ollama/deleteModel'
 import ollamaModels from '@/server/core/ollama/ollamaModels'
 import { handlePullModel as ollamaPullModel } from '@/server/core/ollama/ollamaPullModel'
 import ollamaVerifyConnection from '@/server/core/ollama/ollamaVerifyConnection'
+import sidePanelHandler from '@/server/core/sidePanel/sidePanelHandler'
 
 export {
   ollamaModels,
@@ -14,6 +15,8 @@ export {
   ollamaPullModel,
   deleteModel,
   sendMessage,
+  sidePanelHandler,
+  setMessageContext,
   regenerateResponse,
   continueGenerating,
   getCurrentLanguage,

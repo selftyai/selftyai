@@ -34,6 +34,10 @@
     {
       "resources": ["icons/*"],
       "matches": ["<all_urls>"]
+    },
+    {
+      "resources": ["assets/styles/overlay.css"],
+      "matches": ["<all_urls>"]
     }
   ]
 }
