@@ -1,10 +1,9 @@
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { Button, Image } from '@nextui-org/react'
-import { Tooltip as NextTooltip } from '@nextui-org/react'
+import { Tooltip } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React, { useEffect } from 'react'
 
-import Tooltip from '@/pageContent/PageOverlay/CustomTooltip'
 import { SidePanelAction } from '@/server/types/sidePanel/SidePanelActions'
 import logo from '@/shared/assets/logo.svg'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
@@ -15,9 +14,10 @@ interface ContextMenuProps {
   top: number
   onClose: () => void
   text: string
+  overlayRef: React.RefObject<HTMLDivElement>
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) => {
+const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, overlayRef }) => {
   const { sendMessage, addMessageListener } = useChromePort()
   const { copied, copy } = useClipboard()
 
@@ -43,7 +43,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
       }}
       onClick={onClose}
     >
-      <Tooltip content="Ask AI">
+      <Tooltip content="Ask AI" portalContainer={overlayRef.current ?? undefined}>
         <Button
           isIconOnly
           size="sm"
@@ -54,7 +54,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
           <Image width={35} height={35} src={logo} removeWrapper />
         </Button>
       </Tooltip>
-      <NextTooltip content={copied ? 'Copied!' : 'Copy'}>
+      <Tooltip
+        content={copied ? 'Copied!' : 'Copy'}
+        portalContainer={overlayRef.current ?? undefined}
+        isOpen={true}
+      >
         <Button
           isIconOnly
           size="sm"
@@ -64,8 +68,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text }) =
         >
           <Icon icon="akar-icons:copy" />
         </Button>
-      </NextTooltip>
-      <Tooltip content="Highlight the area">
+      </Tooltip>
+      <Tooltip content="Highlight the area" portalContainer={overlayRef.current ?? undefined}>
         <Button isIconOnly size="sm" variant="light" className="border-none text-base">
           <Icon icon="fluent:copy-select-20-filled" />
         </Button>

@@ -4,7 +4,7 @@ import App from '@/pageContent/PageOverlay'
 
 // Create overlay container
 const container = document.createElement('div')
-container.id = 'selftyai-overlay'
+container.id = 'shadow-root-selftyai'
 document.body.appendChild(container)
 const shadowRoot = container.attachShadow({ mode: 'open' })
 

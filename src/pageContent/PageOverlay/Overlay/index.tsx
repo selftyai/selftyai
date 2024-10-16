@@ -1,5 +1,4 @@
 import { NextUIProvider } from '@nextui-org/react'
-import { ThemeProvider } from 'next-themes'
 import React, { useEffect } from 'react'
 
 interface OverlayProps {
@@ -7,7 +6,6 @@ interface OverlayProps {
   onClose: () => void
   children: React.ReactNode
 }
-
 const Overlay: React.FC<OverlayProps> = ({ isVisible, onClose, children }) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -27,22 +25,20 @@ const Overlay: React.FC<OverlayProps> = ({ isVisible, onClose, children }) => {
 
   return (
     <NextUIProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark">
-        <div
-          className="overlay"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            zIndex: 9999,
-            pointerEvents: isVisible ? 'auto' : 'none'
-          }}
-        >
-          {children}
-        </div>
-      </ThemeProvider>
+      <div
+        id="selftyai-overlay"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 9999,
+          pointerEvents: isVisible ? 'auto' : 'none'
+        }}
+      >
+        {children}
+      </div>
     </NextUIProvider>
   )
 }

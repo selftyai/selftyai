@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import ContextMenu from '@/pageContent/PageOverlay/ContextMenu'
 import Overlay from '@/pageContent/PageOverlay/Overlay'
@@ -7,6 +7,7 @@ const App = () => {
   const [isOverlayVisible, setIsOverlayVisible] = useState(false)
   const [menuPosition, setMenuPosition] = useState<{ left: number; top: number } | null>(null)
   const [selectedText, setSelectedText] = useState<string | null>(null)
+  const ref = useRef<HTMLDivElement>(null)
 
   const closeOverlay = () => {
     setIsOverlayVisible(false)
@@ -53,16 +54,19 @@ const App = () => {
   }, [isOverlayVisible, selectedText])
 
   return (
-    <Overlay isVisible={isOverlayVisible} onClose={closeOverlay}>
-      {menuPosition && selectedText && (
-        <ContextMenu
-          left={menuPosition.left}
-          top={menuPosition.top}
-          onClose={closeOverlay}
-          text={selectedText}
-        />
-      )}
-    </Overlay>
+    <div ref={ref} className="bg-background text-foreground dark">
+      <Overlay isVisible={isOverlayVisible} onClose={closeOverlay}>
+        {menuPosition && selectedText && (
+          <ContextMenu
+            left={menuPosition.left}
+            top={menuPosition.top}
+            onClose={closeOverlay}
+            text={selectedText}
+            overlayRef={ref}
+          />
+        )}
+      </Overlay>
+    </div>
   )
 }
 
