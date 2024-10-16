@@ -10,7 +10,8 @@ import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
   printBuildInfo()
 
   chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
-  
+
+  monitorModels()
   // Abort ongoing conversations on startup
   db.conversations.toArray().then((conversations) => {
     const ongoingConversations = conversations.filter((conversation) => conversation.generating)

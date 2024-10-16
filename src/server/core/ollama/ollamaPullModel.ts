@@ -20,7 +20,12 @@ export const handlePullModel = async ({ modelTag, broadcastMessage }: PullModelP
     const modelId =
       model && model.id
         ? model.id
-        : await db.ollamaPullingModels.add({ modelTag, status: 'pulling manifest' })
+        : await db.ollamaPullingModels.add({
+            modelTag,
+            status: JSON.stringify({
+              status: 'pulling manifest'
+            })
+          })
 
     for await (const model of generator) {
       const modelPullingStatus = model as ModelPullingStatus

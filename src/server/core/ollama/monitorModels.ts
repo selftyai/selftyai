@@ -40,6 +40,12 @@ const monitorModels = async () => {
     for (const dbModel of dbModels) {
       const model = models.find((m) => m.name === dbModel.name)
 
+      if (model && dbModel.id && dbModel.isDeleted) {
+        await db.models.update(dbModel.id, {
+          isDeleted: false
+        })
+      }
+
       if (!model && dbModel.id) {
         await db.models.update(dbModel.id, {
           isDeleted: true
