@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react/dist/iconify.js'
 import { Button, Image } from '@nextui-org/react'
 import { Tooltip } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import { SidePanelAction } from '@/server/types/sidePanel/SidePanelActions'
 import logo from '@/shared/assets/logo.svg'
@@ -18,22 +18,8 @@ interface ContextMenuProps {
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, overlayRef }) => {
-  const { sendMessage, addMessageListener } = useChromePort()
+  const { sendMessage } = useChromePort()
   const { copied, copy } = useClipboard()
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const removeListener = addMessageListener((message: any) => {
-      const { type, payload, ...rest } = message
-
-      console.log(`[ChatProvider] Received message: ${type} with data`, {
-        payload,
-        ...rest
-      })
-    })
-
-    return () => removeListener()
-  }, [addMessageListener])
 
   const handleSendMessage = () => {
     sendMessage(ServerEndpoints.sidePanelHandler, { action: SidePanelAction.OPEN })
