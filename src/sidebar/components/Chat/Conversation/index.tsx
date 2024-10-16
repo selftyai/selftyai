@@ -8,6 +8,7 @@ import logo from '@/shared/assets/logo.svg'
 import MessageCard from '@/sidebar/components/Chat/Message'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 import { MessageWithFiles } from '@/sidebar/types/MessageWithFiles'
+import { ParsedMessage, parseMessageWithContext } from '@/sidebar/utils/parseMessage'
 
 interface ConversationProps {
   messages?: MessageWithFiles[]
@@ -87,6 +88,33 @@ const Conversation = memo(
                 </div>
               )
             }
+        /* TODO: MODIFY migrate with new changes
+        {messages.map(({ role, content, error, finishReason, ...rest }, index, arr) => {
+          let parsedContent: ParsedMessage = { message: '', context: '' }
+
+          const message =
+            typeof content === 'string'
+              ? content
+              : content.map((part, partIndex) => {
+                  if (part.type === 'text') {
+                    parsedContent = parseMessageWithContext(part.text)
+                    return <div key={`text-${partIndex}`}>{parsedContent.message}</div>
+                  }
+                  if (part.type === 'image') {
+                    return (
+                      <div key={`image-${partIndex}`}>
+                        <Image
+                          alt="uploaded image cover"
+                          className="size-32 rounded-small border-small border-default-200/50 object-cover"
+                          src={part.image.toString()}
+                        />
+                      </div>
+                    )
+                  }
+                  return null
+                })
+
+          const context = parsedContent.context*/
 
             return (
               <MessageCard
@@ -147,6 +175,67 @@ const Conversation = memo(
               />
             )
           }
+          /* TODO: Migrate changes 
+          return (
+            <MessageCard
+              key={index}
+              attempts={1}
+              avatar={
+                role === 'assistant' ? (
+                  <Avatar
+                    src={logo}
+                    size="sm"
+                    radius="full"
+                    className="bg-foreground dark:bg-background"
+                    isBordered
+                  />
+                ) : (
+                  <Avatar
+                    isBordered
+                    size="sm"
+                    icon={<AvatarIcon />}
+                    classNames={{
+                      base: 'bg-gradient-to-br from-[#FFB457] to-[#FF705B]',
+                      icon: 'text-black/80'
+                    }}
+                  />
+                )
+              }
+              currentAttempt={1}
+              message={message}
+              messageContext={context}
+              messageClassName={role === 'user' ? 'bg-content3 text-content3-foreground' : ''}
+              showFeedback={
+                (role === 'assistant' && index !== arr.length - 1) ||
+                (role === 'assistant' && index === arr.length - 1 && !isGenerating)
+              }
+              status={finishReason}
+              statusText={
+                error ? <>{errors[error as keyof typeof errors] || errors.default}</> : undefined
+              }
+              onMessageCopy={() =>
+                toast.success('Message copied!', {
+                  duration: 2000,
+                  position: 'top-center'
+                })
+              }
+              onContinueGenerating={continueGenerating}
+              canContinue={!!selectedModel}
+              metadata={
+                {
+                  completionTokens: rest.usage?.completionTokens.toString(),
+                  promptTokens: rest.usage?.promptTokens.toString(),
+                  totalTokens: rest.usage?.totalTokens.toString(),
+                  waitTime: rest.waitingTime ? `${rest.waitingTime / 1000}` : 0,
+                  responseTime: rest.responseTime ? `${rest.responseTime / 1000}` : 0
+                } as Record<string, string>
+              }
+              onRegenerate={regenerateResponse}
+              canRegenerate={!!selectedModel}
+              isLastMessage={isLastMessage(arr, index)}
+            />
+          )
+        })}*/
         )}
       </div>
     )

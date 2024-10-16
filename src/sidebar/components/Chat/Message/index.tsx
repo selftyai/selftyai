@@ -5,12 +5,14 @@ import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import ContextField from '@/sidebar/components/Chat/Message/ContextField'
 import Markdown from '@/sidebar/components/Chat/Message/Markdown'
 
 export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   avatar?: React.ReactNode
   showFeedback?: boolean
   message?: React.ReactNode
+  messageContext?: string
   currentAttempt?: number
   status?: string
   attempts?: number
@@ -33,6 +35,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
     {
       avatar,
       message,
+      messageContext,
       statusText,
       showFeedback,
       attempts = 1,
@@ -102,6 +105,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               messageClassName
             )}
           >
+            <ContextField messageContext={messageContext} />
             <div ref={messageRef} className={'text-small'}>
               {typeof message === 'string' ? <Markdown message={message} /> : message}
             </div>

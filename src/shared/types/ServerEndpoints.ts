@@ -2,6 +2,7 @@ export enum ServerEndpoints {
   // Conversations
   createConversation = 'createConversation',
   sendMessage = 'sendMessage',
+  setMessageContext = 'setMessageContext',
   regenerateResponse = 'regenerateResponse',
   continueGenerating = 'continueGenerating',
   stop = 'stop',
@@ -11,6 +12,9 @@ export enum ServerEndpoints {
   ollamaModels = 'ollamaModels',
   ollamaPullModel = 'ollamaPullModel',
   ollamaDeleteModel = 'ollamaDeleteModel',
+
+  //SidePanel
+  sidePanelHandler = 'sidePanelHandler',
 
   // Internalization
   getCurrentLanguage = 'getCurrentLanguage',
