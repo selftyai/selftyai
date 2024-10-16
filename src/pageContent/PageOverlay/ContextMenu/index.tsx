@@ -57,7 +57,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, ove
       <Tooltip
         content={copied ? 'Copied!' : 'Copy'}
         portalContainer={overlayRef.current ?? undefined}
-        isOpen={true}
       >
         <Button
           isIconOnly
