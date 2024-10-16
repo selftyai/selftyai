@@ -26,7 +26,9 @@ const handlers = {
   [ServerEndpoints.integrationStatusOllama]: core.integrationStatusOllama,
   [ServerEndpoints.regenerateResponse]: core.regenerateResponse,
   [ServerEndpoints.stop]: () => {},
-  [ServerEndpoints.continueGenerating]: core.continueGenerating
+  [ServerEndpoints.continueGenerating]: core.continueGenerating,
+  [ServerEndpoints.sidePanelHandler]: core.sidePanelHandler,
+  [ServerEndpoints.setMessageContext]: core.setMessageContext
 }
 
 const connectedPorts: chrome.runtime.Port[] = []

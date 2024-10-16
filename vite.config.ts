@@ -1,6 +1,10 @@
 import react from '@vitejs/plugin-react'
+import autoprefixer from 'autoprefixer'
 import { build } from 'esbuild'
+import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
+import postcss from 'postcss'
+import tailwindcss from 'tailwindcss'
 import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
@@ -18,7 +22,7 @@ export default defineConfig(({ mode }) => {
         name: 'build-content-script',
         async writeBundle() {
           await build({
-            entryPoints: ['src/pageContent/contentScript.ts'],
+            entryPoints: ['src/pageContent/index.tsx'],
             bundle: true,
             outfile: `dist/contentScript.js`,
             format: 'iife',
@@ -26,11 +30,29 @@ export default defineConfig(({ mode }) => {
             target: 'es2020',
             loader: {
               '.ts': 'ts',
-              '.tsx': 'tsx'
+              '.tsx': 'tsx',
+              '.svg': 'dataurl'
             },
             tsconfig: 'tsconfig.app.json',
             define
           })
+        }
+      },
+      {
+        name: 'build-content-script-styles',
+        async writeBundle() {
+          const inputCSS = 'src/shared/style/index.css'
+          const outputCSS = `dist/assets/styles/overlay.css`
+          const tailwindConfig = 'tailwind.overlay.config.js'
+
+          const css = readFileSync(inputCSS, 'utf8')
+
+          const result = await postcss([tailwindcss(tailwindConfig), autoprefixer]).process(css, {
+            from: inputCSS,
+            to: outputCSS
+          })
+
+          writeFileSync(outputCSS, result.css)
         }
       }
     ],

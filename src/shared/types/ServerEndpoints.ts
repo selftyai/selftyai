@@ -4,6 +4,7 @@ export enum ServerEndpoints {
   getConversations = 'getConversations',
   deleteConversation = 'deleteConversation',
   sendMessage = 'sendMessage',
+  setMessageContext = 'setMessageContext',
   pinConversation = 'pinConversation',
   unpinConversation = 'unpinConversation',
   regenerateResponse = 'regenerateResponse',
@@ -19,6 +20,9 @@ export enum ServerEndpoints {
   disableOllama = 'disableOllama',
   enableOllama = 'enableOllama',
   integrationStatusOllama = 'integrationStatusOllama',
+
+  //SidePanel
+  sidePanelHandler = 'sidePanelHandler',
 
   // Internalization
   getCurrentLanguage = 'getCurrentLanguage',

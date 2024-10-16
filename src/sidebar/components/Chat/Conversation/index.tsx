@@ -8,6 +8,7 @@ import logo from '@/shared/assets/logo.svg'
 import { Message } from '@/shared/types/Message'
 import MessageCard from '@/sidebar/components/Chat/Message'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
+import { ParsedMessage, parseMessageWithContext } from '@/sidebar/utils/parseMessage'
 
 interface ConversationProps {
   messages: Message[]
@@ -35,22 +36,31 @@ const Conversation = memo(
     return (
       <div ref={ref} className="flex flex-col gap-4 px-2">
         {messages.map(({ role, content, error, finishReason, ...rest }, index, arr) => {
+          let parsedContent: ParsedMessage = { message: '', context: '' }
+
           const message =
             typeof content === 'string'
               ? content
-              : content.map((part, partIndex) =>
-                  part.type === 'text' ? (
-                    <div key={`text-${partIndex}`}>{part.text}</div>
-                  ) : part.type === 'image' ? (
-                    <div key={`image-${partIndex}`}>
-                      <Image
-                        alt="uploaded image cover"
-                        className="size-32 rounded-small border-small border-default-200/50 object-cover"
-                        src={part.image.toString()}
-                      />
-                    </div>
-                  ) : null
-                )
+              : content.map((part, partIndex) => {
+                  if (part.type === 'text') {
+                    parsedContent = parseMessageWithContext(part.text)
+                    return <div key={`text-${partIndex}`}>{parsedContent.message}</div>
+                  }
+                  if (part.type === 'image') {
+                    return (
+                      <div key={`image-${partIndex}`}>
+                        <Image
+                          alt="uploaded image cover"
+                          className="size-32 rounded-small border-small border-default-200/50 object-cover"
+                          src={part.image.toString()}
+                        />
+                      </div>
+                    )
+                  }
+                  return null
+                })
+
+          const context = parsedContent.context
 
           if (isGenerating && isLastMessage(messages, index) && !content.length) {
             return (
@@ -109,6 +119,7 @@ const Conversation = memo(
               }
               currentAttempt={1}
               message={message}
+              messageContext={context}
               messageClassName={role === 'user' ? 'bg-content3 text-content3-foreground' : ''}
               showFeedback={
                 (role === 'assistant' && index !== arr.length - 1) ||

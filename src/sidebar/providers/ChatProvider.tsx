@@ -35,6 +35,8 @@ const ChatContext = React.createContext<
       stopGenerating: () => void
       continueGenerating: () => void
       error?: string
+      messageContext?: string
+      setMessageContext: (context: string | undefined) => void
     }
   | undefined
 >(undefined)
@@ -73,6 +75,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [error, setError] = React.useState<string>()
   const [messages, setMessages] = React.useState<Message[]>([])
   const [selectedModel, setSelectedModel] = React.useState<Model>()
+  const [messageContext, setMessageContext] = React.useState<string>()
 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,6 +115,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         },
         [ServerEndpoints.unpinConversation]: () => {
           setConversations(message.conversations)
+        },
+        [ServerEndpoints.setMessageContext]: () => {
+          setMessageContext(message.payload)
         }
       }
 
@@ -156,13 +162,20 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
       setIsGenerating(true)
 
-      const messageObject = {
-        role: 'user',
-        content: [
-          { type: 'text', text: trimmedMessage },
-          ...images.map((image) => ({ type: 'image', image }) as ImagePart)
-        ]
-      } as CoreMessage
+      const messageWithContext = messageContext
+        ? `Here is the user's context and message. Use the information inside the context tag as background knowledge, and respond based on the user's input inside the message tag. <context>${messageContext.trim()}</context><message>${trimmedMessage}</message>`
+        : `Here is the user's message. Respond based on the input inside the message tag. <message>${trimmedMessage}</message>`
+
+      const createMessageObject = (content: string) =>
+        ({
+          role: 'user',
+          content: [
+            { type: 'text', text: content },
+            ...images.map((image) => ({ type: 'image', image }) as ImagePart)
+          ]
+        }) as CoreMessage
+
+      const messageObject = createMessageObject(messageWithContext)
 
       setMessages((prev) => [
         ...prev,
@@ -177,13 +190,16 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       sendPortMessage(ServerEndpoints.sendMessage, {
         chatId,
         message: messageObject,
+        userMessage: trimmedMessage,
         model: {
           provider: selectedModel.provider,
           model: selectedModel.model
         }
       })
+
+      setMessageContext(undefined)
     },
-    [chatId, selectedModel, sendPortMessage]
+    [chatId, messageContext, selectedModel, sendPortMessage]
   )
 
   const selectModel = useCallback(
@@ -273,7 +289,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       regenerateResponse,
       stopGenerating,
       continueGenerating,
-      error
+      error,
+      messageContext,
+      setMessageContext
     }),
     [
       messages,
@@ -290,7 +308,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       regenerateResponse,
       stopGenerating,
       continueGenerating,
-      error
+      error,
+      messageContext,
+      setMessageContext
     ]
   )
 
