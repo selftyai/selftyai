@@ -22,7 +22,7 @@ export enum ServerEndpoints {
   integrationStatusOllama = 'integrationStatusOllama',
 
   //SidePanel
-  sidePanelHandlerer = 'sidePanelHandlerer',
+  sidePanelHandler = 'sidePanelHandler',
 
   // Internalization
   getCurrentLanguage = 'getCurrentLanguage',

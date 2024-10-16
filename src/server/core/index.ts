@@ -16,7 +16,7 @@ import integrationStatusOllama from '@/server/core/ollama/integrationStatusOllam
 import ollamaModels from '@/server/core/ollama/ollamaModels'
 import { handlePullModel as ollamaPullModel } from '@/server/core/ollama/ollamaPullModel'
 import ollamaVerifyConnection from '@/server/core/ollama/ollamaVerifyConnection'
-import sidePanelHandlerer from '@/server/core/sidePanel/sidePanelHandlerer'
+import sidePanelHandler from '@/server/core/sidePanel/sidePanelHandler'
 
 export {
   ollamaModels,
@@ -27,7 +27,7 @@ export {
   sendMessage,
   deleteConversation,
   changeBaseUrl,
-  sidePanelHandlerer,
+  sidePanelHandler,
   setMessageContext,
   pinConversation,
   unpinConversation,

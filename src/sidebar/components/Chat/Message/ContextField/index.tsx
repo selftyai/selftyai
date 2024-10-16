@@ -1,5 +1,13 @@
 import { Icon } from '@iconify/react/dist/iconify.js'
-import { Button, Modal, ModalContent, Tooltip, useDisclosure } from '@nextui-org/react'
+import {
+  Button,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+  Tooltip,
+  useDisclosure
+} from '@nextui-org/react'
 
 import Markdown from '@/sidebar/components/Chat/Message/Markdown'
 
@@ -23,11 +31,12 @@ const ContextField = ({ messageContext }: ContextFieldProps) => {
             </Tooltip>
           </div>
         </div>
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur" scrollBehavior="outside">
+        <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur" scrollBehavior="inside">
           <ModalContent>
-            <div className="flex h-auto flex-1 flex-col p-6 text-base">
+            <ModalHeader>{'Message Context'}</ModalHeader>
+            <ModalBody className="flex flex-1 flex-col p-6 pt-0 text-base">
               <Markdown message={messageContext} />
-            </div>
+            </ModalBody>
           </ModalContent>
         </Modal>
       </>

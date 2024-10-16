@@ -27,7 +27,7 @@ const handlers = {
   [ServerEndpoints.regenerateResponse]: core.regenerateResponse,
   [ServerEndpoints.stop]: () => {},
   [ServerEndpoints.continueGenerating]: core.continueGenerating,
-  [ServerEndpoints.sidePanelHandlerer]: core.sidePanelHandlerer,
+  [ServerEndpoints.sidePanelHandler]: core.sidePanelHandler,
   [ServerEndpoints.setMessageContext]: core.setMessageContext
 }
 

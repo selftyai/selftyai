@@ -4,7 +4,7 @@ interface OpenSidePanelPayload {
   action: SidePanelAction
 }
 
-const sidePanelHandlerer = async ({ action }: OpenSidePanelPayload) => {
+const sidePanelHandler = async ({ action }: OpenSidePanelPayload) => {
   const handleSidePanelAction = (windowId: number | undefined) => {
     if (windowId === undefined) return
 
@@ -26,4 +26,4 @@ const sidePanelHandlerer = async ({ action }: OpenSidePanelPayload) => {
   })
 }
 
-export default sidePanelHandlerer
+export default sidePanelHandler

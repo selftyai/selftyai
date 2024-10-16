@@ -32,7 +32,7 @@ const Conversation = memo(
       AbortedError: t('errors.AbortedError'),
       default: t('errors.default')
     }
-    console.log(messages)
+
     return (
       <div ref={ref} className="flex flex-col gap-4 px-2">
         {messages.map(({ role, content, error, finishReason, ...rest }, index, arr) => {
@@ -61,8 +61,6 @@ const Conversation = memo(
                 })
 
           const context = parsedContent.context
-
-          console.log(message)
 
           if (isGenerating && isLastMessage(messages, index) && !content.length) {
             return (

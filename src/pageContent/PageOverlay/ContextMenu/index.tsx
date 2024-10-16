@@ -22,13 +22,21 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, ove
   const { copied, copy } = useClipboard()
 
   useEffect(() => {
-    const removeListener = addMessageListener(() => {})
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const removeListener = addMessageListener((message: any) => {
+      const { type, payload, ...rest } = message
+
+      console.log(`[ChatProvider] Received message: ${type} with data`, {
+        payload,
+        ...rest
+      })
+    })
 
     return () => removeListener()
-  }, [addMessageListener, sendMessage, text])
+  }, [addMessageListener])
 
   const handleSendMessage = () => {
-    sendMessage(ServerEndpoints.sidePanelHandlerer, { action: SidePanelAction.OPEN })
+    sendMessage(ServerEndpoints.sidePanelHandler, { action: SidePanelAction.OPEN })
 
     sendMessage(ServerEndpoints.setMessageContext, { context: text })
   }
