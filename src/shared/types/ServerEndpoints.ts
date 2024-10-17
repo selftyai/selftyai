@@ -17,6 +17,5 @@ export enum ServerEndpoints {
   sidePanelHandler = 'sidePanelHandler',
 
   // Internalization
-  getCurrentLanguage = 'getCurrentLanguage',
-  changeLanguage = 'changeLanguage'
+  getCurrentLanguage = 'getCurrentLanguage'
 }

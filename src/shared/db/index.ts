@@ -8,6 +8,7 @@ import { Integration } from '@/shared/db/models/Integration'
 import { Message } from '@/shared/db/models/Message'
 import { Model } from '@/shared/db/models/Model'
 import { OllamaPullModel } from '@/shared/db/models/OllamaPullModel'
+import { SettingsItem } from '@/shared/db/models/SettingsItem'
 
 class SelftyDatabase extends Dexie {
   models!: Dexie.Table<Model, number>
@@ -16,6 +17,7 @@ class SelftyDatabase extends Dexie {
   files!: Dexie.Table<File, number>
   integrations!: Dexie.Table<Integration, number>
   ollamaPullingModels!: Dexie.Table<OllamaPullModel, number>
+  settings!: Dexie.Table<SettingsItem, string>
 
   constructor() {
     super('SelftyDatabase')

@@ -129,13 +129,11 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removeListener = addMessageListener((message: any) => {
-      const { type, conversationId } = message
+      const { type, payload } = message
 
       const messageTypes = {
-        selectConversation: () => navigator(`/${conversationId}`),
-        [ServerEndpoints.setMessageContext]: () => {
-          setMessageContext(message.payload)
-        }
+        selectConversation: () => navigator(`/${payload.conversationId}`),
+        [ServerEndpoints.setMessageContext]: () => setMessageContext(payload.context)
       }
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
@@ -155,12 +153,18 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       const trimmedMessage = message.trim()
       if (!trimmedMessage || !selectedModel?.id) return
 
+      const messageWithContext = messageContext
+        ? `Here is the user's context and message. Use the information inside the context tag as background knowledge, and respond based on the user's input inside the message tag. <context>${messageContext.trim()}</context><message>${trimmedMessage}</message>`
+        : `Here is the user's message. Respond based on the input inside the message tag. <message>${trimmedMessage}</message>`
+
       sendPortMessage(ServerEndpoints.sendMessage, {
         conversationId: selectedConversation?.id,
         modelId: selectedModel.id,
-        message: trimmedMessage,
+        message: messageWithContext,
         files: images
-     })
+      })
+
+      setMessageContext(undefined)
       /* TODO: modify code
       if (!trimmedMessage || !selectedModel) return
 
@@ -202,9 +206,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       })
       */
 
-      setMessageContext(undefined)
+      // setMessageContext(undefined)
     },
-    [selectedModel, sendPortMessage, selectedConversation]
+    [selectedModel, sendPortMessage, selectedConversation, setMessageContext, messageContext]
   )
 
   const selectModel = useCallback(

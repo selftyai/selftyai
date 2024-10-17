@@ -57,7 +57,7 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removeListener = addMessageListener((message: any) => {
-      const { type, ...rest } = message
+      const { type, response, ...rest } = message
 
       const messageTypes = {
         [ServerEndpoints.ollamaVerifyConnection]: () => {
@@ -65,44 +65,50 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
           setVerifyingConnection(false)
 
-          if (message.url !== integration?.baseURL && message.connected) {
+          if (response.url !== integration?.baseURL && response.connected) {
             toast.success(t('settings.integrations.ollama.connected'), { position: 'top-center' })
             return
           }
 
-          if (message.url !== integration?.baseURL && !message.connected) {
+          if (response.url !== integration?.baseURL && !response.connected) {
             const messageTypes = {
               'Network Error': t('settings.integrations.ollama.disconnected')
             }
 
             const messageError =
-              messageTypes[message.error as keyof typeof messageTypes] || (message.error as string)
+              messageTypes[response.error as keyof typeof messageTypes] ||
+              (response.error as string)
 
             toast.error(messageError, { position: 'top-center' })
             return
           }
 
-          setConnected(message.connected)
+          setConnected(response.connected)
         },
         [ServerEndpoints.ollamaDeleteModel]: () => {
-          if (message.error) {
-            toast.error(message.error, { position: 'top-center' })
+          if (response.error) {
+            toast.error(response.error, { position: 'top-center' })
             return
           }
 
           toast.success(
             t('settings.integrations.ollama.modelDeleted', {
-              name: message.modelTag
+              name: response.modelTag
             }),
             {
               position: 'top-center'
             }
           )
         },
-        modelPullSuccess: () => {
+        [ServerEndpoints.ollamaPullModel]: () => {
+          if (response.error) {
+            toast.error(response.error, { position: 'top-center' })
+            return
+          }
+
           toast.success(
             t('settings.integrations.ollama.modelPulled', {
-              name: message.modelTag
+              name: response.modelTag
             }),
             {
               position: 'top-center'
@@ -113,10 +119,8 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
       if (messageType) {
-        if (messageType) {
-          console.log(`[OllamaProvider] Received message: ${type} with data`, rest)
-          messageType()
-        }
+        console.log(`[OllamaProvider] Received message: ${type} with data`, rest)
+        messageType()
       }
     })
 
