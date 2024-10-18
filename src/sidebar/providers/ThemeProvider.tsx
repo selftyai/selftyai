@@ -52,7 +52,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({
         setTheme(theme)
       }
     )
-  }, [parent?.classList])
+  }, [parent])
 
   return <ThemeContext.Provider value={{ changeTheme, theme }}>{children}</ThemeContext.Provider>
 }
