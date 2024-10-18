@@ -11,21 +11,15 @@ import {
 } from '@nextui-org/react'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import React, { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Markdown from 'react-markdown'
 import { useNavigate } from 'react-router-dom'
 
 import logo from '@/shared/assets/logo.svg'
-import type { Conversation } from '@/shared/types/Conversation'
 import RecentPromptDropdown from '@/sidebar/components/Sidebar/SidebarContainer/RecentPromptDropdown'
+import { Section, groupConversations } from '@/sidebar/components/Sidebar/SidebarContainer/utils'
 import SidebarDrawer from '@/sidebar/components/Sidebar/SidebarDrawer'
 import { useChat } from '@/sidebar/providers/ChatProvider'
-
-interface Section {
-  key: string
-  title: string
-  titleNode?: React.ReactNode
-  chats: Conversation[]
-}
 
 const MAX_CHATS_TO_DISPLAY = 20
 
@@ -45,114 +39,23 @@ const Sidebar = ({
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const navigator = useNavigate()
   const {
-    chatId,
-    deleteConversation,
+    selectedConversation,
     conversations,
-    setChatId,
+    deleteConversation,
     pinConversation,
     unpinConversation
   } = useChat()
+  const { t } = useTranslation()
 
   const [chatsToShow, setChatsToShow] = useState(MAX_CHATS_TO_DISPLAY)
   const [sections, showMore, onShowMore] = useMemo(() => {
-    const sections: Section[] = []
-
     const onShowMore = () => {
       setChatsToShow((prev) => prev + MAX_CHATS_TO_DISPLAY)
     }
 
-    const pinnedChats = conversations.filter((chat) => chat.isPinned)
-    const unpinnedChats = conversations
-      .filter((chat) => !chat.isPinned)
-      .sort((a, b) => {
-        const lastMessageA = a.messages[a.messages.length - 1]?.createdAt
-        const lastMessageB = b.messages[b.messages.length - 1]?.createdAt
-        if (!lastMessageA || !lastMessageB) return 0
-        return new Date(lastMessageB).getTime() - new Date(lastMessageA).getTime()
-      })
+    const sections = conversations ? groupConversations(conversations, chatsToShow) : []
 
-    if (pinnedChats.length > 0) {
-      sections.push({
-        key: 'pinned',
-        title: 'Pinned',
-        titleNode: (
-          <span className="flex items-center gap-2">
-            <Icon icon="solar:pin-linear" width={20} />
-            Pinned
-          </span>
-        ),
-        chats: pinnedChats
-      })
-    }
-
-    const chatsToDisplay = unpinnedChats.slice(0, chatsToShow)
-
-    const now = new Date()
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
-    const sevenDaysAgoStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
-    const thirtyDaysAgoStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
-
-    const chatsByDateSection = {
-      today: [] as Conversation[],
-      yesterday: [] as Conversation[],
-      previous7Days: [] as Conversation[],
-      previous30Days: [] as Conversation[],
-      other: [] as Conversation[]
-    }
-
-    for (const chat of chatsToDisplay) {
-      const chatDate = new Date(chat.messages[chat.messages.length - 1]?.createdAt)
-      if (chatDate >= todayStart) {
-        chatsByDateSection.today.push(chat)
-      } else if (chatDate >= yesterdayStart) {
-        chatsByDateSection.yesterday.push(chat)
-      } else if (chatDate >= sevenDaysAgoStart) {
-        chatsByDateSection.previous7Days.push(chat)
-      } else if (chatDate >= thirtyDaysAgoStart) {
-        chatsByDateSection.previous30Days.push(chat)
-      } else {
-        chatsByDateSection.other.push(chat)
-      }
-    }
-
-    if (chatsByDateSection.today.length > 0) {
-      sections.push({
-        key: 'today',
-        title: 'Today',
-        chats: chatsByDateSection.today
-      })
-    }
-    if (chatsByDateSection.yesterday.length > 0) {
-      sections.push({
-        key: 'yesterday',
-        title: 'Yesterday',
-        chats: chatsByDateSection.yesterday
-      })
-    }
-    if (chatsByDateSection.previous7Days.length > 0) {
-      sections.push({
-        key: 'previous7Days',
-        title: 'Previous 7 Days',
-        chats: chatsByDateSection.previous7Days
-      })
-    }
-    if (chatsByDateSection.previous30Days.length > 0) {
-      sections.push({
-        key: 'previous30Days',
-        title: 'Previous 30 Days',
-        chats: chatsByDateSection.previous30Days
-      })
-    }
-    if (chatsByDateSection.other.length > 0) {
-      sections.push({
-        key: 'other',
-        title: 'Other',
-        chats: chatsByDateSection.other
-      })
-    }
-
-    const totalChatsCount = unpinnedChats.length
+    const totalChatsCount = conversations?.length ?? 0
     const showMore = totalChatsCount > chatsToShow
 
     return [sections, showMore, onShowMore]
@@ -165,7 +68,7 @@ const Sidebar = ({
           <Image src={logo} className="size-8" alt="Logo" />
         </div>
         <span className="text-base font-bold uppercase leading-6 text-foreground">
-          {chrome.i18n.getMessage('extensionName')}
+          {t('extensionName')}
         </span>
       </div>
 
@@ -184,11 +87,11 @@ const Sidebar = ({
           }
           onClick={() => {
             navigator('/')
-            setChatId(undefined)
+            // setChatId(undefined)
             if (isOpen) onOpenChange()
           }}
         >
-          New Chat
+          {t('newChat')}
         </Button>
 
         <Listbox
@@ -210,14 +113,15 @@ const Sidebar = ({
                   {
                     key: 'show-more',
                     title: 'Show more',
-                    chats: []
+                    titleNode: <></>,
+                    conversations: []
                   } as Section
                 ]
               : []
           }
           emptyContent={
             <div className="flex h-full items-center justify-center text-sm text-default-400">
-              No conversations
+              {t('noConversations')}
             </div>
           }
         >
@@ -237,7 +141,7 @@ const Sidebar = ({
                   />
                 }
               >
-                Show more
+                {t('showMore')}
               </ListboxItem>
             ) : (
               <ListboxSection
@@ -245,33 +149,28 @@ const Sidebar = ({
                   base: 'py-0',
                   heading: 'py-0 pl-[10px] text-small text-default-400'
                 }}
-                title={section.title}
-                items={section.chats}
+                title={section.titleNode}
+                items={section.conversations}
                 key={section.key}
               >
                 {(conversation) => (
                   <ListboxItem
-                    key={conversation.id}
+                    key={`${conversation.id}`}
                     className={cn(
                       'relative h-[44px] truncate px-[12px] py-[10px] text-default-500',
-                      chatId === conversation.id && 'bg-default-100 text-default-foreground'
+                      selectedConversation?.id === conversation.id &&
+                        'bg-default-100 text-default-foreground'
                     )}
                     classNames={{
                       title: 'truncate'
                     }}
                     endContent={
                       <RecentPromptDropdown
-                        onDelete={() => {
-                          deleteConversation(conversation.id)
-                        }}
-                        onPin={() => {
-                          pinConversation(conversation.id)
-                        }}
-                        onUnpin={() => {
-                          unpinConversation(conversation.id)
-                        }}
-                        pinned={conversation.isPinned}
-                        selected={chatId === conversation.id}
+                        onDelete={async () => deleteConversation(conversation!.id)}
+                        onPin={async () => pinConversation(conversation!.id)}
+                        onUnpin={async () => unpinConversation(conversation!.id)}
+                        pinned={conversation.pinned}
+                        selected={selectedConversation?.id === conversation.id}
                       />
                     }
                     textValue={conversation.title}
@@ -303,7 +202,7 @@ const Sidebar = ({
           variant="light"
           onClick={() => window.open(chrome.runtime.getURL('index.html'))}
         >
-          Full page
+          {t('fullPage')}
         </Button>
         <Button
           className="justify-start text-default-600"
@@ -317,7 +216,7 @@ const Sidebar = ({
           variant="light"
           onClick={() => navigator('/settings')}
         >
-          Settings
+          {t('settings.title')}
         </Button>
       </div>
     </div>

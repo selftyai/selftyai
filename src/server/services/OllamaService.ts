@@ -3,8 +3,8 @@ import axios from 'axios'
 import { BaseService } from '@/server/services/BaseService'
 import type { OllamaTagsResponse } from '@/server/types/ollama/OllamaTagsResponse'
 import type { ShowOllamaModel } from '@/server/types/ollama/ShowOllamaModel'
-import { AIProvider } from '@/shared/types/AIProvider'
-import type { Model } from '@/shared/types/Model'
+import { Model } from '@/shared/db/models/Model'
+import { Integrations } from '@/shared/types/Integrations'
 import { OllamaErrorEnum } from '@/shared/types/ollama/OllamaErrorEnum'
 
 export class OllamaService extends BaseService {
@@ -72,8 +72,8 @@ export class OllamaService extends BaseService {
           return {
             name: model.name,
             model: modelName,
-            provider: AIProvider.ollama,
-            hasVision: modelData?.projector_info?.['clip.has_vision_encoder'] || false
+            provider: Integrations.ollama,
+            vision: modelData?.projector_info?.['clip.has_vision_encoder'] || false
           } as Model
         })
       )

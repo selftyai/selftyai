@@ -1,13 +1,13 @@
 import { Icon } from '@iconify/react'
 import { Button, Spacer, useDisclosure, Avatar, Modal, ModalContent } from '@nextui-org/react'
+import { useTranslation } from 'react-i18next'
 
 import ModelsTable from '@/sidebar/components/Settings/Integrations/Ollama/ModelsTable'
 import PullModel from '@/sidebar/components/Settings/Integrations/Ollama/PullModel'
-import { useOllama } from '@/sidebar/providers/OllamaProvider'
 
 const ConfigureOllamaModels = () => {
   const { isOpen, onOpenChange } = useDisclosure()
-  const { deleteModel, models } = useOllama()
+  const { t } = useTranslation()
 
   const content = (
     <div className="flex flex-col p-6">
@@ -19,19 +19,19 @@ const ConfigureOllamaModels = () => {
           />
         </div>
         <span className="text-base font-medium leading-6 text-foreground">
-          Manage ollama models
+          {t('settings.integrations.ollama.models.title')}
         </span>
       </div>
       <PullModel />
       <Spacer y={4} />
-      <ModelsTable models={models} onModelDelete={async (model) => deleteModel(model.model)} />
+      <ModelsTable />
     </div>
   )
 
   return (
     <>
       <Button size="sm" variant="faded" onClick={onOpenChange}>
-        Models
+        {t('settings.integrations.ollama.models.button')}
       </Button>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
         <ModalContent>{content}</ModalContent>

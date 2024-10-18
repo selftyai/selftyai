@@ -1,13 +1,14 @@
 import { Link, Chip, Image } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
-import { useTheme } from 'next-themes'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
+import { useTranslation } from 'react-i18next'
 
 import aimlapiLogo from '@/sidebar/assets/aimlapi-logo.jpeg'
 import groqLogo from '@/sidebar/assets/groq-logo.png'
 import lmStudioLogo from '@/sidebar/assets/lm-studio-logo.png'
 import IntegrationItem from '@/sidebar/components/Settings/Integrations/IntegrationItem'
 import ConfigureOllama from '@/sidebar/components/Settings/Integrations/Ollama/ConfigureOllama'
+import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
 interface AppearanceSettingCardProps {
   className?: string
@@ -15,97 +16,98 @@ interface AppearanceSettingCardProps {
 
 const Integrations = ({ className, ...props }: AppearanceSettingCardProps) => {
   const { theme } = useTheme()
+  const { t } = useTranslation()
 
   const integrations = [
     {
       id: 'ollama',
-      title: 'Ollama',
+      title: t('settings.integrations.ollama.title'),
       subTitle: (
         <Link href="https://ollama.com" target="_blank">
-          ollama.com
+          {t('settings.integrations.ollama.website')}
         </Link>
       ),
-      description: 'Generate AI responses with your own models based on Ollama.',
+      description: t('settings.integrations.ollama.description'),
       icon: 'simple-icons:ollama',
       actionButtons: <ConfigureOllama />
     },
     {
       id: 'groq',
-      title: 'Groq',
+      title: t('settings.integrations.groq.title'),
       subTitle: (
         <Link href="https://groq.com/" target="_blank">
-          groq.com
+          {t('settings.integrations.groq.website')}
         </Link>
       ),
-      description: 'Generate AI responses with Groq. Use your API key to get started.',
+      description: t('settings.integrations.groq.description'),
       icon: <Image src={groqLogo} width="32" height="32" />,
       actionButtons: (
         <Chip color="secondary" variant="dot">
-          Coming soon
+          {t('comingSoon')}
         </Chip>
       )
     },
     {
-      id: 'lmstudio',
-      title: 'LM Studio',
+      id: 'lmStudio',
+      title: t('settings.integrations.lmStudio.title'),
       subTitle: (
         <Link href="https://lmstudio.ai/" target="_blank">
-          lmstudio.ai
+          {t('settings.integrations.lmStudio.website')}
         </Link>
       ),
-      description: 'Generate AI responses with your own models based on LM Studio.',
+      description: t('settings.integrations.lmStudio.description'),
       icon: <Image src={lmStudioLogo} width="32" height="32" />,
       actionButtons: (
         <Chip color="secondary" variant="dot">
-          Coming soon
+          {t('comingSoon')}
         </Chip>
       )
     },
     {
       id: 'aimlapi',
-      title: 'AI/ML API',
+      title: t('settings.integrations.aimlapi.title'),
       subTitle: (
         <Link href="https://aimlapi.com/" target="_blank">
-          aimlapi.com
+          {t('settings.integrations.aimlapi.website')}
         </Link>
       ),
-      description: 'Generate AI responses with AI/ML. Use your API key to get started.',
+      description: t('settings.integrations.aimlapi.description'),
       icon: <Image src={aimlapiLogo} width="32" height="32" />,
       actionButtons: (
         <Chip color="secondary" variant="dot">
-          Coming soon
+          {t('comingSoon')}
         </Chip>
       )
     },
     {
       id: 'openai',
-      title: 'OpenAI',
+      title: t('settings.integrations.openai.title'),
       subTitle: (
         <Link href="https://platform.openai.com/" target="_blank">
-          platform.openai.com
+          {t('settings.integrations.openai.website')}
         </Link>
       ),
-      description: 'Generate AI responses with OpenAI. Use your API key to get started.',
+      description: t('settings.integrations.openai.description'),
       icon: 'simple-icons:openai',
       actionButtons: (
         <Chip color="secondary" variant="dot">
-          Coming soon
+          {t('comingSoon')}
         </Chip>
       )
     },
     {
       id: 'anthropic',
-      title: 'Anthropic',
+      title: t('settings.integrations.anthropic.title'),
       subTitle: (
         <Link href="https://www.anthropic.com/api" target="_blank">
-          anthropic.com/api
+          {t('settings.integrations.anthropic.website')}
         </Link>
       ),
-      description: 'Generate AI responses with Anthropic. Use your API key to get started.',
+      description: t('settings.integrations.anthropic.description'),
       icon: 'simple-icons:anthropic',
       actionButtons: (
         <Chip color="secondary" variant="dot">
-          Coming soon
+          {t('comingSoon')}
         </Chip>
       )
     }

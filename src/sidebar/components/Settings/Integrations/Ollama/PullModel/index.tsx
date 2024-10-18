@@ -1,11 +1,14 @@
 import { Icon } from '@iconify/react'
-import { Button, Card, CardBody, Divider, Input, Spacer, Progress } from '@nextui-org/react'
+import { Button, Card, CardBody, Divider, Input, Spacer, Progress, Link } from '@nextui-org/react'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
+import type { ModelPullingStatus } from '@/shared/types/ollama/ModelPullingStatus'
 import { useOllama } from '@/sidebar/providers/OllamaProvider'
 
 const PullModel = () => {
   const [modelTag, setModelTag] = React.useState<string>('')
+  const { t } = useTranslation()
 
   const { pullModel, pullingModels } = useOllama()
 
@@ -22,18 +25,18 @@ const PullModel = () => {
         <CardBody className="px-4">
           <div className="flex items-start justify-between pb-3">
             <p className="mt-1.5 text-sm font-medium text-default-700">
-              Pull new model from Ollama
+              {t('settings.integrations.ollama.models.pullModel.description')}
             </p>
             <Button
+              as={Link}
               className="bg-default-foreground text-background"
               endContent={<Icon className="h-3 w-3" icon="solar:link-linear" />}
               radius="md"
               size="sm"
-              onClick={() => {
-                window.open('https://ollama.com/library', '_blank')
-              }}
+              href="https://ollama.com/library"
+              target="_blank"
             >
-              All models
+              {t('settings.integrations.ollama.models.pullModel.library')}
             </Button>
           </div>
           <Divider />
@@ -41,11 +44,13 @@ const PullModel = () => {
           <div className="py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="w-full">
-                <p className="text-sm font-normal text-default-500">Model tag</p>
+                <p className="text-sm font-normal text-default-500">
+                  {t('settings.integrations.ollama.models.pullModel.modelTag')}
+                </p>
                 <Input
                   className="mt-2"
                   classNames={{ inputWrapper: 'bg-default-200' }}
-                  placeholder="e.g llama3.1:latest"
+                  placeholder={t('settings.integrations.ollama.models.pullModel.placeholder')}
                   value={modelTag}
                   onChange={(e) => setModelTag(e.target.value)}
                 />
@@ -55,50 +60,45 @@ const PullModel = () => {
           <Spacer y={3} />
           <Divider />
           <div>
-            <div className="flex items-end justify-between pt-3">
-              <p className="relative mb-2 text-xs text-default-500">
-                Learn more about <span className="text-default-foreground">Ollama integration</span>
-                <Icon
-                  className={
-                    'absolute right-0 top-0 h-2.5 w-2.5 translate-x-[8px] translate-y-[-2px] text-default-foreground'
-                  }
-                  icon="material-symbols-light:arrow-outward-rounded"
-                />
-              </p>
+            <div className="flex items-end justify-end pt-3">
               <Button
                 className="bg-default-foreground text-background"
                 radius="md"
                 size="sm"
-                disabled={!modelTag}
+                isDisabled={!modelTag}
                 onClick={() => handlePullModel(modelTag)}
               >
-                Pull
+                {t('settings.integrations.ollama.models.pullModel.pull')}
               </Button>
             </div>
           </div>
         </CardBody>
       </Card>
-      {pullingModels.map((modelPullingStatus) => (
-        <React.Fragment key={modelPullingStatus.modelTag}>
-          <Spacer y={3} />
-          <div className="relative w-full rounded-medium border border-warning-100 bg-content2 bg-warning-100/50 px-4 py-3 text-foreground">
-            {modelPullingStatus.total ? (
-              <Progress
-                label={`${modelPullingStatus.modelTag}: ${modelPullingStatus.status}`}
-                size="sm"
-                value={modelPullingStatus.completed}
-                maxValue={modelPullingStatus.total}
-                color="default"
-                formatOptions={{ style: 'percent' }}
-                showValueLabel={true}
-                className="max-w-md"
-              />
-            ) : (
-              <p className="text-sm font-medium">{`${modelPullingStatus.modelTag}: ${modelPullingStatus.status}`}</p>
-            )}
-          </div>
-        </React.Fragment>
-      ))}
+      {pullingModels?.map(({ modelTag, status }) => {
+        const modelPullingStatus = JSON.parse(status) as ModelPullingStatus
+
+        return (
+          <React.Fragment key={modelTag}>
+            <Spacer y={3} />
+            <div className="relative w-full rounded-medium border border-warning-100 bg-content2 bg-warning-100/50 px-4 py-3 text-foreground">
+              {modelPullingStatus.total ? (
+                <Progress
+                  label={`${modelTag}: ${modelPullingStatus.status}`}
+                  size="sm"
+                  value={modelPullingStatus.completed}
+                  maxValue={modelPullingStatus.total}
+                  color="default"
+                  formatOptions={{ style: 'percent' }}
+                  showValueLabel={true}
+                  className="max-w-md"
+                />
+              ) : (
+                <p className="text-sm font-medium">{`${modelTag}: ${modelPullingStatus.status}`}</p>
+              )}
+            </div>
+          </React.Fragment>
+        )
+      })}
     </>
   )
 }

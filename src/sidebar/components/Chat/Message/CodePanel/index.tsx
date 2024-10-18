@@ -1,9 +1,11 @@
 import { Button } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
-import { useTheme } from 'next-themes'
 import { FC, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+
+import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
 interface CodePanelProps {
   language: string
@@ -13,6 +15,7 @@ interface CodePanelProps {
 const CodePanel: FC<CodePanelProps> = memo(({ language, value }) => {
   const { theme } = useTheme()
   const { copied, copy } = useClipboard()
+  const { t } = useTranslation()
 
   const isDark = theme === 'dark'
 
@@ -32,7 +35,7 @@ const CodePanel: FC<CodePanelProps> = memo(({ language, value }) => {
           onPress={handleCopy}
           className="hidden h-6 bg-content2 shadow-small group-hover/code-panel:flex"
         >
-          {copied ? <p>&#x2728;Copied!&#x2728;</p> : <p>Copy!</p>}
+          {copied ? <p>{t('copied')}</p> : <p>{t('copy')}</p>}
         </Button>
       </div>
       <SyntaxHighlighter

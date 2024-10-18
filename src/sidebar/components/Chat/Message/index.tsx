@@ -3,13 +3,16 @@ import { Button, Tooltip, Badge } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
+import ContextField from '@/sidebar/components/Chat/Message/ContextField'
 import Markdown from '@/sidebar/components/Chat/Message/Markdown'
 
 export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   avatar?: React.ReactNode
   showFeedback?: boolean
   message?: React.ReactNode
+  messageContext?: string
   currentAttempt?: number
   status?: string
   attempts?: number
@@ -32,6 +35,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
     {
       avatar,
       message,
+      messageContext,
       statusText,
       showFeedback,
       attempts = 1,
@@ -51,6 +55,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
     },
     ref
   ) => {
+    const { t } = useTranslation()
     const messageRef = React.useRef<HTMLDivElement>(null)
 
     const { copied, copy } = useClipboard()
@@ -100,6 +105,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
               messageClassName
             )}
           >
+            <ContextField messageContext={messageContext} />
             <div ref={messageRef} className={'text-small'}>
               {typeof message === 'string' ? <Markdown message={message} /> : message}
             </div>
@@ -130,7 +136,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
             )}
             {showFeedback && (
               <div className="flex items-center gap-2 pt-2">
-                <Tooltip content="Copy" placement="bottom">
+                <Tooltip content={t('copyButton')} placement="bottom">
                   <Button isIconOnly radius="full" size="sm" variant="flat" onPress={handleCopy}>
                     {copied ? (
                       <Icon className="text-lg text-default-600" icon="gravity-ui:check" />
@@ -145,8 +151,14 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                       <div className="flex flex-col gap-2 p-2.5">
                         {Object.entries(metadata).map(([key, value]) => (
                           <div key={key} className="flex gap-1">
-                            <span className="text-tiny text-default-500">{key}:</span>
-                            <span className="text-tiny text-default-600">{value}</span>
+                            <span className="text-tiny text-default-500">
+                              {t(`responseMetadata.${key}.label`)}:
+                            </span>
+                            <span className="text-tiny text-default-600">
+                              {t(`responseMetadata.${key}.unit`, {
+                                value
+                              })}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -160,7 +172,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                   </Tooltip>
                 )}
                 {status === 'aborted' && (
-                  <Tooltip content="Continue generating" placement="bottom">
+                  <Tooltip content={t('continueButton')} placement="bottom">
                     <Button
                       isIconOnly
                       radius="full"
@@ -174,7 +186,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                   </Tooltip>
                 )}
                 {isLastMessage && (
-                  <Tooltip content="Regenerate" placement="bottom">
+                  <Tooltip content={t('regenerateButton')} placement="bottom">
                     <Button
                       isIconOnly
                       radius="full"

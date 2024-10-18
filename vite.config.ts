@@ -1,58 +1,63 @@
 import react from '@vitejs/plugin-react'
+import autoprefixer from 'autoprefixer'
 import { build } from 'esbuild'
-import { writeFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
+import postcss from 'postcss'
+import tailwindcss from 'tailwindcss'
 import { defineConfig } from 'vite'
-
-import createManifest from './manifest'
-
-const SUPPORTED_BROWSERS = ['chrome', 'opera']
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const [buildMode, browser] = mode.split(':')
-  const isDevelopment = buildMode === 'development'
-
-  if (!SUPPORTED_BROWSERS.includes(browser)) {
-    throw new Error(`Unsupported browser: ${browser}`)
-  }
+  const isDevelopment = mode === 'development'
 
   const define = {
-    'process.env.BROWSER': JSON.stringify(browser)
+    'process.env.NODE_ENV': JSON.stringify(mode)
   }
 
   return {
     plugins: [
       react(),
       {
-        name: 'generate-manifest',
-        writeBundle() {
-          const manifest = createManifest(browser)
-          writeFileSync(`dist/${browser}/manifest.json`, JSON.stringify(manifest, null, 2))
-        }
-      },
-      {
         name: 'build-content-script',
         async writeBundle() {
           await build({
-            entryPoints: ['src/pageContent/contentScript.ts'],
+            entryPoints: ['src/pageContent/index.tsx'],
             bundle: true,
-            outfile: `dist/${browser}/contentScript.js`,
+            outfile: `dist/contentScript.js`,
             format: 'iife',
             minify: true,
             target: 'es2020',
             loader: {
               '.ts': 'ts',
-              '.tsx': 'tsx'
+              '.tsx': 'tsx',
+              '.svg': 'dataurl'
             },
             tsconfig: 'tsconfig.app.json',
             define
           })
         }
+      },
+      {
+        name: 'build-content-script-styles',
+        async writeBundle() {
+          const inputCSS = 'src/shared/style/index.css'
+          const outputCSS = `dist/assets/styles/overlay.css`
+          const tailwindConfig = 'tailwind.overlay.config.js'
+
+          const css = readFileSync(inputCSS, 'utf8')
+
+          const result = await postcss([tailwindcss(tailwindConfig), autoprefixer]).process(css, {
+            from: inputCSS,
+            to: outputCSS
+          })
+
+          writeFileSync(outputCSS, result.css)
+        }
       }
     ],
     build: {
-      outDir: `dist/${browser}`,
+      outDir: `dist`,
       minify: isDevelopment ? false : 'esbuild',
       rollupOptions: {
         input: {

@@ -1,0 +1,50 @@
+language: 'en'
+early_access: false
+reviews:
+  path_instructions:
+    - path: 'src/server/**/*.ts'
+      instructions: |
+        Review the background script of the Chrome extension. Ensure that:
+        - The code uses the Chrome Extension API correctly.
+        - The code follows the TypeScript style guide and best practices.
+        - Asynchronous operations are handled properly, especially with Chrome APIs.
+        - The code is well-structured and easy to understand.
+
+    - path: 'src/sidebar/**/*.ts'
+      instructions: |
+        Review the sidebar script of the Chrome extension. Ensure that:
+        - The code follows the TypeScript style guide and best practices.
+        - The code is well-structured and easy to understand.
+        - The sidebar interacts with the background script correctly.
+        - React components are used properly and efficiently (e.g., functional components, hooks).
+
+    - path: 'src/pageContent/**/*.ts'
+      instructions: |
+        Review the content script of the Chrome extension. Ensure that:
+        - The code follows the TypeScript style guide and best practices.
+        - The code is well-structured and easy to understand.
+        - The content script interacts with the background script correctly.
+        - The content script injects scripts and styles properly.
+
+    - path: 'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
+      instructions: |
+        Review the test files of the Chrome extension. Ensure that:
+        - The test cases cover all the functionalities of the extension.
+        - The test cases are well-structured, easy to understand, and reliable.
+        - The test cases are reliable and provide good coverage.
+        - The tests are written using Vitest.
+
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - 'main'
+      - 'fix/.*'
+      - 'chore/.*'
+      - 'feat/.*'
+chat:
+  auto_reply: true

@@ -1,25 +1,3 @@
-export const processChatStream = async (
-  stream: ReadableStream<Uint8Array>,
-  onChunk: (data: string) => void,
-  onFinish: () => void
-) => {
-  const reader = stream.getReader()
-
-  const decoder = new TextDecoder('utf-8')
-
-  while (true) {
-    const { done, value } = await reader.read()
-
-    if (done) break
-
-    const decoded = decoder.decode(value)
-
-    onChunk(decoded)
-  }
-
-  onFinish()
-}
-
 export async function* streamingFetch(input: () => Promise<Response>) {
   const response = await input()
 
