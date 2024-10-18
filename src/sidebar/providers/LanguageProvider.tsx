@@ -1,6 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { db } from '@/shared/db'
+import { SettingsKeys } from '@/shared/db/models/SettingsItem'
 import { Language } from '@/shared/types/Languages'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 import sendMessageAsync from '@/sidebar/utils/sendMessageAsync'
@@ -19,21 +21,19 @@ const LanguageProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
 
   const changeLanguage = React.useCallback(
     async (language: Language) => {
-      await sendMessageAsync({ type: ServerEndpoints.changeLanguage, payload: language })
+      await db.settings.put({ key: SettingsKeys.language, value: language })
       i18n.changeLanguage(language)
     },
     [i18n]
   )
 
   React.useEffect(() => {
-    sendMessageAsync({ type: ServerEndpoints.getCurrentLanguage }).then((language: unknown) => {
-      if (typeof language !== 'string') {
-        return
+    sendMessageAsync<string>({ type: ServerEndpoints.getCurrentLanguage, payload: null }).then(
+      (language) => {
+        i18n.changeLanguage(language)
+        setIsSynchronized(true)
       }
-
-      i18n.changeLanguage(language)
-      setIsSynchronized(true)
-    })
+    )
   }, [i18n])
 
   if (!isSynchronized) {

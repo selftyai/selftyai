@@ -11,7 +11,7 @@ import {
   ModalContent,
   Switch
 } from '@nextui-org/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import ConfigureOllamaModels from '@/sidebar/components/Settings/Integrations/Ollama/ConfigureOllamaModels'
@@ -22,17 +22,20 @@ const ConfigureOllama = () => {
   const { t } = useTranslation()
 
   const {
-    baseURL,
-    changeBaseURL,
-    connected,
     pullingModels,
-    enabled,
-    enableOllama,
-    disableOllama,
-    error
+    integration,
+    connected,
+    verifyingConnection,
+    toggleOllama,
+    verifyConnection,
+    changeBaseURL
   } = useOllama()
 
-  const [input, setInput] = React.useState(baseURL)
+  const [input, setInput] = React.useState(integration?.baseURL || '')
+
+  useEffect(() => {
+    setInput(integration?.baseURL || '')
+  }, [integration])
 
   const content = (
     <div className="flex flex-1 flex-col p-6">
@@ -80,18 +83,6 @@ const ConfigureOllama = () => {
             }}
           />
         </div>
-
-        {error && (
-          <div className="relative w-full rounded-medium border border-danger-100 bg-content2 bg-danger-100/50 px-4 py-3 text-foreground">
-            {error === 'ollamaOriginError' ? (
-              <span>{t('errors.ollamaOriginError')}</span>
-            ) : error === 'ollamaConnectionError' ? (
-              <span>{t('errors.ollamaConnectionError')}</span>
-            ) : (
-              <span>{error}</span>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="mb-5 flex flex-col gap-2">
@@ -107,24 +98,12 @@ const ConfigureOllama = () => {
             }}
           />
         </p>
-        <p
-          className={cn(
-            'ml-auto inline-flex items-center gap-2 text-xs font-normal',
-            connected ? 'text-success-500' : 'text-danger-500'
-          )}
-        >
-          <Icon
-            icon={connected ? 'akar-icons:circle-check' : 'akar-icons:circle-alert'}
-            className="h-3 w-3"
-          />
-          {t(connected ? 'connected' : 'disconnected')}
-        </p>
         <Input
           className="mt-2"
           variant="flat"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          defaultValue={baseURL}
+          defaultValue={integration?.baseURL}
           placeholder=""
           validate={(value) => {
             if (!value) {
@@ -132,6 +111,19 @@ const ConfigureOllama = () => {
             }
             return ''
           }}
+          endContent={
+            <Button
+              className="bg-default-foreground text-background"
+              radius="md"
+              size="sm"
+              color="secondary"
+              isDisabled={!input.length || input === integration?.baseURL}
+              onClick={() => verifyConnection(input)}
+              isLoading={verifyingConnection}
+            >
+              {t('settings.integrations.ollama.configurations.verify')}
+            </Button>
+          }
         />
 
         <div className="ml-auto mt-1 flex flex-row gap-2">
@@ -143,10 +135,13 @@ const ConfigureOllama = () => {
             radius="md"
             size="sm"
             color="secondary"
-            isDisabled={!input.length || pullingModels.length > 0 || input === baseURL}
-            onClick={() => changeBaseURL(input)}
+            isDisabled={!!pullingModels?.length || input === integration?.baseURL || !input.length}
+            onClick={() => {
+              onOpenChange()
+              changeBaseURL(input)
+            }}
           >
-            {t('settings.integrations.ollama.configurations.saveAndVerify')}
+            {t('save')}
           </Button>
         </div>
       </div>
@@ -156,12 +151,8 @@ const ConfigureOllama = () => {
   return (
     <>
       <div className="flex flex-row gap-2">
-        <Switch
-          isSelected={enabled}
-          onValueChange={(value) => (value ? enableOllama() : disableOllama())}
-          size="sm"
-        />
-        {enabled && (
+        <Switch isSelected={integration?.active} onValueChange={toggleOllama} size="sm" />
+        {integration?.active && (
           <React.Fragment>
             <Button size="sm" variant="faded" onClick={onOpenChange}>
               <Icon

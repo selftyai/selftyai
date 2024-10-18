@@ -1,12 +1,8 @@
 export enum ServerEndpoints {
   // Conversations
   createConversation = 'createConversation',
-  getConversations = 'getConversations',
-  deleteConversation = 'deleteConversation',
   sendMessage = 'sendMessage',
   setMessageContext = 'setMessageContext',
-  pinConversation = 'pinConversation',
-  unpinConversation = 'unpinConversation',
   regenerateResponse = 'regenerateResponse',
   continueGenerating = 'continueGenerating',
   stop = 'stop',
@@ -16,15 +12,14 @@ export enum ServerEndpoints {
   ollamaModels = 'ollamaModels',
   ollamaPullModel = 'ollamaPullModel',
   ollamaDeleteModel = 'ollamaDeleteModel',
-  ollamaChangeUrl = 'ollamaChangeUrl',
-  disableOllama = 'disableOllama',
-  enableOllama = 'enableOllama',
-  integrationStatusOllama = 'integrationStatusOllama',
 
   //SidePanel
   sidePanelHandler = 'sidePanelHandler',
 
   // Internalization
   getCurrentLanguage = 'getCurrentLanguage',
-  changeLanguage = 'changeLanguage'
+
+  // Theme
+  getTheme = 'getTheme',
+  setTheme = 'setTheme'
 }

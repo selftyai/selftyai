@@ -10,7 +10,7 @@ const printBuildInfo = () =>
                            |___/       
                            
 
-(build v${chrome.runtime.getManifest().version}-${process.env.BROWSER}) - Use your LLM models on any website
+v${chrome.runtime.getManifest().version} - Use your LLM models on any website
 
 Website: https://selftyai.com?ref=extension_info
 Source code: https://github.com/selftyai/selftyai

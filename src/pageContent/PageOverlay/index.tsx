@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import ContextMenu from '@/pageContent/PageOverlay/ContextMenu'
 import Overlay from '@/pageContent/PageOverlay/Overlay'
+import ThemeProvider from '@/sidebar/providers/ThemeProvider'
 
 const App = () => {
   const [isOverlayVisible, setIsOverlayVisible] = useState(false)
@@ -54,19 +55,21 @@ const App = () => {
   }, [isOverlayVisible, selectedText])
 
   return (
-    <div ref={ref} className="bg-background text-foreground dark">
-      <Overlay isVisible={isOverlayVisible} onClose={closeOverlay}>
-        {menuPosition && selectedText && (
-          <ContextMenu
-            left={menuPosition.left}
-            top={menuPosition.top}
-            onClose={closeOverlay}
-            text={selectedText}
-            overlayRef={ref}
-          />
-        )}
-      </Overlay>
-    </div>
+    <ThemeProvider parent={ref.current!}>
+      <div ref={ref} className="text-foreground">
+        <Overlay isVisible={isOverlayVisible} onClose={closeOverlay}>
+          {menuPosition && selectedText && (
+            <ContextMenu
+              left={menuPosition.left}
+              top={menuPosition.top}
+              onClose={closeOverlay}
+              text={selectedText}
+              overlayRef={ref}
+            />
+          )}
+        </Overlay>
+      </div>
+    </ThemeProvider>
   )
 }
 

@@ -98,9 +98,11 @@
           "baseURL": {
             "label": "Base URL",
             "description": "By default, the base URL is set to <strong>http://127.0.0.1:11434</strong>. If you have a dedicated server, you can change the base URL here.",
-            "required": "Base URL is required"
+            "required": "Base URL is required",
+            "needToVerify": "Connection is not verified"
           },
-          "saveAndVerify": "Save & verify"
+          "saveAndVerify": "Save & verify",
+          "verify": "Verify"
         },
         "models": {
           "title": "Manage models",
@@ -117,7 +119,12 @@
         "noModels": "No models found.",
         "search": "Search by tag name...",
         "connected": "Connection with Ollama server established successfully",
-        "disconnected": "Connection with Ollama server is not established"
+        "disconnected": "Connection with Ollama server is not established",
+        "baseURLChanged": "Base URL has been changed successfully",
+        "modelDeleted": "Model {{ name }} has been deleted successfully",
+        "modelPulled": "Model {{ name }} has been pulled successfully and will be available in the models list at once",
+        "modelPulling": "Model {{ name }} is pulling",
+        "modelAlreadyPulled": "Model {{ name }} is already pulled"
       },
       "groq": {
         "title": "Groq",
@@ -149,6 +156,7 @@
   "connected": "Connected",
   "disconnected": "Disconnected",
   "cancel": "Cancel",
+  "save": "Save",
   "configure": "Configure",
   "delete": "Delete",
   "comingSoon": "Coming soon",
@@ -165,5 +173,8 @@
   "showMore": "Show more",
   "fullPage": "Full page",
   "copied": "Copied!",
-  "copy": "Copy"
+  "copy": "Copy",
+  "newConversation": "New conversation",
+  "unpinnedConversation": "Conversation unpinned successfully",
+  "pinnedConversation": "Conversation pinned successfully"
 }

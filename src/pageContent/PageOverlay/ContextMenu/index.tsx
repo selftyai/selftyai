@@ -29,7 +29,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, ove
 
   return (
     <div
-      className="z-[10000] flex items-center justify-center gap-2 rounded-lg bg-background p-1"
+      className="z-[10000] flex items-center justify-center gap-2 rounded-lg border-1 border-content2 bg-background p-1 text-foreground"
       style={{
         position: 'absolute',
         left: `${left}px`,

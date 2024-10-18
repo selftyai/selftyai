@@ -1,10 +1,10 @@
 import { RadioGroup } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
-import { useTheme } from 'next-themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { ThemeCustomRadio } from '@/sidebar/components/ThemeSwitcher'
+import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
 interface AppearanceSettingCardProps {
   className?: string
@@ -13,7 +13,7 @@ interface AppearanceSettingCardProps {
 const AppearanceSetting = React.forwardRef<HTMLDivElement, AppearanceSettingCardProps>(
   ({ className, ...props }, ref) => {
     const { t } = useTranslation()
-    const { theme, setTheme } = useTheme()
+    const { theme, changeTheme } = useTheme()
 
     return (
       <div ref={ref} className={cn('p-2', className)} {...props}>
@@ -29,10 +29,8 @@ const AppearanceSetting = React.forwardRef<HTMLDivElement, AppearanceSettingCard
               wrapper: 'mt-4 flex-wrap gap-x-2 gap-y-2'
             }}
             orientation="horizontal"
-            onChange={(e) => {
-              setTheme(e.target.value)
-            }}
-            defaultValue={theme}
+            onChange={(e) => changeTheme(e.target.value)}
+            value={theme}
           >
             <ThemeCustomRadio value="light" variant="light">
               {t('settings.appearance.theme.options.light')}

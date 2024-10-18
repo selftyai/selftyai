@@ -3,6 +3,7 @@ import { Button, Card, CardBody, Divider, Input, Spacer, Progress, Link } from '
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type { ModelPullingStatus } from '@/shared/types/ollama/ModelPullingStatus'
 import { useOllama } from '@/sidebar/providers/OllamaProvider'
 
 const PullModel = () => {
@@ -33,6 +34,7 @@ const PullModel = () => {
               radius="md"
               size="sm"
               href="https://ollama.com/library"
+              target="_blank"
             >
               {t('settings.integrations.ollama.models.pullModel.library')}
             </Button>
@@ -72,27 +74,31 @@ const PullModel = () => {
           </div>
         </CardBody>
       </Card>
-      {pullingModels.map((modelPullingStatus) => (
-        <React.Fragment key={modelPullingStatus.modelTag}>
-          <Spacer y={3} />
-          <div className="relative w-full rounded-medium border border-warning-100 bg-content2 bg-warning-100/50 px-4 py-3 text-foreground">
-            {modelPullingStatus.total ? (
-              <Progress
-                label={`${modelPullingStatus.modelTag}: ${modelPullingStatus.status}`}
-                size="sm"
-                value={modelPullingStatus.completed}
-                maxValue={modelPullingStatus.total}
-                color="default"
-                formatOptions={{ style: 'percent' }}
-                showValueLabel={true}
-                className="max-w-md"
-              />
-            ) : (
-              <p className="text-sm font-medium">{`${modelPullingStatus.modelTag}: ${modelPullingStatus.status}`}</p>
-            )}
-          </div>
-        </React.Fragment>
-      ))}
+      {pullingModels?.map(({ modelTag, status }) => {
+        const modelPullingStatus = JSON.parse(status) as ModelPullingStatus
+
+        return (
+          <React.Fragment key={modelTag}>
+            <Spacer y={3} />
+            <div className="relative w-full rounded-medium border border-warning-100 bg-content2 bg-warning-100/50 px-4 py-3 text-foreground">
+              {modelPullingStatus.total ? (
+                <Progress
+                  label={`${modelTag}: ${modelPullingStatus.status}`}
+                  size="sm"
+                  value={modelPullingStatus.completed}
+                  maxValue={modelPullingStatus.total}
+                  color="default"
+                  formatOptions={{ style: 'percent' }}
+                  showValueLabel={true}
+                  className="max-w-md"
+                />
+              ) : (
+                <p className="text-sm font-medium">{`${modelTag}: ${modelPullingStatus.status}`}</p>
+              )}
+            </div>
+          </React.Fragment>
+        )
+      })}
     </>
   )
 }

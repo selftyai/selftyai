@@ -1,4 +1,4 @@
-import { Model } from '@/shared/types/Model'
+import { Model } from '@/shared/db/models/Model'
 
 /**
  * Base class for all AI providers
