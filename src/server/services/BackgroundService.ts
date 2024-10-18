@@ -17,15 +17,15 @@ class BackgroundService {
     this.messageHandler = new MessageHandler(createMessageHandlerChain())
   }
 
-  start() {
+  public async start() {
     printBuildInfo()
     this.setupSidePanel()
-    this.initializeDatabase()
+    await this.initializeDatabase()
     this.startModelMonitoring()
     this.registerListeners()
   }
 
-  stop() {
+  public stop() {
     this.stopModelMonitoring()
     this.unregisterListeners()
   }
@@ -34,11 +34,10 @@ class BackgroundService {
     chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
   }
 
-  private initializeDatabase() {
-    db.conversations.toArray().then((conversations) => {
-      const ongoingConversations = conversations.filter((conversation) => conversation.generating)
-      this.abortOngoingConversations(ongoingConversations)
-    })
+  private async initializeDatabase() {
+    const conversations = await db.conversations.toArray()
+    const ongoingConversations = conversations.filter((conversation) => conversation.generating)
+    await this.abortOngoingConversations(ongoingConversations)
   }
 
   private async abortOngoingConversations(ongoingConversations: Conversation[]) {

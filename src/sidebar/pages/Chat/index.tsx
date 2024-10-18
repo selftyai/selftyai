@@ -1,6 +1,5 @@
 import { Icon } from '@iconify/react'
 import { Card, CardHeader, CardBody, Avatar, Button } from '@nextui-org/react'
-import { useTheme } from 'next-themes'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -11,6 +10,7 @@ import SidebarContainer from '@/sidebar/components/Sidebar/SidebarContainer'
 import Textarea from '@/sidebar/components/Textarea'
 import { useScrollAnchor } from '@/sidebar/hooks/useScrollAnchor'
 import { useChat } from '@/sidebar/providers/ChatProvider'
+import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
 const Chat = () => {
   const [prompt, setPrompt] = useState<string>()

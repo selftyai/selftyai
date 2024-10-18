@@ -3,10 +3,11 @@ import { MessageEvent } from '@/server/types/MessageEvent'
 
 class MessageHandler {
   private handler!: AbstractHandler<MessageEvent<unknown>, unknown>
+  private wrappedHandler: (message: MessageEvent<unknown>) => Promise<unknown>
 
   constructor(handler: AbstractHandler<MessageEvent<unknown>, unknown>) {
     this.handler = handler
-
+    this.wrappedHandler = this.wrapAsyncHandler(this.handler)
     this.onMessage = this.onMessage.bind(this)
   }
 
@@ -38,8 +39,8 @@ class MessageHandler {
       `[${sender.id}][Message Handler] Received message with type: ${type} and payload`,
       payload
     )
-    const handler = this.wrapAsyncHandler(this.handler)
-    handler(message).then((payload: unknown) => {
+
+    this.wrappedHandler(message).then((payload: unknown) => {
       console.log(
         `[${sender.id}][Message Handler] Sending response for message type: ${type}`,
         payload

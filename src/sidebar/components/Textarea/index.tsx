@@ -1,33 +1,30 @@
 import { Icon } from '@iconify/react'
-import {
-  Button,
-  Tooltip,
-  Image,
-  Badge,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownSection,
-  DropdownItem
-} from '@nextui-org/react'
+import { Button, Tooltip, Image, Badge } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
-import React, { memo, useEffect, useMemo } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import React, { memo, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { File } from '@/shared/db/models/File'
-import { Model } from '@/shared/db/models/Model'
 import ContextField from '@/sidebar/components/Textarea/ContextField'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
 import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
+
+import SelectModelDropdown from './SelectModelDropdown'
 
 interface TextAreaProps {
   selectedPrompt?: string
 }
 
 const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
-  const { sendMessage, messages, selectedConversation, stopGenerating, messageContext, setMessageContext } = useChat()
+  const {
+    sendMessage,
+    messages,
+    selectedConversation,
+    stopGenerating,
+    messageContext,
+    setMessageContext
+  } = useChat()
   const { selectedModel, models, selectModel } = useModels()
   const { formRef, onKeyDown } = useEnterSubmit()
   const { t } = useTranslation()
@@ -35,25 +32,10 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
   const hasError = messages ? messages[messages.length - 1]?.error === 'error' : false
   const isGenerating = selectedConversation?.generating
 
-  const groupedModels = useMemo(() => {
-    return models.reduce(
-      (acc, model) => {
-        if (!acc[model.provider]) {
-          acc[model.provider] = []
-        }
-        acc[model.provider].push(model)
-        return acc
-      },
-      {} as Record<string, Model[]>
-    )
-  }, [models])
-
   const [prompt, setPrompt] = React.useState<string>('')
   const [images, setImages] = React.useState<Omit<File, 'conversationId' | 'messageId'>[]>([])
 
   const imageRef = React.useRef<HTMLInputElement>(null)
-
-  const navigator = useNavigate()
 
   const onRemoveImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index))
@@ -216,87 +198,11 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
           }
         />
         <div className="flex w-full flex-wrap items-end justify-between gap-2 px-4 pb-4">
-          <Dropdown className="bg-content1" placement="top-start">
-            <DropdownTrigger>
-              <Button
-                size="sm"
-                startContent={
-                  <Icon className="text-medium text-warning-500" icon="proicons:sparkle" />
-                }
-                variant="flat"
-              >
-                {selectedModel ? selectedModel.name : t('selectModel')}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              aria-label="models"
-              className="p-0 pt-2"
-              variant="faded"
-              onAction={(e) => selectModel(e as string)}
-              items={Object.keys(groupedModels)
-                .map((provider) => ({
-                  key: provider,
-                  models: groupedModels[provider]
-                }))
-                .filter((provider) => provider.models.length > 0)}
-              emptyContent={
-                <div className="flex flex-col gap-2 pb-2 text-center">
-                  <Trans
-                    i18nKey="noModelsAvailable"
-                    components={{
-                      SettingsLink: (
-                        <Button
-                          size="sm"
-                          color="default"
-                          className="text-default-600"
-                          onClick={() => navigator('/settings?tab=integrations')}
-                          startContent={
-                            <Icon
-                              className="text-default-600"
-                              icon="solar:settings-minimalistic-line-duotone"
-                              width={16}
-                            />
-                          }
-                        />
-                      )
-                    }}
-                  />
-                </div>
-              }
-            >
-              {(provider) => (
-                <DropdownSection
-                  classNames={{
-                    heading: 'text-tiny px-[10px]'
-                  }}
-                  title={t(provider.key)}
-                  items={provider.models.map((model, index) => ({ ...model, index }))}
-                >
-                  {(model) => (
-                    <DropdownItem
-                      key={model.model}
-                      className="text-default-500 data-[hover=true]:text-default-500"
-                      classNames={{
-                        description: 'text-default-500 text-tiny'
-                      }}
-                      endContent={
-                        selectedModel?.name === model.name && (
-                          <Icon
-                            className="text-default-foreground"
-                            height={24}
-                            icon="solar:check-circle-bold"
-                            width={24}
-                          />
-                        )
-                      }
-                    >
-                      {model.name}
-                    </DropdownItem>
-                  )}
-                </DropdownSection>
-              )}
-            </DropdownMenu>
-          </Dropdown>
+          <SelectModelDropdown
+            models={models}
+            onSelectModel={selectModel}
+            selectedModel={selectedModel}
+          />
 
           {/* <p className="py-1 text-tiny text-default-400">{prompt.length}/2000</p> */}
         </div>

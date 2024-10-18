@@ -1,10 +1,11 @@
 import { Button } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
-import { useTheme } from 'next-themes'
 import { FC, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+
+import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
 interface CodePanelProps {
   language: string

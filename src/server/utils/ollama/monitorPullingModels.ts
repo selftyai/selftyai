@@ -1,6 +1,16 @@
+import { OllamaService } from '@/server/services/OllamaService'
 import createOllamaService from '@/server/utils/ollama/createOllamaService'
 import getOrCreateOllamaIntegration from '@/server/utils/ollama/getOrCreateOllamaIntegration'
 import { db } from '@/shared/db'
+
+async function getOllamaModels(service: OllamaService) {
+  try {
+    return await service.getModels()
+  } catch (error: unknown) {
+    console.warn('Error while monitoring models:', error instanceof Error ? error.message : error)
+    return []
+  }
+}
 
 export default async function monitorPullingModels() {
   const integration = await getOrCreateOllamaIntegration()
@@ -10,7 +20,7 @@ export default async function monitorPullingModels() {
   const service = await createOllamaService()
 
   try {
-    const [models, dbModels] = await Promise.all([service.getModels(), db.models.toArray()])
+    const [models, dbModels] = await Promise.all([getOllamaModels(service), db.models.toArray()])
 
     const modelMap = new Map(models.map((model) => [model.name, model]))
 
@@ -37,10 +47,12 @@ export default async function monitorPullingModels() {
         isDeleted: false
       }))
 
-    await Promise.all([
-      ...updates.map((update) => db.models.update(update!.id, update!.changes)),
-      db.models.bulkAdd(newModels)
-    ])
+    await db.transaction('rw', db.models, async () => {
+      await Promise.all([
+        ...updates.map((update) => db.models.update(update!.id, update!.changes)),
+        db.models.bulkAdd(newModels)
+      ])
+    })
   } catch (error: unknown) {
     console.warn('Error while monitoring models:', error instanceof Error ? error.message : error)
   }

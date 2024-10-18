@@ -1,8 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sendMessageAsync = (message: any) => {
+import { MessageEvent } from '@/server/types/MessageEvent'
+
+export default function sendMessageAsync<T = unknown>(message: MessageEvent<unknown>): Promise<T> {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(message, (response) => {
-      console.log('sendMessageAsync', response)
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError)
       } else {
@@ -11,5 +11,3 @@ const sendMessageAsync = (message: any) => {
     })
   })
 }
-
-export default sendMessageAsync

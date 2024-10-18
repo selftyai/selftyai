@@ -16,8 +16,6 @@ class PortHandler {
     this.connectedPorts = []
 
     this.onConnect = this.onConnect.bind(this)
-    this.onDisconnect = this.onDisconnect.bind(this)
-    this.onMessage = this.onMessage.bind(this)
     this.broadcastMessage = this.broadcastMessage.bind(this)
   }
 
@@ -25,8 +23,8 @@ class PortHandler {
     console.log('[PortHandler] Port connected:', port)
     this.connectedPorts.push(port)
 
-    port.onDisconnect.addListener(this.onDisconnect)
-    port.onMessage.addListener(this.onMessage(port))
+    port.onDisconnect.addListener(() => this.onDisconnect(port))
+    port.onMessage.addListener(this.onMessage.bind(this, port))
   }
 
   private onDisconnect(port: chrome.runtime.Port) {
@@ -37,37 +35,35 @@ class PortHandler {
     }
   }
 
-  private onMessage(port: chrome.runtime.Port) {
-    return async (message: MessageEvent<unknown>) => {
-      let response = null
+  private async onMessage(port: chrome.runtime.Port, message: MessageEvent<unknown>) {
+    let response = null
 
+    try {
+      response = await this.handler.handle({
+        ...message,
+        broadcastMessage: this.broadcastMessage,
+        port,
+        getConnectedPorts: () => this.connectedPorts
+      })
+    } catch (error: unknown) {
+      console.warn(
+        '[PortHandler] Error while handling message:',
+        error instanceof Error ? error.message : error
+      )
+    }
+
+    if (response) {
       try {
-        response = await this.handler.handle({
-          ...message,
-          broadcastMessage: this.broadcastMessage,
-          port,
-          getConnectedPorts: () => this.connectedPorts
+        port.postMessage({
+          type: message.type,
+          response
         })
+        console.log('[PortHandler] Response sent:', response)
       } catch (error: unknown) {
         console.warn(
-          '[PortHandler] Error while handling message:',
+          '[PortHandler] Error while sending response:',
           error instanceof Error ? error.message : error
         )
-      }
-
-      if (response) {
-        try {
-          port.postMessage({
-            type: message.type,
-            response
-          })
-          console.log('[PortHandler] Response sent:', response)
-        } catch (error: unknown) {
-          console.warn(
-            '[PortHandler] Error while sending response:',
-            error instanceof Error ? error.message : error
-          )
-        }
       }
     }
   }

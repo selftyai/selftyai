@@ -71,9 +71,24 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const { models: ollamaModels } = useOllama()
 
+  const [selectedModel, setSelectedModel] = React.useState<Model>()
+  const [messageContext, setMessageContext] = React.useState<string>()
+
   const models = useMemo<Model[]>(() => {
-    return [...(ollamaModels ?? [])]
-  }, [ollamaModels])
+    const newModels = [...(ollamaModels ?? [])]
+
+    if (
+      ollamaModels &&
+      selectedModel &&
+      !newModels
+        .map(({ name, provider }) => `${name}-${provider}`)
+        .includes(`${selectedModel.name}-${selectedModel.provider}`)
+    ) {
+      setSelectedModel(undefined)
+    }
+
+    return newModels
+  }, [ollamaModels, selectedModel])
 
   const selectedConversation = useLiveQuery(async () => {
     if (!conversationId) return undefined
@@ -86,6 +101,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     }
 
     const model = await db.models.get(data.modelId)
+    setSelectedModel(model)
 
     return { ...data, model }
   }, [conversationId])
@@ -122,9 +138,6 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
     return conversationsWithLastMessage
   }, [])
-
-  const [selectedModel, setSelectedModel] = React.useState<Model>()
-  const [messageContext, setMessageContext] = React.useState<string>()
 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

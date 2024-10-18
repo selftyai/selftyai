@@ -1,3 +1,4 @@
+import { ExtendedEvent } from '@/server/handlers/PortHandler'
 import ContinueMessageHandler from '@/server/handlers/chat/ContinueMessageHandler'
 import GenerateMessageHandler from '@/server/handlers/chat/GenerateMessageHandler'
 import RegenerateMessageHandler from '@/server/handlers/chat/RegenerateMessageHandler'
@@ -7,10 +8,13 @@ import DeleteModelHandler from '@/server/handlers/ollama/DeleteModelHandler'
 import PullModelHandler from '@/server/handlers/ollama/PullModelHandler'
 import VerifyConnectionHandler from '@/server/handlers/ollama/VerifyConnectionHandler'
 import SidePanelHandler from '@/server/handlers/sidePanel/SidePanelHandler'
+import GetThemeHandler from '@/server/handlers/theme/GetThemeHandler'
+import SetThemeHandler from '@/server/handlers/theme/SetThemeHandler'
+import { MessageEvent } from '@/server/types/MessageEvent'
 import mergeHandlers from '@/server/utils/mergeHandlers'
 
 export function createHandlerChains() {
-  return mergeHandlers(
+  return mergeHandlers<ExtendedEvent<unknown>>(
     // Chat handlers
     new ContinueMessageHandler(),
     new GenerateMessageHandler(),
@@ -26,5 +30,11 @@ export function createHandlerChains() {
 }
 
 export function createMessageHandlerChain() {
-  return mergeHandlers(new CurrentLanguageHandler())
+  return mergeHandlers<MessageEvent<unknown>>(
+    // Language handlers
+    new CurrentLanguageHandler(),
+    // Theme handlers
+    new GetThemeHandler(),
+    new SetThemeHandler()
+  )
 }

@@ -1,6 +1,5 @@
 import { Link, Chip, Image } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
-import { useTheme } from 'next-themes'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import { useTranslation } from 'react-i18next'
 
@@ -9,6 +8,7 @@ import groqLogo from '@/sidebar/assets/groq-logo.png'
 import lmStudioLogo from '@/sidebar/assets/lm-studio-logo.png'
 import IntegrationItem from '@/sidebar/components/Settings/Integrations/IntegrationItem'
 import ConfigureOllama from '@/sidebar/components/Settings/Integrations/Ollama/ConfigureOllama'
+import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
 interface AppearanceSettingCardProps {
   className?: string

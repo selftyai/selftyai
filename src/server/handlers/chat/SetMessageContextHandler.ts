@@ -17,8 +17,8 @@ class SetMessageContextHandler extends AbstractHandler<
     if (request.type === ServerEndpoints.setMessageContext) {
       const { context } = request.payload
 
-      const interval = setInterval(async () => {
-        const isSidebarOpen = await this.checkIsSidebarOpen(request)
+      const interval = setInterval(() => {
+        const isSidebarOpen = this.checkIsSidebarOpen(request)
 
         if (isSidebarOpen) {
           request.broadcastMessage({
@@ -37,7 +37,7 @@ class SetMessageContextHandler extends AbstractHandler<
     return super.handle(request)
   }
 
-  private async checkIsSidebarOpen(request: ExtendedEvent<SetMessageContextRequest>) {
+  private checkIsSidebarOpen(request: ExtendedEvent<SetMessageContextRequest>) {
     return request
       .getConnectedPorts()
       .some(

@@ -47,6 +47,13 @@ export default async function streamChatMessage({
     return false
   }
 
+  const assistantMessage = await db.messages.where({ id: assistantMessageId }).first()
+
+  if (!assistantMessage) {
+    console.warn('[streamChatMessage] Assistant message not found:', assistantMessageId)
+    return false
+  }
+
   await db.messages.where({ conversationId, role: 'assistant' }).modify({
     error: undefined,
     finishReason: undefined
@@ -104,16 +111,10 @@ export default async function streamChatMessage({
 
     const startedAt = new Date()
     for await (const textPart of textStream) {
-      const assistantMessage = await db.messages.where({ id: assistantMessageId }).first()
-
-      if (!assistantMessage) {
-        console.warn('[streamChatMessage] Assistant message not found:', assistantMessageId)
-        return false
-      }
-
       await db.messages.update(assistantMessageId, {
         content: assistantMessage.content + textPart
       })
+      assistantMessage.content += textPart
     }
     const endAt = new Date()
 

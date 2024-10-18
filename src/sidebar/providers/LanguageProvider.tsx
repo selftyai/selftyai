@@ -28,14 +28,12 @@ const LanguageProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   )
 
   React.useEffect(() => {
-    sendMessageAsync({ type: ServerEndpoints.getCurrentLanguage }).then((language: unknown) => {
-      if (typeof language !== 'string') {
-        return
+    sendMessageAsync<string>({ type: ServerEndpoints.getCurrentLanguage, payload: null }).then(
+      (language) => {
+        i18n.changeLanguage(language)
+        setIsSynchronized(true)
       }
-
-      i18n.changeLanguage(language)
-      setIsSynchronized(true)
-    })
+    )
   }, [i18n])
 
   if (!isSynchronized) {

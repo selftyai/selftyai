@@ -17,17 +17,16 @@ export default async function pullModel(modelTag: string): Promise<PullModelResp
 
     const model = await db.ollamaPullingModels.where({ modelTag }).first()
     const modelId =
-      model && model.id
-        ? model.id
-        : await db.ollamaPullingModels.add({
-            modelTag,
-            status: JSON.stringify({
-              status: 'pulling manifest'
-            })
-          })
+      model?.id ??
+      (await db.ollamaPullingModels.add({
+        modelTag,
+        status: JSON.stringify({
+          status: 'pulling manifest'
+        })
+      }))
 
-    for await (const model of pullingStatusStream) {
-      const modelPullingStatus = model as ModelPullingStatus
+    for await (const statusUpdate of pullingStatusStream) {
+      const modelPullingStatus = statusUpdate as ModelPullingStatus
 
       if (modelPullingStatus.status === 'success') {
         await db.ollamaPullingModels.delete(modelId)
