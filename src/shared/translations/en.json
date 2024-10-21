@@ -1,6 +1,6 @@
 {
   "extensionName": "Selfty AI",
-  "disclaimer": "LLM's can make mistakes. Check important info.",
+  "disclaimer": "LLM's can make mistakes. Check the information provided by them.",
   "prompts": [
     {
       "id": "prompt1",
@@ -82,6 +82,14 @@
         "options": {
           "light": "Light",
           "dark": "Dark"
+        }
+      },
+      "language": {
+        "label": "Interface Language",
+        "description": "Select a language for the extension.",
+        "options": {
+          "en": "English",
+          "uk": "Ukrainian"
         }
       }
     },
@@ -176,5 +184,11 @@
   "copy": "Copy",
   "newConversation": "New conversation",
   "unpinnedConversation": "Conversation unpinned successfully",
-  "pinnedConversation": "Conversation pinned successfully"
+  "pinnedConversation": "Conversation pinned successfully",
+  "pageContent": {
+    "contextMenu": {
+      "highlight": "Highlight the area",
+      "askAI": "Ask AI"
+    }
+  }
 }

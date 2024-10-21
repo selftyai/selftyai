@@ -14,6 +14,15 @@ export const LanguageContext = React.createContext<
   | undefined
 >(undefined)
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const useLanguage = () => {
+  const context = React.useContext(LanguageContext)
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider')
+  }
+  return context
+}
+
 const LanguageProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { i18n } = useTranslation()
 

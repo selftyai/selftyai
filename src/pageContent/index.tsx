@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 
 import App from '@/pageContent/PageOverlay'
+import '@/shared/i18n'
 
 // Create overlay container
 const container = document.createElement('div')

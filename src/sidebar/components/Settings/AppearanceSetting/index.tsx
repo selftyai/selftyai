@@ -3,7 +3,10 @@ import { cn } from '@nextui-org/react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { ThemeCustomRadio } from '@/sidebar/components/ThemeSwitcher'
+import { Language, supportedLanguages } from '@/shared/types/Languages'
+import { LanguageCustomRadio } from '@/sidebar/components/CustomRadio/LanguageCustomRadio'
+import { ThemeCustomRadio } from '@/sidebar/components/CustomRadio/ThemeCustomRadio'
+import { useLanguage } from '@/sidebar/providers/LanguageProvider'
 import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
 interface AppearanceSettingCardProps {
@@ -12,11 +15,12 @@ interface AppearanceSettingCardProps {
 
 const AppearanceSetting = React.forwardRef<HTMLDivElement, AppearanceSettingCardProps>(
   ({ className, ...props }, ref) => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { theme, changeTheme } = useTheme()
+    const { changeLanguage } = useLanguage()
 
     return (
-      <div ref={ref} className={cn('p-2', className)} {...props}>
+      <div ref={ref} className={cn('flex flex-col gap-4 p-2', className)} {...props}>
         <div>
           <p className="text-base font-medium text-default-700">
             {t('settings.appearance.theme.label')}
@@ -38,6 +42,28 @@ const AppearanceSetting = React.forwardRef<HTMLDivElement, AppearanceSettingCard
             <ThemeCustomRadio value="dark" variant="dark">
               {t('settings.appearance.theme.options.dark')}
             </ThemeCustomRadio>
+          </RadioGroup>
+        </div>
+        <div>
+          <p className="text-base font-medium text-default-700">
+            {t('settings.appearance.language.label')}
+          </p>
+          <p className="mt-1 text-sm font-normal text-default-400">
+            {t('settings.appearance.language.description')}
+          </p>
+          <RadioGroup
+            classNames={{
+              wrapper: 'mt-4 flex-wrap gap-x-2 gap-y-2'
+            }}
+            orientation="horizontal"
+            onChange={(e) => changeLanguage(e.target.value as Language)}
+            value={i18n.language}
+          >
+            {Object.entries(supportedLanguages).map(([key, language]) => (
+              <LanguageCustomRadio key={language} value={language} language={language}>
+                {t(`settings.appearance.language.options.${key}`)}
+              </LanguageCustomRadio>
+            ))}
           </RadioGroup>
         </div>
       </div>

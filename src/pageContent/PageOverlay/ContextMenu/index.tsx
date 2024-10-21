@@ -3,6 +3,7 @@ import { Button, Image } from '@nextui-org/react'
 import { Tooltip } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { SidePanelAction } from '@/server/types/sidePanel/SidePanelActions'
 import logo from '@/shared/assets/logo.svg'
@@ -20,6 +21,7 @@ interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, overlayRef }) => {
   const { sendMessage } = useChromePort()
   const { copied, copy } = useClipboard()
+  const { t } = useTranslation()
 
   const handleSendMessage = () => {
     sendMessage(ServerEndpoints.sidePanelHandler, { action: SidePanelAction.OPEN })
@@ -37,7 +39,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, ove
       }}
       onClick={onClose}
     >
-      <Tooltip content="Ask AI" portalContainer={overlayRef.current ?? undefined}>
+      <Tooltip
+        content={t('pageContent.contextMenu.askAI')}
+        portalContainer={overlayRef.current ?? undefined}
+      >
         <Button
           isIconOnly
           size="sm"
@@ -49,7 +54,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, ove
         </Button>
       </Tooltip>
       <Tooltip
-        content={copied ? 'Copied!' : 'Copy'}
+        content={copied ? t('copied') : t('copy')}
         portalContainer={overlayRef.current ?? undefined}
       >
         <Button
@@ -62,7 +67,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ left, top, onClose, text, ove
           <Icon icon="akar-icons:copy" />
         </Button>
       </Tooltip>
-      <Tooltip content="Highlight the area" portalContainer={overlayRef.current ?? undefined}>
+      <Tooltip
+        content={t('pageContent.contextMenu.highlight')}
+        portalContainer={overlayRef.current ?? undefined}
+      >
         <Button isIconOnly size="sm" variant="light" className="border-none text-base">
           <Icon icon="fluent:copy-select-20-filled" />
         </Button>
