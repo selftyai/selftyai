@@ -3,7 +3,9 @@ import { cn } from '@nextui-org/react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { ContentScriptServerEndpoints } from '@/shared/types/ContentScriptEndpoints'
 import { Language, supportedLanguages } from '@/shared/types/Languages'
+import sendMessageToContentScript from '@/shared/utils/sendMessageToContentScript'
 import { LanguageCustomRadio } from '@/sidebar/components/CustomRadio/LanguageCustomRadio'
 import { ThemeCustomRadio } from '@/sidebar/components/CustomRadio/ThemeCustomRadio'
 import { useLanguage } from '@/sidebar/providers/LanguageProvider'
@@ -56,7 +58,13 @@ const AppearanceSetting = React.forwardRef<HTMLDivElement, AppearanceSettingCard
               wrapper: 'mt-4 flex-wrap gap-x-2 gap-y-2'
             }}
             orientation="horizontal"
-            onChange={(e) => changeLanguage(e.target.value as Language)}
+            onChange={(e) => {
+              changeLanguage(e.target.value as Language)
+              sendMessageToContentScript({
+                type: ContentScriptServerEndpoints.languageChanged,
+                payload: e.target.value
+              })
+            }}
             value={i18n.language}
           >
             {Object.entries(supportedLanguages).map(([key, language]) => (

@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 
 import App from '@/pageContent/PageOverlay'
+import { PageOverlayRefProvider } from '@/pageContent/providers/PageOverlayRefProvider'
 import '@/shared/i18n'
 
 // Create overlay container
@@ -17,4 +18,8 @@ shadowRoot.appendChild(linkEl)
 
 // Render overlay
 const root = createRoot(shadowRoot)
-root.render(<App />)
+root.render(
+  <PageOverlayRefProvider>
+    <App />
+  </PageOverlayRefProvider>
+)
