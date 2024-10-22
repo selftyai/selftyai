@@ -8,7 +8,7 @@ interface CustomRadioProps extends RadioProps {
 }
 
 export const CustomRadio = (props: CustomRadioProps) => {
-  const { imageSrc, imageWrapperClassName } = props
+  const { imageSrc, imageWrapperClassName, ...rest } = props
   const {
     Component,
     children,
@@ -19,7 +19,7 @@ export const CustomRadio = (props: CustomRadioProps) => {
     getLabelProps,
     getLabelWrapperProps,
     getControlProps
-  } = useRadio(props)
+  } = useRadio(rest)
   const wrapperProps = getWrapperProps()
 
   return (
