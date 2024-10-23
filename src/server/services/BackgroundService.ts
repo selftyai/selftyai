@@ -17,10 +17,10 @@ class BackgroundService {
     this.messageHandler = new MessageHandler(createMessageHandlerChain())
   }
 
-  public async start() {
+  public start() {
     printBuildInfo()
     this.setupSidePanel()
-    await this.initializeDatabase()
+    this.initializeDatabase()
     this.startModelMonitoring()
     this.registerListeners()
   }

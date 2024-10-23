@@ -3,7 +3,9 @@ import React, { createContext, useContext, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { ContentScriptServerEndpoints } from '@/shared/types/ContentScriptEndpoints'
+import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 import { useTheme } from '@/sidebar/providers/ThemeProvider'
+import sendMessageAsync from '@/sidebar/utils/sendMessageAsync'
 
 interface PageContentContextProps {
   isContextEnabled: boolean
@@ -42,6 +44,15 @@ export const PageContentProvider: React.FC<{ children: ReactNode }> = ({ childre
       chrome.runtime.onMessage.removeListener(handleMessage)
     }
   }, [changeTheme, i18n])
+
+  React.useEffect(() => {
+    sendMessageAsync<boolean>({ type: ServerEndpoints.getIsContextEnabled, payload: null }).then(
+      (value: boolean) => {
+        setIsContextEnabled(value)
+        console.log(`[PageContentProvider] Received isContextEnabled: ${value}`)
+      }
+    )
+  }, [])
 
   return (
     <PageContentContext.Provider value={{ isContextEnabled }}>

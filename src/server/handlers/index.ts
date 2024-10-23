@@ -7,6 +7,8 @@ import CurrentLanguageHandler from '@/server/handlers/i18n/CurrentLanguageHandle
 import DeleteModelHandler from '@/server/handlers/ollama/DeleteModelHandler'
 import PullModelHandler from '@/server/handlers/ollama/PullModelHandler'
 import VerifyConnectionHandler from '@/server/handlers/ollama/VerifyConnectionHandler'
+import GetContextIsEnableHandler from '@/server/handlers/settings/GetContextIsEnableHandler'
+import SetContextIsEnableHandler from '@/server/handlers/settings/SetContextIsEnableHandler'
 import SidePanelHandler from '@/server/handlers/sidePanel/SidePanelHandler'
 import GetThemeHandler from '@/server/handlers/theme/GetThemeHandler'
 import SetThemeHandler from '@/server/handlers/theme/SetThemeHandler'
@@ -35,6 +37,11 @@ export function createMessageHandlerChain() {
     new CurrentLanguageHandler(),
     // Theme handlers
     new GetThemeHandler(),
-    new SetThemeHandler()
+    new SetThemeHandler(),
+
+    // Settings handlers
+    // IsContextEnable handlers
+    new GetContextIsEnableHandler(),
+    new SetContextIsEnableHandler()
   )
 }

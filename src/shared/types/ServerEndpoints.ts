@@ -21,5 +21,9 @@ export enum ServerEndpoints {
 
   // Theme
   getTheme = 'getTheme',
-  setTheme = 'setTheme'
+  setTheme = 'setTheme',
+
+  // Settings
+  setIsContextEnabled = 'setIsContextEnabled',
+  getIsContextEnabled = 'getIsContextEnabled'
 }

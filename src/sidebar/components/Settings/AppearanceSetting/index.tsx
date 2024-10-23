@@ -22,7 +22,7 @@ const AppearanceSetting = React.forwardRef<HTMLDivElement, AppearanceSettingCard
     const { changeLanguage } = useLanguage()
 
     return (
-      <div ref={ref} className={cn('flex flex-col gap-4 p-2', className)} {...props}>
+      <div ref={ref} className={cn('flex flex-col gap-4', className)} {...props}>
         <div>
           <p className="text-base font-medium text-default-700">
             {t('settings.appearance.theme.label')}

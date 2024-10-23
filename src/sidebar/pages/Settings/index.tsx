@@ -1,14 +1,40 @@
-import { Tab, Tabs } from '@nextui-org/react'
+import { Icon } from '@iconify/react/dist/iconify.js'
+import { Tab, Tabs, Tooltip } from '@nextui-org/react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import AppearanceSetting from '@/sidebar/components/Settings/AppearanceSetting'
+import General from '@/sidebar/components/Settings/General'
 import Integrations from '@/sidebar/components/Settings/Integrations'
 import SidebarContainer from '@/sidebar/components/Sidebar/SidebarContainer'
+import useMediaQuery from '@/sidebar/hooks/useMediaQuery'
 
 const Settings = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { t } = useTranslation()
+
+  const isSmallScreen = useMediaQuery('(max-width: 450px)')
+
+  const tabs = [
+    {
+      id: 'general',
+      title: t('settings.general.title'),
+      icon: 'line-md:cog-loop',
+      children: <General />
+    },
+    {
+      id: 'appearance',
+      title: t('settings.appearance.title'),
+      icon: 'lucide:palette',
+      children: <AppearanceSetting />
+    },
+    {
+      id: 'integrations',
+      title: t('settings.integrations.title'),
+      icon: 'fluent:glance-horizontal-sparkles-24-regular',
+      children: <Integrations className="max-h-[75dvh]" />
+    }
+  ]
 
   return (
     <div className="flex h-full max-h-[100dvh] w-full max-w-full flex-col">
@@ -33,18 +59,29 @@ const Settings = () => {
             }}
             radius="full"
             variant="underlined"
-            selectedKey={searchParams.get('tab') || 'appearance'}
+            selectedKey={searchParams.get('tab') || 'general'}
             onSelectionChange={(key) => {
               searchParams.set('tab', key as string)
               setSearchParams(searchParams)
             }}
+            items={tabs}
           >
-            <Tab key="appearance" title={t('settings.appearance.title')}>
-              <AppearanceSetting />
-            </Tab>
-            <Tab key="integrations" title={t('settings.integrations.title')}>
-              <Integrations className="max-h-[75dvh]" />
-            </Tab>
+            {(tab) => (
+              <Tab
+                key={tab.id}
+                className="max-[450px]:px-3"
+                title={
+                  <Tooltip isDisabled={!isSmallScreen} content={tab.title}>
+                    <div className="flex items-center space-x-2">
+                      <Icon icon={tab.icon} width={24} height={24} />
+                      <span className="max-[450px]:hidden">{tab.title}</span>
+                    </div>
+                  </Tooltip>
+                }
+              >
+                {tab.children}
+              </Tab>
+            )}
           </Tabs>
         </div>
       </SidebarContainer>
