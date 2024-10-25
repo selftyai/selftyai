@@ -1,4 +1,4 @@
-import { Icon } from '@iconify/react/dist/iconify.js'
+import { Icon } from '@iconify/react'
 import { Tab, Tabs } from '@nextui-org/react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
