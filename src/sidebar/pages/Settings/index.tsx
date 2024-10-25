@@ -1,14 +1,37 @@
+import { Icon } from '@iconify/react/dist/iconify.js'
 import { Tab, Tabs } from '@nextui-org/react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import AppearanceSetting from '@/sidebar/components/Settings/AppearanceSetting'
 import Integrations from '@/sidebar/components/Settings/Integrations'
+import Plugins from '@/sidebar/components/Settings/Plugins'
 import SidebarContainer from '@/sidebar/components/Sidebar/SidebarContainer'
 
 const Settings = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { t } = useTranslation()
+
+  const tabs = [
+    {
+      id: 'appearance',
+      title: t('settings.appearance.title'),
+      icon: 'lucide:palette',
+      children: <AppearanceSetting />
+    },
+    {
+      id: 'integrations',
+      title: t('settings.integrations.title'),
+      icon: 'fluent:glance-horizontal-sparkles-24-regular',
+      children: <Integrations className="max-h-[75dvh]" />
+    },
+    {
+      id: 'plugins',
+      title: t('settings.plugins.title'),
+      icon: 'lucide:toy-brick',
+      children: <Plugins className="max-h-[75dvh]" />
+    }
+  ]
 
   return (
     <div className="flex h-full max-h-[100dvh] w-full max-w-full flex-col">
@@ -38,13 +61,21 @@ const Settings = () => {
               searchParams.set('tab', key as string)
               setSearchParams(searchParams)
             }}
+            items={tabs}
           >
-            <Tab key="appearance" title={t('settings.appearance.title')}>
-              <AppearanceSetting />
-            </Tab>
-            <Tab key="integrations" title={t('settings.integrations.title')}>
-              <Integrations className="max-h-[75dvh]" />
-            </Tab>
+            {(tab) => (
+              <Tab
+                key={tab.id}
+                title={
+                  <div className="flex items-center space-x-2">
+                    <Icon icon={tab.icon} width={24} height={24} />
+                    <span>{tab.title}</span>
+                  </div>
+                }
+              >
+                {tab.children}
+              </Tab>
+            )}
           </Tabs>
         </div>
       </SidebarContainer>

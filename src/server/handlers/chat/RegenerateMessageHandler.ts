@@ -15,6 +15,10 @@ interface RegenerateMessageRequest {
    * Model ID (`models` table) which generates the message
    */
   modelId: number
+  /**
+   * Array of tools to use for the message
+   */
+  tools: string[]
 }
 
 class RegenerateMessageHandler extends AbstractHandler<
@@ -50,7 +54,8 @@ class RegenerateMessageHandler extends AbstractHandler<
       const success = await streamChatMessage({
         conversation,
         modelId,
-        port: request.port
+        port: request.port,
+        tools: request.payload.tools
       })
 
       if (success) {

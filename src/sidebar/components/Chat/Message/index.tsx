@@ -5,8 +5,11 @@ import { useClipboard } from '@nextui-org/use-clipboard'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { ToolInvocation } from '@/shared/db/models/ToolInvocation'
 import ContextField from '@/sidebar/components/Chat/Message/ContextField'
 import Markdown from '@/sidebar/components/Chat/Message/Markdown'
+
+import ToolInvocations from './ToolInvocations'
 
 export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   avatar?: React.ReactNode
@@ -21,6 +24,7 @@ export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   statusText?: JSX.Element
   messageLength?: number
   metadata?: Record<string, string>
+  tools: ToolInvocation[]
   onAttemptChange?: (attempt: number) => void
   onMessageCopy?: (content: string | string[]) => void
   onContinueGenerating?: () => void
@@ -51,6 +55,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
       onRegenerate,
       canRegenerate,
       isLastMessage,
+      tools,
       ...props
     },
     ref
@@ -98,7 +103,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
             {avatar}
           </Badge>
         </div>
-        <div className="flex w-full flex-col gap-4">
+        <div className="w-full overflow-hidden">
           <div
             className={cn(
               'group relative w-full rounded-medium bg-content2 px-4 py-3 text-default-600',
@@ -106,6 +111,7 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
             )}
           >
             <ContextField messageContext={messageContext} />
+            <ToolInvocations tools={tools} />
             <div ref={messageRef} className={'text-small'}>
               {typeof message === 'string' ? <Markdown message={message} /> : message}
             </div>
@@ -168,6 +174,30 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                   >
                     <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-default/40">
                       <Icon className="text-lg text-default-600" icon="gravity-ui:circle-info" />
+                    </div>
+                  </Tooltip>
+                )}
+                {tools.length > 0 && (
+                  <Tooltip
+                    showArrow
+                    content={
+                      <div className="flex flex-col gap-2 p-2.5">
+                        <p>{t('invokedTools')}</p>
+                        <ul className="list-inside list-disc">
+                          {tools.map((tool) => (
+                            <li key={tool.id}>
+                              {t(`tools.${tool.toolName}`, {
+                                provider: t(`tools.${tool.subName}`)
+                              })}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    }
+                    placement="top"
+                  >
+                    <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-default/40">
+                      <Icon className="text-lg text-default-600" icon="lucide:toy-brick" />
                     </div>
                   </Tooltip>
                 )}

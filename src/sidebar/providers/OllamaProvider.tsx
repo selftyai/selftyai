@@ -7,6 +7,7 @@ import { db } from '@/shared/db'
 import { Integration } from '@/shared/db/models/Integration'
 import { Model } from '@/shared/db/models/Model'
 import { OllamaPullModel } from '@/shared/db/models/OllamaPullModel'
+import logger from '@/shared/logger'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 import { useChromePort } from '@/sidebar/hooks/useChromePort'
 
@@ -119,7 +120,7 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
       if (messageType) {
-        console.log(`[OllamaProvider] Received message: ${type} with data`, rest)
+        logger.info(`[OllamaProvider] Received message: ${type} with data`, rest)
         messageType()
       }
     })

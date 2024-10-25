@@ -11,6 +11,7 @@ import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 
 import SelectModelDropdown from './SelectModelDropdown'
+import SelectToolDropdown from './SelectToolDropdown'
 
 interface TextAreaProps {
   selectedPrompt?: string
@@ -129,7 +130,7 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
               <Tooltip showArrow content={t(isGenerating ? 'stopButton' : 'promptButton')}>
                 <Button
                   isIconOnly
-                  color={isGenerating ? 'default' : !prompt ? 'default' : 'primary'}
+                  color={isGenerating || !prompt ? 'default' : 'primary'}
                   isDisabled={!isGenerating && (!prompt || !selectedModel || hasError)}
                   radius="lg"
                   size="sm"
@@ -198,11 +199,14 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
           }
         />
         <div className="flex w-full flex-wrap items-end justify-between gap-2 px-4 pb-4">
-          <SelectModelDropdown
-            models={models}
-            onSelectModel={selectModel}
-            selectedModel={selectedModel}
-          />
+          <div className="inline-flex flex-wrap gap-2">
+            <SelectModelDropdown
+              models={models}
+              onSelectModel={selectModel}
+              selectedModel={selectedModel}
+            />
+            <SelectToolDropdown />
+          </div>
 
           {/* <p className="py-1 text-tiny text-default-400">{prompt.length}/2000</p> */}
         </div>

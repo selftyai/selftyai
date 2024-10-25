@@ -25,7 +25,7 @@ const CodePanel: FC<CodePanelProps> = memo(({ language, value }) => {
   }
 
   return (
-    <div className="codeblock group/code-panel relative mb-3 w-full max-w-[65vw] overflow-x-auto rounded-lg bg-content1 font-sans sm:max-w-full">
+    <div className="codeblock group/code-panel relative mb-3 w-full overflow-x-auto rounded-lg bg-content1 font-sans sm:max-w-full">
       <div className="flex items-center justify-between overflow-x-auto rounded-lg px-4 py-2 text-xs">
         <div className="p-1">{language}</div>
         <Button

@@ -87,7 +87,6 @@ const Sidebar = ({
           }
           onClick={() => {
             navigator('/')
-            // setChatId(undefined)
             if (isOpen) onOpenChange()
           }}
         >
@@ -194,16 +193,20 @@ const Sidebar = ({
       <Spacer y={8} />
 
       <div className="mt-auto flex flex-col">
-        <Button
-          className="justify-start text-small text-default-600"
-          startContent={
-            <Icon className="text-default-600" icon="solar:monitor-line-duotone" width={24} />
-          }
-          variant="light"
-          onClick={() => window.open(chrome.runtime.getURL('index.html'))}
-        >
-          {t('fullPage')}
-        </Button>
+        {!window.location.search.includes('fullscreen') && (
+          <Button
+            className="justify-start text-small text-default-600"
+            startContent={
+              <Icon className="text-default-600" icon="solar:monitor-line-duotone" width={24} />
+            }
+            variant="light"
+            onClick={() =>
+              window.open(`${chrome.runtime.getURL('index.html')}?fullscreen`, '_child', 'noopener')
+            }
+          >
+            {t('fullPage')}
+          </Button>
+        )}
         <Button
           className="justify-start text-default-600"
           startContent={

@@ -5,7 +5,8 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownSection,
-  DropdownItem
+  DropdownItem,
+  Chip
 } from '@nextui-org/react'
 import { memo, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -99,7 +100,9 @@ const SelectModelDropdown = memo(
                 heading: 'text-tiny px-[10px]'
               }}
               title={t(provider.key)}
-              items={provider.models.map((model, index) => ({ ...model, index }))}
+              items={provider.models
+                .sort((a, b) => (a.name > b.name ? 1 : -1))
+                .map((model, index) => ({ ...model, index }))}
             >
               {(model) => (
                 <DropdownItem
@@ -119,8 +122,19 @@ const SelectModelDropdown = memo(
                       />
                     )
                   }
+                  textValue={model.model}
                 >
                   {model.name}
+                  {model.vision && (
+                    <Chip color="success" size="sm" variant="flat" radius="sm" className="ml-2">
+                      <Icon icon="solar:eye-linear" width={16} />
+                    </Chip>
+                  )}
+                  {model.supportTool && (
+                    <Chip color="secondary" size="sm" variant="flat" radius="sm" className="ml-2">
+                      <Icon icon="lucide:toy-brick" width={16} />
+                    </Chip>
+                  )}
                 </DropdownItem>
               )}
             </DropdownSection>

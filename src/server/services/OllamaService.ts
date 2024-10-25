@@ -73,7 +73,8 @@ export class OllamaService extends BaseService {
             name: model.name,
             model: modelName,
             provider: Integrations.ollama,
-            vision: modelData?.projector_info?.['clip.has_vision_encoder'] || false
+            vision: modelData?.projector_info?.['clip.has_vision_encoder'] || false,
+            supportTool: modelData.template.includes('.ToolCalls')
           } as Model
         })
       )

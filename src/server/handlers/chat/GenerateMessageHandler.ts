@@ -24,6 +24,10 @@ interface GenerateMessageRequest {
    * Array of files to attach to the message
    */
   files: Omit<File, 'conversationId' | 'messageId'>[]
+  /**
+   * Array of tools to use for the message
+   */
+  tools: string[]
 }
 
 class GenerateMessageHandler extends AbstractHandler<
@@ -74,7 +78,8 @@ class GenerateMessageHandler extends AbstractHandler<
       const success = await streamChatMessage({
         conversation,
         modelId,
-        port: request.port
+        port: request.port,
+        tools: request.payload.tools
       })
 
       if (success) {
