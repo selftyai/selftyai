@@ -13,4 +13,5 @@ export interface Message extends TimestampedEntity {
   totalTokens?: number
   finishReason?: string
   error?: string
+  availableTools?: string[]
 }

@@ -17,8 +17,10 @@
   "dependencies": {
     "@ai-sdk/openai": "^0.0.60",
     "@iconify/react": "^5.0.2",
+    "@langchain/community": "^0.3.6",
+    "@langchain/core": "^0.3.13",
+    "@langchain/ollama": "^0.1.0",
     "@nextui-org/react": "^2.4.8",
-    "ai": "^3.3.43",
     "axios": "^1.7.7",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",

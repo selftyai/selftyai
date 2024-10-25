@@ -1,5 +1,6 @@
 import { AbstractHandler } from '@/server/handlers/AbstractHandler'
 import { MessageEvent } from '@/server/types/MessageEvent'
+import logger from '@/shared/logger'
 
 export interface ExtendedEvent<T> extends MessageEvent<T> {
   broadcastMessage: (message: MessageEvent<unknown>) => void
@@ -20,7 +21,7 @@ class PortHandler {
   }
 
   public onConnect(port: chrome.runtime.Port) {
-    console.log('[PortHandler] Port connected:', port)
+    logger.info('[PortHandler] Port connected:', port)
     this.connectedPorts.push(port)
 
     port.onDisconnect.addListener(() => this.onDisconnect(port))
@@ -28,7 +29,7 @@ class PortHandler {
   }
 
   private onDisconnect(port: chrome.runtime.Port) {
-    console.log('[PortHandler] Port disconnected:', port)
+    logger.info('[PortHandler] Port disconnected:', port)
     const index = this.connectedPorts.indexOf(port)
     if (index > -1) {
       this.connectedPorts.splice(index, 1)
@@ -58,7 +59,7 @@ class PortHandler {
           type: message.type,
           response
         })
-        console.log('[PortHandler] Response sent:', response)
+        logger.info('[PortHandler] Response sent:', response)
       } catch (error: unknown) {
         console.warn(
           '[PortHandler] Error while sending response:',

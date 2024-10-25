@@ -33,6 +33,10 @@ export default async function monitorPullingModels() {
         if (!model && dbModel.id) {
           return { id: dbModel.id, changes: { isDeleted: true } }
         }
+        // Migrate data
+        if (model && dbModel.id && dbModel.supportTool === undefined) {
+          return { id: dbModel.id, changes: { supportTool: model.supportTool } }
+        }
         return null
       })
       .filter(Boolean)
@@ -44,6 +48,7 @@ export default async function monitorPullingModels() {
         model: model.model,
         provider: model.provider,
         vision: model.vision,
+        supportTool: model.supportTool,
         isDeleted: false
       }))
 

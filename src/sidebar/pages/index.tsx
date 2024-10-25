@@ -1,14 +1,21 @@
 import { HashRouter, Routes, Route } from 'react-router-dom'
 
+import ErrorBoundary from '@/sidebar/components/ErrorBoundary'
 import Chat from '@/sidebar/pages/Chat'
 import Settings from '@/sidebar/pages/Settings'
-
-import ProvidersWrapper from '../providers'
+import ProvidersWrapper from '@/sidebar/providers'
 
 const AppRoutes = () => (
   <HashRouter>
     <Routes>
-      <Route path="/" element={<ProvidersWrapper />}>
+      <Route
+        path="/"
+        element={
+          <ErrorBoundary>
+            <ProvidersWrapper />
+          </ErrorBoundary>
+        }
+      >
         <Route index element={<Chat />} />
         <Route path="/:conversationId" element={<Chat />} />
         <Route path="/settings" element={<Settings />} />

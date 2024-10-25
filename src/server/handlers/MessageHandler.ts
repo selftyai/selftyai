@@ -1,5 +1,6 @@
 import { AbstractHandler } from '@/server/handlers/AbstractHandler'
 import { MessageEvent } from '@/server/types/MessageEvent'
+import logger from '@/shared/logger'
 
 class MessageHandler {
   private handler!: AbstractHandler<MessageEvent<unknown>, unknown>
@@ -30,21 +31,15 @@ class MessageHandler {
 
   public onMessage(
     message: MessageEvent<unknown>,
-    sender: chrome.runtime.MessageSender,
+    _: chrome.runtime.MessageSender,
     sendResponse: (response?: unknown) => void
   ) {
     const { type, payload } = message
 
-    console.log(
-      `[${sender.id}][Message Handler] Received message with type: ${type} and payload`,
-      payload
-    )
+    logger.info(`[MessageHandler] Received message with type: ${type} and payload`, payload)
 
     this.wrappedHandler(message).then((payload: unknown) => {
-      console.log(
-        `[${sender.id}][Message Handler] Sending response for message type: ${type}`,
-        payload
-      )
+      logger.info(`[MessageHandler] Sending response for message type: ${type}`, payload)
       sendResponse(payload)
     })
 

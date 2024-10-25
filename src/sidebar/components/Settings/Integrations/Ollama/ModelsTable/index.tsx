@@ -78,6 +78,13 @@ const ModelsTable = React.forwardRef<HTMLDivElement>(() => {
                   </Chip>
                 </Tooltip>
               )}
+              {model.supportTool && (
+                <Tooltip content={t('supportToolInvocation')} placement="top">
+                  <Chip color="secondary" size="sm" variant="flat" radius="sm">
+                    <Icon icon="lucide:toy-brick" width={16} />
+                  </Chip>
+                </Tooltip>
+              )}
             </div>
           )
         case 'actions':
