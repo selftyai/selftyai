@@ -8,20 +8,23 @@ export default function getMappedMessages(messages: Message[], files: File[]) {
     message.role === 'assistant'
       ? new AIMessage(message.content)
       : new HumanMessage({
-          content: [
-            {
-              text: message.content,
-              type: 'text'
-            },
-            ...files
-              .filter((file) => file.messageId === message.id && file.type === 'image')
-              .map((file) => ({
-                type: 'image_url',
-                image_url: {
-                  url: file.data
-                }
-              }))
-          ]
+          content:
+            files.filter((file) => file.messageId === message.id).length > 0
+              ? [
+                  {
+                    text: message.content,
+                    type: 'text'
+                  },
+                  ...files
+                    .filter((file) => file.messageId === message.id && file.type === 'image')
+                    .map((file) => ({
+                      type: 'image_url',
+                      image_url: {
+                        url: file.data
+                      }
+                    }))
+                ]
+              : message.content
         })
   )
 }

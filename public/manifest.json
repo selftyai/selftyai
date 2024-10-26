@@ -28,7 +28,7 @@
     "default_title": "__MSG_extensionName__",
     "default_panel": "index.html"
   },
-  "permissions": ["sidePanel"],
+  "permissions": ["sidePanel", "tts"],
   "host_permissions": ["<all_urls>"],
   "web_accessible_resources": [
     {

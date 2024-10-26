@@ -1,6 +1,7 @@
-// import { createOllama } from 'ollama-ai-provider'
+import { ChatGroq } from '@langchain/groq'
 import { ChatOllama } from '@langchain/ollama'
 
+import createGroqService from '@/server/utils/groq/createGroqService'
 import createOllamaService from '@/server/utils/ollama/createOllamaService'
 
 const providers = {
@@ -10,6 +11,15 @@ const providers = {
     return new ChatOllama({
       model,
       baseUrl: service.getBaseURL()
+    })
+  },
+  groq: async (model: string) => {
+    const service = await createGroqService()
+
+    return new ChatGroq({
+      model,
+      apiKey: service.getBaseURL(),
+      streaming: true
     })
   }
 } as const

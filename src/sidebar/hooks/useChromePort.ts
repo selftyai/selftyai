@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useCallback } from 'react'
 
+import logger from '@/shared/logger'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
 type MessageHandler = (message: any) => void
@@ -35,17 +36,18 @@ export const useChromePort = () => {
           error instanceof Error &&
           error.message === 'Attempting to use a disconnected port object'
         ) {
-          console.warn('[useChromePort] Port is disconnected. Reconnecting...')
+          logger.error('[useChromePort] Port is disconnected. Reconnecting...')
           portRef.current = chrome.runtime.connect()
           portRef.current.onMessage.addListener((message) => {
             messageHandlersRef.current.forEach((handler) => handler(message))
           })
+          portRef.current.postMessage({ type, payload })
         } else {
-          console.error('[useChromePort] Error while sending message:', error)
+          logger.error('[useChromePort] Error while sending message:', error)
         }
       }
     } else {
-      console.error('[useChromePort] Port is not connected')
+      logger.error('[useChromePort] Port is not connected')
     }
   }, [])
 
