@@ -136,8 +136,7 @@ export default async function streamChatMessage({
 
     const executor = agentExecutor ? agentExecutor : chainWithoutTools
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const stream: any = await executor.invoke(
+    await executor.invoke(
       {
         chat_history: mappedMessages
       },
@@ -193,10 +192,6 @@ export default async function streamChatMessage({
         ]
       }
     )
-
-    await db.messages.update(assistantMessageId, {
-      content: stream?.content || stream?.output?.[0]?.text || stream?.output
-    })
   } catch (error) {
     if (error instanceof Error) {
       const finishReason = abortController?.signal.aborted ? 'aborted' : 'error'

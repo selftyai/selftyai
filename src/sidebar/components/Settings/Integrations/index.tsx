@@ -5,17 +5,16 @@ import { useTranslation } from 'react-i18next'
 
 import aimlapiLogo from '@/sidebar/assets/aimlapi-logo.jpeg'
 import lmStudioLogo from '@/sidebar/assets/lm-studio-logo.png'
+import ConfigureGroq from '@/sidebar/components/Settings/Integrations/Groq'
 import IntegrationItem from '@/sidebar/components/Settings/Integrations/IntegrationItem'
 import ConfigureOllama from '@/sidebar/components/Settings/Integrations/Ollama/ConfigureOllama'
 import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
-import ConfigureGroq from './Groq'
-
-interface AppearanceSettingCardProps {
+interface IntegrationsProps {
   className?: string
 }
 
-const Integrations = ({ className, ...props }: AppearanceSettingCardProps) => {
+const Integrations = ({ className, ...props }: IntegrationsProps) => {
   const { theme } = useTheme()
   const { t } = useTranslation()
 
