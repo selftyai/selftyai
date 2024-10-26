@@ -91,7 +91,6 @@ export default async function streamChatMessage({
 
   try {
     const llm = await getProvider(model.provider, model.model)
-    llm.bind({ signal: abortController.signal })
 
     const modifiedModel = Object.create(Object.getPrototypeOf(llm))
     Object.assign(modifiedModel, llm)
@@ -103,11 +102,10 @@ export default async function streamChatMessage({
         signal: abortController.signal
       })
     }
-    modifiedModel.bind({ signal: abortController.signal })
 
     const messagePlaceholders = new MessagesPlaceholder('chat_history')
     const prompt = ChatPromptTemplate.fromMessages([
-      ['system', conversation.systemMessage || 'You are a helpful assistant.'],
+      conversation.systemMessage ? ['system', conversation.systemMessage] : '',
       messagePlaceholders,
       ['placeholder', '{agent_scratchpad}']
     ])
@@ -177,7 +175,11 @@ export default async function streamChatMessage({
               // @ts-ignore
               const { message } = output.generations[0][0]
 
-              if (!message.tool_calls.length) {
+              if (message.tool_calls && !message.tool_calls.length) {
+                await db.conversations.update(conversationId, {
+                  generating: false
+                })
+
                 await db.messages.update(assistantMessageId, {
                   promptTokens: message.usage_metadata.input_tokens,
                   completionTokens: message.usage_metadata.output_tokens,
@@ -190,10 +192,6 @@ export default async function streamChatMessage({
         ]
       }
     )
-
-    await db.conversations.update(conversationId, {
-      generating: false
-    })
   } catch (error) {
     if (error instanceof Error) {
       const finishReason = abortController?.signal.aborted ? 'aborted' : 'error'

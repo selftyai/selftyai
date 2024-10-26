@@ -87,6 +87,7 @@ const Sidebar = ({
           }
           onClick={() => {
             navigator('/')
+            chrome.tts.stop()
             if (isOpen) onOpenChange()
           }}
         >
@@ -99,6 +100,7 @@ const Sidebar = ({
           onAction={(key) => {
             if (key === 'show-more') return onShowMore()
 
+            chrome.tts.stop()
             navigator(`/${key}`)
             if (isOpen) onOpenChange()
           }}
@@ -217,7 +219,10 @@ const Sidebar = ({
             />
           }
           variant="light"
-          onClick={() => navigator('/settings')}
+          onClick={() => {
+            chrome.tts.stop()
+            navigator('/settings')
+          }}
         >
           {t('settings.title')}
         </Button>

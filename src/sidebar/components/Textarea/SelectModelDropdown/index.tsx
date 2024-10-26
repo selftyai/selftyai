@@ -6,7 +6,8 @@ import {
   DropdownMenu,
   DropdownSection,
   DropdownItem,
-  Chip
+  Chip,
+  Image
 } from '@nextui-org/react'
 import { memo, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -42,6 +43,17 @@ const SelectModelDropdown = memo(
       switch (provider) {
         case 'ollama':
           return <Icon className="text-large text-default-500" icon="simple-icons:ollama" />
+        case 'groq':
+          return (
+            <Image
+              src="https://www.google.com/s2/favicons?domain=https://groq.com/&sz=128"
+              width={24}
+              height={24}
+              fallbackSrc={
+                <Icon className="text-large text-default-500" icon="majesticons:robot-line" />
+              }
+            />
+          )
         default:
           return <Icon className="text-large text-default-500" icon="majesticons:robot-line" />
       }
@@ -60,7 +72,7 @@ const SelectModelDropdown = memo(
         </DropdownTrigger>
         <DropdownMenu
           aria-label="models"
-          className="p-0 pt-2"
+          className="max-h-[300px] overflow-y-auto p-0 pt-2"
           variant="faded"
           onAction={(e) => onSelectModel(e as string)}
           items={Object.keys(groupedModels)

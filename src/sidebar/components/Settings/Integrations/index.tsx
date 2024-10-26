@@ -4,17 +4,17 @@ import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import { useTranslation } from 'react-i18next'
 
 import aimlapiLogo from '@/sidebar/assets/aimlapi-logo.jpeg'
-import groqLogo from '@/sidebar/assets/groq-logo.png'
 import lmStudioLogo from '@/sidebar/assets/lm-studio-logo.png'
+import ConfigureGroq from '@/sidebar/components/Settings/Integrations/Groq'
 import IntegrationItem from '@/sidebar/components/Settings/Integrations/IntegrationItem'
 import ConfigureOllama from '@/sidebar/components/Settings/Integrations/Ollama/ConfigureOllama'
 import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
-interface AppearanceSettingCardProps {
+interface IntegrationsProps {
   className?: string
 }
 
-const Integrations = ({ className, ...props }: AppearanceSettingCardProps) => {
+const Integrations = ({ className, ...props }: IntegrationsProps) => {
   const { theme } = useTheme()
   const { t } = useTranslation()
 
@@ -40,12 +40,14 @@ const Integrations = ({ className, ...props }: AppearanceSettingCardProps) => {
         </Link>
       ),
       description: t('settings.integrations.groq.description'),
-      icon: <Image src={groqLogo} width="32" height="32" />,
-      actionButtons: (
-        <Chip color="secondary" variant="dot">
-          {t('comingSoon')}
-        </Chip>
-      )
+      icon: (
+        <Image
+          src="https://www.google.com/s2/favicons?domain=https://groq.com/&sz=128"
+          width="32"
+          height="32"
+        />
+      ),
+      actionButtons: <ConfigureGroq />
     },
     {
       id: 'lmStudio',

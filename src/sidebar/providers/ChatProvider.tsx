@@ -11,6 +11,7 @@ import type { Model } from '@/shared/db/models/Model'
 import logger from '@/shared/logger'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 import { useChromePort } from '@/sidebar/hooks/useChromePort'
+import { useGroq } from '@/sidebar/providers/GroqProvider'
 import { useOllama } from '@/sidebar/providers/OllamaProvider'
 import { ConversationWithLastMessage } from '@/sidebar/types/ConversationWithLastMessage'
 import { ConversationWithModel } from '@/sidebar/types/ConversationWithModel'
@@ -73,13 +74,14 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const navigator = useNavigate()
 
   const { models: ollamaModels } = useOllama()
+  const { models: groqModels } = useGroq()
 
   const [selectedModel, setSelectedModel] = React.useState<Model>()
   const [messageContext, setMessageContext] = React.useState<string>()
   const [tools, setTools] = React.useState<string[]>([])
 
   const models = useMemo<Model[]>(() => {
-    const newModels = [...(ollamaModels ?? [])]
+    const newModels = [...(ollamaModels ?? []), ...(groqModels ?? [])]
 
     if (
       ollamaModels &&
@@ -92,7 +94,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     }
 
     return newModels
-  }, [ollamaModels, selectedModel])
+  }, [ollamaModels, selectedModel, groqModels])
 
   const selectedConversation = useLiveQuery(async () => {
     if (!conversationId) return undefined
@@ -191,12 +193,11 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const selectModel = useCallback(
     (model: string) => {
-      const selectedModel = models.find((m) => m.model === model)
-      if (selectedModel) {
-        setSelectedModel(selectedModel)
-      }
+      const newSelectedModel = models.find((m) => m.model === model)
+
+      setSelectedModel(newSelectedModel === selectedModel ? undefined : newSelectedModel)
     },
-    [models]
+    [models, selectedModel]
   )
 
   const deleteConversation = useCallback(

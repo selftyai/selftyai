@@ -45,7 +45,7 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (prompt) {
+    if (prompt && selectedModel) {
       sendMessage(prompt, images)
       setPrompt('')
       setImages([])

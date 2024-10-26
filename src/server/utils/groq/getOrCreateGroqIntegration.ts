@@ -2,14 +2,15 @@ import { db } from '@/shared/db'
 import { Integration } from '@/shared/db/models/Integration'
 import { Integrations } from '@/shared/types/Integrations'
 
-export default async function getOrCreateOllamaIntegration() {
-  const integration = await db.integrations.get({ name: Integrations.ollama })
+export default async function getOrCreateGroqIntegration() {
+  const integration = await db.integrations.get({ name: Integrations.groq })
 
   if (!integration) {
     const integrationId = await db.integrations.add({
-      name: Integrations.ollama,
+      name: Integrations.groq,
       active: false,
-      baseURL: 'http://localhost:11434'
+      baseURL: '',
+      apiKey: ''
     })
 
     const integration = (await db.integrations.get(integrationId)) as Integration

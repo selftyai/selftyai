@@ -63,6 +63,8 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
     const { t } = useTranslation()
     const messageRef = React.useRef<HTMLDivElement>(null)
 
+    const [speaking, setSpeaking] = React.useState(false)
+
     const { copied, copy } = useClipboard()
 
     const hasFailed = status === 'error'
@@ -88,6 +90,51 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
 
       onMessageCopy?.(valueToCopy)
     }, [copy, message, onMessageCopy])
+
+    const handleReadAloud = React.useCallback(() => {
+      let stringValue = ''
+
+      if (typeof message === 'string') {
+        stringValue = message
+      } else if (Array.isArray(message)) {
+        message.forEach((child) => {
+          const childString = typeof child === 'string' ? child : child?.props?.children?.toString()
+
+          if (childString) {
+            stringValue += childString + '\n'
+          }
+        })
+      }
+
+      const valueToSpeak = stringValue || messageRef.current?.textContent || ''
+
+      if (!chrome?.tts) {
+        console.error('Text-to-speech is not available')
+        return
+      }
+
+      setSpeaking(true)
+      const handleBeforeUnload = () => {
+        chrome.tts.stop()
+      }
+      window.addEventListener('beforeunload', handleBeforeUnload)
+
+      chrome.tts.speak(valueToSpeak, {
+        onEvent: function (event) {
+          if (['cancelled', 'interrupted', 'error', 'end'].includes(event.type)) {
+            setSpeaking(false)
+            if (event.type === 'error') {
+              console.error('TTS error:', event)
+            }
+          }
+        }
+      })
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+        chrome.tts.stop()
+      }
+    }, [message])
 
     return (
       <div {...props} ref={ref} className={cn('flex gap-3', className)}>
@@ -142,6 +189,21 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
             )}
             {showFeedback && (
               <div className="flex items-center gap-2 pt-2">
+                <Tooltip content={t(speaking ? 'stopButton' : 'readAloud')} placement="bottom">
+                  <Button
+                    isIconOnly
+                    radius="full"
+                    size="sm"
+                    variant="flat"
+                    onPress={speaking ? () => chrome.tts.stop() : handleReadAloud}
+                  >
+                    {speaking ? (
+                      <Icon className="text-lg text-default-600" icon="solar:stop-bold" />
+                    ) : (
+                      <Icon className="text-lg text-default-600" icon="gravity-ui:volume" />
+                    )}
+                  </Button>
+                </Tooltip>
                 <Tooltip content={t('copyButton')} placement="bottom">
                   <Button isIconOnly radius="full" size="sm" variant="flat" onPress={handleCopy}>
                     {copied ? (

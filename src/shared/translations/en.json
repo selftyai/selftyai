@@ -130,7 +130,15 @@
       "groq": {
         "title": "Groq",
         "website": "groq.com",
-        "description": "Use groq models to generate responses. Use your API key to get started."
+        "description": "Use groq models to generate responses. Use your API key to get started.",
+        "apiKey": {
+          "label": "API key",
+          "description": "Enter your Groq API key. If you don't have one, you can get it from their <Link>website</Link>.",
+          "verify": "Check connection"
+        },
+        "connected": "Connection with Groq API established successfully",
+        "disconnected": "Connection with Groq API is not established",
+        "invalidApiKey": "Invalid API key, please check and try again"
       },
       "lmStudio": {
         "title": "LM Studio",
@@ -244,5 +252,7 @@
     "google_search": "Google"
   },
   "invokedTools": "Invoked tools",
-  "noPluginsAvailable": "No plugins available <SettingsLink>Go to settings</SettingsLink>"
+  "noPluginsAvailable": "No plugins available <SettingsLink>Go to settings</SettingsLink>",
+  "groq": "Groq",
+  "readAloud": "Read aloud"
 }

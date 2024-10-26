@@ -6,11 +6,11 @@ export default function getTools(tools: string[]) {
   return [
     {
       id: Integrations.tavily,
-      invokeTool: GoogleSearchTool
+      invokeTool: TavilySearchTool
     },
     {
       id: Integrations.google,
-      invokeTool: TavilySearchTool
+      invokeTool: GoogleSearchTool
     }
   ]
     .filter((tool) => tools.includes(tool.id))
