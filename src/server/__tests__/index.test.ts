@@ -22,9 +22,26 @@ vi.mock('@/server/services/BackgroundService', () => {
 })
 
 describe('server index', () => {
+  let backgroundService: BackgroundService
+
+  beforeEach(() => {
+    backgroundService = new BackgroundService()
+  })
+
   it('should start the background service', () => {
-    const backgroundService = new BackgroundService()
     backgroundService.start()
     expect(backgroundService.start).toHaveBeenCalled()
+  })
+
+  it('should stop the background service', () => {
+    backgroundService.stop()
+    expect(backgroundService.stop).toHaveBeenCalled()
+  })
+
+  it('should handle start errors gracefully', () => {
+    vi.mocked(backgroundService.start).mockImplementationOnce(() => {
+      throw new Error('Start failed')
+    })
+    expect(() => backgroundService.start()).toThrow('Start failed')
   })
 })

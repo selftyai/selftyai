@@ -49,6 +49,9 @@ const SelectModelDropdown = memo(
               src="https://www.google.com/s2/favicons?domain=https://groq.com/&sz=128"
               width={24}
               height={24}
+              fallbackSrc={
+                <Icon className="text-large text-default-500" icon="majesticons:robot-line" />
+              }
             />
           )
         default:

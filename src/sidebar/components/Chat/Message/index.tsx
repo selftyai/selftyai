@@ -108,17 +108,32 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
 
       const valueToSpeak = stringValue || messageRef.current?.textContent || ''
 
+      if (!chrome?.tts) {
+        console.error('Text-to-speech is not available')
+        return
+      }
+
       setSpeaking(true)
-      window.onbeforeunload = () => {
+      const handleBeforeUnload = () => {
         chrome.tts.stop()
       }
+      window.addEventListener('beforeunload', handleBeforeUnload)
+
       chrome.tts.speak(valueToSpeak, {
         onEvent: function (event) {
           if (['cancelled', 'interrupted', 'error', 'end'].includes(event.type)) {
             setSpeaking(false)
+            if (event.type === 'error') {
+              console.error('TTS error:', event)
+            }
           }
         }
       })
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+        chrome.tts.stop()
+      }
     }, [message])
 
     return (

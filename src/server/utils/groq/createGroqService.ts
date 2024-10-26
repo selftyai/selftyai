@@ -1,5 +1,5 @@
 import { GroqService } from '@/server/services/GroqService'
-import getOrCreateOllamaIntegration from '@/server/utils/groq/getOrCreateGroqIntegration'
+import getOrCreateGroqIntegration from '@/server/utils/groq/getOrCreateGroqIntegration'
 
 /**
  * Create a Groq service
@@ -7,7 +7,7 @@ import getOrCreateOllamaIntegration from '@/server/utils/groq/getOrCreateGroqInt
  */
 export default async function createGroqService(url?: string) {
   const service = GroqService.getInstance()
-  const integration = await getOrCreateOllamaIntegration()
+  const integration = await getOrCreateGroqIntegration()
   service.setBaseURL(url || integration?.apiKey || '')
 
   return service
