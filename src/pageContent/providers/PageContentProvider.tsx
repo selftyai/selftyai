@@ -9,8 +9,8 @@ import { useTheme } from '@/sidebar/providers/ThemeProvider'
 import sendMessageAsync from '@/sidebar/utils/sendMessageAsync'
 
 interface PageContentContextProps {
-  isPageOverlayEnabled?: boolean
-  isContextInPromptEnabled?: boolean
+  isPageOverlayEnabled: boolean
+  isContextInPromptEnabled: boolean
 }
 
 const PageContentContext = createContext<PageContentContextProps | undefined>(undefined)
@@ -19,12 +19,8 @@ export const PageContentProvider: React.FC<{ children: ReactNode }> = ({ childre
   const { changeTheme } = useTheme()
   const { i18n } = useTranslation()
 
-  const [isPageOverlayEnabled, setIsPageOverlayEnabled] = React.useState<boolean | undefined>()
-  const [isContextInPromptEnabled, setIsContextInPromptEnabled] = React.useState<
-    boolean | undefined
-  >()
-
-  console.log(isContextInPromptEnabled)
+  const [isPageOverlayEnabled, setIsPageOverlayEnabled] = React.useState<boolean>(true)
+  const [isContextInPromptEnabled, setIsContextInPromptEnabled] = React.useState<boolean>(true)
 
   React.useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,7 +39,9 @@ export const PageContentProvider: React.FC<{ children: ReactNode }> = ({ childre
       const messageType = messageTypes[type as keyof typeof messageTypes]
 
       if (messageType) {
-        console.log(`[PageContentProvider] Received message: ${type} with payload:`, payload)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[PageContentProvider] Received message: ${type} with payload:`, payload)
+        }
         messageType()
       }
     }
@@ -56,23 +54,27 @@ export const PageContentProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, [changeTheme, i18n])
 
   React.useEffect(() => {
-    sendMessageAsync<string>({
-      type: ServerEndpoints.getSettings,
-      payload: SettingsKeys.isPageOverlayEnabled
-    }).then((value: string) => {
-      if (value === 'true' || value === 'default') setIsPageOverlayEnabled(true)
-      if (value === 'false') setIsPageOverlayEnabled(false)
-      console.log(`[PageContentProvider] Received PageOverlayIsEnable: ${value}`)
-    })
+    const fetchSettings = async (
+      key: SettingsKeys,
+      setter: React.Dispatch<React.SetStateAction<boolean>>
+    ) => {
+      const response = await sendMessageAsync<{ value: string; error?: string }>({
+        type: ServerEndpoints.getSettings,
+        payload: key
+      })
 
-    sendMessageAsync<string>({
-      type: ServerEndpoints.getSettings,
-      payload: SettingsKeys.isContextInPromptEnabled
-    }).then((value: string) => {
-      if (value === 'true' || value === 'default') setIsContextInPromptEnabled(true)
-      if (value === 'false') setIsContextInPromptEnabled(false)
-      console.log(`[PageContentProvider] Received isContextInPromptEnabled: ${value}`)
-    })
+      if (response.error) {
+        throw Error(`Error fetching ${key}: ${response.error}`)
+      }
+
+      setter(response.value === 'true' || response.value === 'default')
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[PageContentProvider] Received ${key}: ${response.value}`)
+      }
+    }
+
+    fetchSettings(SettingsKeys.isPageOverlayEnabled, setIsPageOverlayEnabled)
+    fetchSettings(SettingsKeys.isContextInPromptEnabled, setIsContextInPromptEnabled)
   }, [])
 
   return (
@@ -82,6 +84,12 @@ export const PageContentProvider: React.FC<{ children: ReactNode }> = ({ childre
   )
 }
 
+/**
+ * Custom hook to access the PageContentContext.
+ *
+ * @returns {PageContentContextProps} The context value of PageContentContext.
+ * @throws Will throw an error if the hook is used outside of a PageContentProvider.
+ */
 export const usePageContent = (): PageContentContextProps => {
   const context = useContext(PageContentContext)
   if (!context) {

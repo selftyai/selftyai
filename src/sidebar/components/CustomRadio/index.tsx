@@ -57,7 +57,7 @@ export const CustomRadio = (props: CustomRadioProps) => {
       </div>
       {imageSrc && (
         <div className={cn('absolute top-[37px]', imageWrapperClassName)}>
-          <Image src={imageSrc} />
+          <Image src={imageSrc} alt="Radio option illustration" loading="lazy" />
         </div>
       )}
     </Component>

@@ -1,6 +1,6 @@
 {
   "extensionName": "Selfty AI",
-  "disclaimer": "LLM's can make mistakes. Check the information provided by them.",
+  "disclaimer": "LLMs can make mistakes. Check the information provided by them.",
   "prompts": [
     {
       "id": "prompt1",

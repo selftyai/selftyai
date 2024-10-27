@@ -8,7 +8,7 @@ const useContextMenuState = (menuRef: RefObject<HTMLElement>) => {
 
   const closeOverlay = () => {
     setSelectedText(null)
-    window.getSelection()?.empty()
+    window.getSelection()?.removeAllRanges()
   }
 
   const adjustMenuPosition = useCallback(
@@ -21,8 +21,6 @@ const useContextMenuState = (menuRef: RefObject<HTMLElement>) => {
       const menuRect = menu.getBoundingClientRect()
       const viewportWidth = window.innerWidth
       const viewportHeight = window.innerHeight
-
-      console.log(menuRect)
 
       return {
         left: Math.min(
@@ -47,6 +45,7 @@ const useContextMenuState = (menuRef: RefObject<HTMLElement>) => {
       }
 
       const selection = window.getSelection()
+      const scrollY = window.scrollY || document.documentElement.scrollTop
 
       if (selection && selection.rangeCount > 0) {
         const text = selection.toString().trim()

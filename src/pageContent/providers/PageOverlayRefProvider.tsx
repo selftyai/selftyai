@@ -16,11 +16,15 @@ export const PageOverlayRefProvider: React.FC<{ children: ReactNode }> = ({ chil
     </PageOverlayRefContext.Provider>
   )
 }
-
+/**
+ * Hook to access the page overlay ref context.
+ * @returns {PageOverlayRefContextProps} The context containing the overlay ref
+ * @throws {Error} When used outside of PageOverlayRefProvider
+ */
 export const usePageOverlayRef = (): PageOverlayRefContextProps => {
   const context = useContext(PageOverlayRefContext)
   if (!context) {
-    throw new Error('usePageOverlay must be used within a PageOverlayProvider')
+    throw new Error('usePageOverlayRef must be used within a PageOverlayRefProvider')
   }
   return context
 }

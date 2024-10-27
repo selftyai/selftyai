@@ -35,7 +35,7 @@ const ContextMenu: React.FC = () => {
       {menuPosition && selectedText && (
         <motion.div
           className="pointer-events-auto z-[10000] flex items-center justify-center gap-2 rounded-lg border-1 border-content2 bg-background p-1 text-foreground"
-          layoutId="context-menu"
+          layout
           style={{
             position: 'absolute',
             left: `${menuPosition.left}px`,
