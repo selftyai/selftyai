@@ -45,6 +45,7 @@
     "ollamaConnectionError": "Ollama is not connected. Please check your base URL and try again. If you don't use dedicated server, verify you have installed Ollama on your local machine."
   },
   "generatingResponse": "{{ model }} is thinking <Loader />",
+  "runTool": "{{ model }} running {{ toolName }} <Loader />",
   "responseMetadata": {
     "completionTokens": {
       "label": "Completion tokens",
@@ -137,7 +138,15 @@
       "groq": {
         "title": "Groq",
         "website": "groq.com",
-        "description": "Use groq models to generate responses. Use your API key to get started."
+        "description": "Use groq models to generate responses. Use your API key to get started.",
+        "apiKey": {
+          "label": "API key",
+          "description": "Enter your Groq API key. If you don't have one, you can get it from their <Link>website</Link>.",
+          "verify": "Check connection"
+        },
+        "connected": "Connection with Groq API established successfully",
+        "disconnected": "Connection with Groq API is not established",
+        "invalidApiKey": "Invalid API key, please check and try again"
       },
       "lmStudio": {
         "title": "LM Studio",
@@ -158,6 +167,40 @@
         "title": "Anthropic",
         "website": "anthropic.com/api",
         "description": "Generate AI responses with Anthropic. Use your API key to get started."
+      }
+    },
+    "plugins": {
+      "title": "Plugins",
+      "requestNewPlugin": "Request new plugin",
+      "webSearch": {
+        "title": "Web search",
+        "google": {
+          "title": "Google",
+          "description": "Search the web using Google.",
+          "action": "Configure",
+          "apiKey": {
+            "label": "API key",
+            "description": "Enter your Google Search API key. If you don't have one, you can get it <Link>here</Link>."
+          },
+          "searchEngineId": {
+            "label": "Search engine ID",
+            "description": "Enter your Google search engine ID. If you don't have one, you can get it <Link>here</Link>."
+          }
+        },
+        "duckduckgo": {
+          "title": "DuckDuckGo",
+          "description": "Search the web using DuckDuckGo.",
+          "action": "Configure"
+        },
+        "tavily": {
+          "title": "Tavily",
+          "description": "Search the web using Tavily.",
+          "action": "Configure",
+          "apiKey": {
+            "label": "API key",
+            "description": "Enter your Tavily API key. If you don't have one, you can get it from their <Link>website</Link>."
+          }
+        }
       }
     },
     "general": {
@@ -216,6 +259,28 @@
   "newConversation": "New conversation",
   "unpinnedConversation": "Conversation unpinned successfully",
   "pinnedConversation": "Conversation pinned successfully",
+  "webSearchResults": "Web Search Results",
+  "error": {
+    "title": "An error occurred",
+    "reloadPage": "Reload page",
+    "reportABug": "Report a bug"
+  },
+  "tools_zero": "Select tools",
+  "tools_one": "1 tool",
+  "tools_two": "2 tools",
+  "tools_few": "{{ count }} tools",
+  "tools_many": "{{ count }} tools",
+  "tools_other": "{{ count }} tools",
+  "supportToolInvocation": "This model supports tool invocations.",
+  "tools": {
+    "web_search": "Web search ({{ provider }})",
+    "tavily_search": "Tavily",
+    "google_search": "Google"
+  },
+  "invokedTools": "Invoked tools",
+  "noPluginsAvailable": "No plugins available <SettingsLink>Go to settings</SettingsLink>",
+  "groq": "Groq",
+  "readAloud": "Read aloud",
   "pageContent": {
     "contextMenu": {
       "highlight": "Highlight the area",

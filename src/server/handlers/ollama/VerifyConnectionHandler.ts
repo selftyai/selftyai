@@ -26,8 +26,6 @@ class VerifyConnectionHandler extends AbstractHandler<
 
       const urlToVerify = url ?? service.getBaseURL()
 
-      console.log('[VerifyConnectionHandler] Verifying connection for URL:', urlToVerify)
-
       try {
         const connected = await service.verifyConnection(urlToVerify)
 

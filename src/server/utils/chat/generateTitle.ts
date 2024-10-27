@@ -1,5 +1,3 @@
-import { CoreMessage, generateText } from 'ai'
-
 import getProvider from '@/server/utils/chat/getProvider'
 import { db } from '@/shared/db'
 
@@ -18,7 +16,7 @@ export default async function generateTitle(conversationId: number) {
     return false
   }
 
-  const provider = await getProvider(model.provider)
+  const provider = await getProvider(model.provider, model.name)
 
   const prompt = `
     Given the user's prompt, generate a concise and engaging chat title that captures the main idea. The title should:
@@ -36,15 +34,7 @@ export default async function generateTitle(conversationId: number) {
     return false
   }
 
-  const messageData = {
-    role: 'user',
-    content: `${prompt} ${message.content}`
-  } as CoreMessage
-
-  const result = await generateText({
-    model: provider(model.model),
-    messages: [messageData]
-  })
+  const result = await provider.invoke(`${prompt} ${message.content}`)
 
   await db.conversations.update(conversationId, {
     title: result.text.length > 50 ? result.text.substring(0, 47) + '...' : result.text

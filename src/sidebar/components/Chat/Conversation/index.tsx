@@ -1,10 +1,10 @@
 import { Avatar, AvatarIcon, Image } from '@nextui-org/react'
-import type { CoreMessage } from 'ai'
 import React, { memo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import logo from '@/shared/assets/logo.svg'
+import { Message } from '@/shared/db/models/Message'
 import MessageCard from '@/sidebar/components/Chat/Message'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
 import { MessageWithFiles } from '@/sidebar/types/MessageWithFiles'
@@ -21,7 +21,7 @@ const Conversation = memo(
     const { selectedModel } = useModels()
     const { selectedConversation, continueGenerating, regenerateResponse } = useChat()
 
-    const isLastMessage = (arr: CoreMessage[], index: number) => {
+    const isLastMessage = (arr: Message[], index: number) => {
       return index === arr.length - 1 && arr[index].role === 'assistant'
     }
 
@@ -35,7 +35,7 @@ const Conversation = memo(
       <div ref={ref} className="flex flex-col gap-4 px-2">
         {messages?.map(
           (
-            { id, role, files, content, conversationId, error, finishReason, ...rest },
+            { id, role, files, tools, content, conversationId, error, finishReason, ...rest },
             index,
             arr
           ) => {
@@ -77,8 +77,19 @@ const Conversation = memo(
                         src={logo}
                       />
                       <Trans
-                        i18nKey="generatingResponse"
-                        values={{ model: selectedConversation?.model?.model }}
+                        i18nKey={
+                          !tools.length || tools[tools.length - 1].status !== 'loading'
+                            ? 'generatingResponse'
+                            : 'runTool'
+                        }
+                        values={{
+                          model: selectedConversation?.model?.model,
+                          ...(tools.length && {
+                            toolName: t(`tools.${tools[tools.length - 1].toolName}`, {
+                              provider: t(`tools.${tools[tools.length - 1].subName}`)
+                            })
+                          })
+                        }}
                         components={{
                           Loader: (
                             <div className="mt-4 flex">
@@ -99,6 +110,7 @@ const Conversation = memo(
               <MessageCard
                 key={`message-${conversationId}-${id}-${index}`}
                 attempts={1}
+                tools={tools}
                 avatar={
                   role === 'assistant' ? (
                     <Avatar
@@ -144,9 +156,10 @@ const Conversation = memo(
                   {
                     completionTokens: rest?.completionTokens?.toString(),
                     promptTokens: rest?.promptTokens?.toString(),
-                    totalTokens: rest?.totalTokens?.toString(),
-                    waitTime: rest.waitingTime ? `${rest.waitingTime / 1000}` : 0,
-                    responseTime: rest.responseTime ? `${rest.responseTime / 1000}` : 0
+                    totalTokens: rest?.totalTokens?.toString()
+                    // TODO: Add these back when the background is ready
+                    // waitTime: rest.waitingTime ? `${rest.waitingTime / 1000}` : 0,
+                    // responseTime: rest.responseTime ? `${rest.responseTime / 1000}` : 0
                   } as Record<string, string>
                 }
                 onRegenerate={regenerateResponse}

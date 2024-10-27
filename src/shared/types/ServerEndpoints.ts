@@ -13,6 +13,9 @@ export enum ServerEndpoints {
   ollamaPullModel = 'ollamaPullModel',
   ollamaDeleteModel = 'ollamaDeleteModel',
 
+  // Groq
+  groqVerifyConnection = 'groqVerifyConnection',
+
   //SidePanel
   sidePanelHandler = 'sidePanelHandler',
 

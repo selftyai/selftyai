@@ -15,6 +15,10 @@ interface ContinueMessageRequest {
    * Model ID (`models` table) which generates the message
    */
   modelId: number
+  /**
+   * Array of tools to use for the message
+   */
+  tools: string[]
 }
 
 class ContinueMessageHandler extends AbstractHandler<
@@ -41,7 +45,8 @@ class ContinueMessageHandler extends AbstractHandler<
         conversation,
         modelId,
         port: request.port,
-        useLastMessage: true
+        useLastMessage: true,
+        tools: request.payload.tools
       })
 
       if (success) {

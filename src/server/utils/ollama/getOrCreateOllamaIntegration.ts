@@ -6,7 +6,7 @@ export default async function getOrCreateOllamaIntegration() {
   const integration = await db.integrations.get({ name: Integrations.ollama })
 
   if (!integration) {
-    const integrationId = db.integrations.add({
+    const integrationId = await db.integrations.add({
       name: Integrations.ollama,
       active: false,
       baseURL: 'http://localhost:11434'

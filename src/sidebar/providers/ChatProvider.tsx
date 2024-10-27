@@ -9,8 +9,10 @@ import { db } from '@/shared/db'
 import { File } from '@/shared/db/models/File'
 import type { Model } from '@/shared/db/models/Model'
 import { SettingsKeys } from '@/shared/db/models/SettingsItem'
+import logger from '@/shared/logger'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 import { useChromePort } from '@/sidebar/hooks/useChromePort'
+import { useGroq } from '@/sidebar/providers/GroqProvider'
 import { useOllama } from '@/sidebar/providers/OllamaProvider'
 import { ConversationWithLastMessage } from '@/sidebar/types/ConversationWithLastMessage'
 import { ConversationWithModel } from '@/sidebar/types/ConversationWithModel'
@@ -31,6 +33,8 @@ const ChatContext = React.createContext<
       conversations?: ConversationWithLastMessage[]
       selectedConversation?: ConversationWithModel
       messages?: MessageWithFiles[]
+      messageContext?: string
+      tools: string[]
       sendMessage: (
         message: string,
         images: Omit<File, 'conversationId' | 'messageId'>[]
@@ -41,10 +45,10 @@ const ChatContext = React.createContext<
       regenerateResponse: () => void
       stopGenerating: () => void
       continueGenerating: () => void
-      messageContext?: string
       setMessageContext: (context: string | undefined) => void
       defaultMessageWithContext: string
       defaultMessageWithoutContext: string
+      setTools: (tools: string[]) => void
     }
   | undefined
 >(undefined)
@@ -74,6 +78,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const navigator = useNavigate()
 
   const { models: ollamaModels } = useOllama()
+  const { models: groqModels } = useGroq()
 
   const [selectedModel, setSelectedModel] = React.useState<Model>()
   const [messageContext, setMessageContext] = React.useState<string>()
@@ -87,9 +92,10 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       `Here is the user's message. Respond based on the input inside the message tag. <message></message>`,
     []
   )
+  const [tools, setTools] = React.useState<string[]>([])
 
   const models = useMemo<Model[]>(() => {
-    const newModels = [...(ollamaModels ?? [])]
+    const newModels = [...(ollamaModels ?? []), ...(groqModels ?? [])]
 
     if (
       ollamaModels &&
@@ -102,7 +108,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     }
 
     return newModels
-  }, [ollamaModels, selectedModel])
+  }, [ollamaModels, selectedModel, groqModels])
 
   const selectedConversation = useLiveQuery(async () => {
     if (!conversationId) return undefined
@@ -125,11 +131,13 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
     const messages = await db.messages.where({ conversationId: Number(conversationId) }).toArray()
     const files = await db.files.where({ conversationId: Number(conversationId) }).toArray()
+    const tools = await db.toolInvocations.toArray()
 
     const messagesWithFiles: MessageWithFiles[] = messages.map((message) => {
       return {
         ...message,
-        files: files.filter((file) => file.messageId === message.id)
+        files: files.filter((file) => file.messageId === message.id),
+        tools: tools.filter((tool) => tool.messageId === message.id)
       }
     })
 
@@ -181,7 +189,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       const messageType = messageTypes[type as keyof typeof messageTypes]
 
       if (messageType) {
-        console.log(`[ChatProvider] Received message: ${type}`)
+        logger.info(`[ChatProvider] Received message: ${type}`)
         messageType()
       }
     })
@@ -210,52 +218,11 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         conversationId: selectedConversation?.id,
         modelId: selectedModel.id,
         message: prompt,
-        files: images
+        files: images,
+        tools
       })
 
       setMessageContext(undefined)
-      /* TODO: modify code
-      if (!trimmedMessage || !selectedModel) return
-
-      setIsGenerating(true)
-
-      const messageWithContext = messageContext
-        ? `Here is the user's context and message. Use the information inside the context tag as background knowledge, and respond based on the user's input inside the message tag. <context>${messageContext.trim()}</context><message>${trimmedMessage}</message>`
-        : `Here is the user's message. Respond based on the input inside the message tag. <message>${trimmedMessage}</message>`
-
-      const createMessageObject = (content: string) =>
-        ({
-          role: 'user',
-          content: [
-            { type: 'text', text: content },
-            ...images.map((image) => ({ type: 'image', image }) as ImagePart)
-          ]
-        }) as CoreMessage
-
-      const messageObject = createMessageObject(messageWithContext)
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...messageObject,
-          id: 'temp',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        } as Message
-      ])
-
-      sendPortMessage(ServerEndpoints.sendMessage, {
-        chatId,
-        message: messageObject,
-        userMessage: trimmedMessage,
-        model: {
-          provider: selectedModel.provider,
-          model: selectedModel.model
-        }
-      })
-      */
-
-      // setMessageContext(undefined)
     },
     [
       selectedModel,
@@ -266,18 +233,18 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       customPromptWithContext?.value,
       defaultMessageWithContext,
       customPromptWithoutContext?.value,
-      defaultMessageWithoutContext
+      defaultMessageWithoutContext,
+      tools
     ]
   )
 
   const selectModel = useCallback(
     (model: string) => {
-      const selectedModel = models.find((m) => m.model === model)
-      if (selectedModel) {
-        setSelectedModel(selectedModel)
-      }
+      const newSelectedModel = models.find((m) => m.model === model)
+
+      setSelectedModel(newSelectedModel === selectedModel ? undefined : newSelectedModel)
     },
-    [models]
+    [models, selectedModel]
   )
 
   const deleteConversation = useCallback(
@@ -338,18 +305,20 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
     sendPortMessage(ServerEndpoints.regenerateResponse, {
       conversationId: selectedConversation.id,
-      modelId: selectedModel.id
+      modelId: selectedModel.id,
+      tools
     })
-  }, [sendPortMessage, selectedModel, selectedConversation])
+  }, [sendPortMessage, selectedModel, selectedConversation, tools])
 
   const continueGenerating = useCallback(() => {
     if (!selectedConversation?.id || !selectedModel?.id) return
 
     sendPortMessage(ServerEndpoints.continueGenerating, {
       conversationId: selectedConversation?.id,
-      modelId: selectedModel.id
+      modelId: selectedModel.id,
+      tools
     })
-  }, [selectedConversation, sendPortMessage, selectedModel])
+  }, [selectedConversation, sendPortMessage, selectedModel, tools])
 
   const stopGenerating = useCallback(() => {
     if (!selectedConversation) return
@@ -373,7 +342,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       messageContext,
       setMessageContext,
       defaultMessageWithContext,
-      defaultMessageWithoutContext
+      defaultMessageWithoutContext,
+      setTools,
+      tools
     }),
     [
       messages,
@@ -390,7 +361,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       messageContext,
       setMessageContext,
       defaultMessageWithContext,
-      defaultMessageWithoutContext
+      defaultMessageWithoutContext,
+      setTools,
+      tools
     ]
   )
 

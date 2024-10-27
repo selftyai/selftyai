@@ -3,10 +3,11 @@ import ContinueMessageHandler from '@/server/handlers/chat/ContinueMessageHandle
 import GenerateMessageHandler from '@/server/handlers/chat/GenerateMessageHandler'
 import RegenerateMessageHandler from '@/server/handlers/chat/RegenerateMessageHandler'
 import SetMessageContextHandler from '@/server/handlers/chat/SetMessageContextHandler'
+import GroqVerifyConnectionHandler from '@/server/handlers/groq/VerifyConnectionHandler'
 import CurrentLanguageHandler from '@/server/handlers/i18n/CurrentLanguageHandler'
 import DeleteModelHandler from '@/server/handlers/ollama/DeleteModelHandler'
 import PullModelHandler from '@/server/handlers/ollama/PullModelHandler'
-import VerifyConnectionHandler from '@/server/handlers/ollama/VerifyConnectionHandler'
+import OllamaVerifyConnectionHandler from '@/server/handlers/ollama/VerifyConnectionHandler'
 import GetSettingsHandler from '@/server/handlers/settings/GetSettingsHandler'
 import SidePanelHandler from '@/server/handlers/sidePanel/SidePanelHandler'
 import GetThemeHandler from '@/server/handlers/theme/GetThemeHandler'
@@ -23,8 +24,10 @@ export function createHandlerChains() {
     new SetMessageContextHandler(),
     // Ollama handlers
     new DeleteModelHandler(),
-    new VerifyConnectionHandler(),
+    new OllamaVerifyConnectionHandler(),
     new PullModelHandler(),
+    // Groq handlers
+    new GroqVerifyConnectionHandler(),
     // SidePanel handlers
     new SidePanelHandler()
   )

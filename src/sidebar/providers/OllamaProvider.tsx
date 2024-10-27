@@ -7,6 +7,8 @@ import { db } from '@/shared/db'
 import { Integration } from '@/shared/db/models/Integration'
 import { Model } from '@/shared/db/models/Model'
 import { OllamaPullModel } from '@/shared/db/models/OllamaPullModel'
+import logger from '@/shared/logger'
+import { Integrations } from '@/shared/types/Integrations'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 import { useChromePort } from '@/sidebar/hooks/useChromePort'
 
@@ -40,16 +42,16 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { t } = useTranslation()
 
   const models = useLiveQuery(async () => {
-    const integration = await db.integrations.get({ name: 'ollama' })
+    const integration = await db.integrations.get({ name: Integrations.ollama })
     if (!integration || !integration.active) return []
 
     return db.models
-      .where({ provider: 'ollama' })
+      .where({ provider: Integrations.ollama })
       .and((model) => !model.isDeleted)
       .toArray()
   }, [])
   const pullingModels = useLiveQuery(() => db.ollamaPullingModels.toArray(), [])
-  const integration = useLiveQuery(() => db.integrations.get({ name: 'ollama' }), [])
+  const integration = useLiveQuery(() => db.integrations.get({ name: Integrations.ollama }), [])
 
   const [connected, setConnected] = React.useState(false)
   const [verifyingConnection, setVerifyingConnection] = React.useState(false)
@@ -119,7 +121,7 @@ const OllamaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
       if (messageType) {
-        console.log(`[OllamaProvider] Received message: ${type} with data`, rest)
+        logger.info(`[OllamaProvider] Received message: ${type} with data`, rest)
         messageType()
       }
     })

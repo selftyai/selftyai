@@ -6,6 +6,7 @@ import { useSearchParams } from 'react-router-dom'
 import AppearanceSetting from '@/sidebar/components/Settings/AppearanceSetting'
 import General from '@/sidebar/components/Settings/General'
 import Integrations from '@/sidebar/components/Settings/Integrations'
+import Plugins from '@/sidebar/components/Settings/Plugins'
 import SidebarContainer from '@/sidebar/components/Sidebar/SidebarContainer'
 import useMediaQuery from '@/sidebar/hooks/useMediaQuery'
 
@@ -33,6 +34,12 @@ const Settings = () => {
       title: t('settings.integrations.title'),
       icon: 'fluent:glance-horizontal-sparkles-24-regular',
       children: <Integrations className="max-h-[75dvh]" />
+    },
+    {
+      id: 'plugins',
+      title: t('settings.plugins.title'),
+      icon: 'lucide:toy-brick',
+      children: <Plugins className="max-h-[75dvh]" />
     }
   ]
 

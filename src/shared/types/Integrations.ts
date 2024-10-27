@@ -1,3 +1,6 @@
 export enum Integrations {
-  ollama = 'ollama'
+  ollama = 'ollama',
+  tavily = 'tavily',
+  google = 'google',
+  groq = 'groq'
 }

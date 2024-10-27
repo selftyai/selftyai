@@ -6,5 +6,12 @@ export interface Model extends TimestampedEntity {
   model: string
   provider: string
   isDeleted?: boolean
+  /**
+   * Whether this model has vision capabilities.
+   */
   vision?: boolean
+  /**
+   * Whether this model is a support tool invocation.
+   */
+  supportTool?: boolean
 }

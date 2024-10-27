@@ -8,6 +8,8 @@ import { Conversation } from '@/shared/db/models/Conversation'
 import { SettingsKeys } from '@/shared/db/models/SettingsItem'
 import printBuildInfo from '@/shared/printBuildInfo'
 
+import monitorGroqModels from '../utils/groq/monitorGroqModels'
+
 class BackgroundService {
   private portHandler: PortHandler
   private messageHandler: MessageHandler
@@ -70,9 +72,14 @@ class BackgroundService {
     }
   }
 
+  private async modelMonitoring() {
+    await monitorGroqModels()
+    await monitorPullingModels()
+  }
+
   private startModelMonitoring() {
-    monitorPullingModels()
-    this.modelMonitoringInterval = setInterval(monitorPullingModels, 1000 * 5)
+    this.modelMonitoring()
+    this.modelMonitoringInterval = setInterval(this.modelMonitoring, 1000 * 5)
     checkOngoingPullModels()
   }
 

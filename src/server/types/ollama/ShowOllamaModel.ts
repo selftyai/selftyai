@@ -7,7 +7,7 @@ type OllamaProjectorInfo = {
 export type ShowOllamaModel = {
   modelfile: string
   parameters: string
-  template: Date
+  template: string
   details: OllamaModelDetails
   projector_info?: OllamaProjectorInfo
   name?: string

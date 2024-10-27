@@ -9,6 +9,7 @@ import { Message } from '@/shared/db/models/Message'
 import { Model } from '@/shared/db/models/Model'
 import { OllamaPullModel } from '@/shared/db/models/OllamaPullModel'
 import { SettingsItem } from '@/shared/db/models/SettingsItem'
+import { ToolInvocation } from '@/shared/db/models/ToolInvocation'
 
 class SelftyDatabase extends Dexie {
   models!: Dexie.Table<Model, number>
@@ -18,6 +19,7 @@ class SelftyDatabase extends Dexie {
   integrations!: Dexie.Table<Integration, number>
   ollamaPullingModels!: Dexie.Table<OllamaPullModel, number>
   settings!: Dexie.Table<SettingsItem, string>
+  toolInvocations!: Dexie.Table<ToolInvocation, number>
 
   constructor() {
     super('SelftyDatabase')
@@ -36,6 +38,7 @@ class SelftyDatabase extends Dexie {
     addTimestampHooks(this.files)
     addTimestampHooks(this.integrations)
     addTimestampHooks(this.ollamaPullingModels)
+    addTimestampHooks(this.toolInvocations)
   }
 }
 
