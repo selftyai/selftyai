@@ -18,7 +18,9 @@ const ContextMenu: React.FC = () => {
   const { copied, copy } = useClipboard()
   const { t } = useTranslation()
 
-  const { menuPosition, selectedText, closeOverlay } = useContextMenuState()
+  const menuRef = React.createRef<HTMLDivElement>()
+
+  const { menuPosition, selectedText, closeOverlay } = useContextMenuState(menuRef)
   const { isContextInPromptEnabled } = usePageContent()
 
   const handleSendMessage = () => {
@@ -33,6 +35,7 @@ const ContextMenu: React.FC = () => {
       {menuPosition && selectedText && (
         <motion.div
           className="pointer-events-auto z-[10000] flex items-center justify-center gap-2 rounded-lg border-1 border-content2 bg-background p-1 text-foreground"
+          layoutId="context-menu"
           style={{
             position: 'absolute',
             left: `${menuPosition.left}px`,
@@ -43,6 +46,7 @@ const ContextMenu: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.125, ease: 'easeOut' } }}
           transition={{ type: 'spring', stiffness: 232, damping: 17 }}
+          ref={menuRef}
         >
           <Tooltip
             content={

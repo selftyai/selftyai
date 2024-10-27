@@ -1,17 +1,46 @@
-import { useEffect, useState } from 'react'
+import { RefObject, useCallback, useLayoutEffect, useState } from 'react'
 
-const useContextMenuState = () => {
-  const [isOverlayVisible, setIsOverlayVisible] = useState(false)
+const MENU_PADDING = 4 // set padding for the context menu in pixels
+
+const useContextMenuState = (menuRef: RefObject<HTMLElement>) => {
   const [menuPosition, setMenuPosition] = useState<{ left: number; top: number } | null>(null)
   const [selectedText, setSelectedText] = useState<string | null>(null)
 
   const closeOverlay = () => {
-    setIsOverlayVisible(false)
     setSelectedText(null)
     window.getSelection()?.empty()
   }
 
-  useEffect(() => {
+  const adjustMenuPosition = useCallback(
+    (position: { left: number; top: number }) => {
+      const menu = menuRef.current
+      if (!menu) return position
+
+      const scrollY = window.scrollY || document.documentElement.scrollTop
+
+      const menuRect = menu.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+
+      console.log(menuRect)
+
+      return {
+        left: Math.min(
+          position.left + MENU_PADDING,
+          viewportWidth - menuRect.width - getScrollbarWidth() * 1.5 - MENU_PADDING
+        ),
+        top: Math.min(
+          position.top + MENU_PADDING,
+          viewportHeight - menuRect.height + scrollY - MENU_PADDING
+        )
+      }
+    },
+    [menuRef]
+  )
+
+  const getScrollbarWidth = () => window.innerWidth - document.documentElement.clientWidth
+
+  useLayoutEffect(() => {
     const handleMouseUp = (event: MouseEvent) => {
       if (event.button === 2) {
         return
@@ -22,14 +51,11 @@ const useContextMenuState = () => {
       if (selection && selection.rangeCount > 0) {
         const text = selection.toString().trim()
 
-        const scrollY = window.scrollY || document.documentElement.scrollTop
-
-        if (text.length > 0 && text !== selectedText && !isOverlayVisible) {
+        if (text.length > 0 && text !== selectedText) {
           const { clientX: left, clientY: top } = event
 
           setSelectedText(text)
           setMenuPosition({ left, top: top + scrollY })
-          setIsOverlayVisible(true)
         }
       }
     }
@@ -47,10 +73,20 @@ const useContextMenuState = () => {
       document.removeEventListener('mouseup', handleMouseUp)
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isOverlayVisible, selectedText])
+  }, [selectedText])
+
+  useLayoutEffect(() => {
+    if (menuPosition && menuRef.current) {
+      const timeoutId = setTimeout(() => {
+        const adjustedPosition = adjustMenuPosition(menuPosition)
+        setMenuPosition(adjustedPosition)
+      }, 100)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [menuPosition, menuRef, adjustMenuPosition])
 
   return {
-    isOverlayVisible,
     menuPosition,
     selectedText,
     closeOverlay

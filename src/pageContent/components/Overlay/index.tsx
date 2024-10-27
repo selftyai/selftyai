@@ -15,9 +15,10 @@ export const Overlay: React.FC<OverlayProps> = ({ children }) => {
           top: 0,
           left: 0,
           width: '100%',
-          height: '100%',
+          height: `${document.documentElement.scrollHeight}px`,
           zIndex: 9999,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          overflow: 'hidden'
         }}
       >
         {children}

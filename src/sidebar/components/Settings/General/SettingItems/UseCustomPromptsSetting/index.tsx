@@ -11,7 +11,7 @@ import { SettingsKeys } from '@/shared/db/models/SettingsItem'
 import CustomSwitch from '@/sidebar/components/CustomSwitch'
 import { useChat } from '@/sidebar/providers/ChatProvider'
 
-const UseCustomPromtsSetting = () => {
+const UseCustomPromptsSetting = () => {
   const { t } = useTranslation()
   const { defaultMessageWithContext, defaultMessageWithoutContext } = useChat()
   const [textAreaPrompt, setTextAreaPrompt] = React.useState<string>('')
@@ -19,7 +19,7 @@ const UseCustomPromtsSetting = () => {
 
   const [isButtonsDisabled, setIsButtonsDisabled] = React.useState<boolean>(true)
   const [validationMessage, setValidationMessage] = React.useState<string>('')
-  const [isUseCustomPromtsSwitch, setIsUseCustomPromtsSwitch] = React.useState<boolean>()
+  const [isUseCustomPromptsSwitch, setIsUseCustomPromptsSwitch] = React.useState<boolean>()
 
   const promptSchemaWithContext = React.useMemo(
     () =>
@@ -27,7 +27,7 @@ const UseCustomPromtsSetting = () => {
         .string()
         .min(1, { message: t('settings.general.isUsingDefaultPrompt.errors.promptEmpty') })
         .regex(
-          /(<context>.*<\/context>.*<message>.*<\/message>)|(<message>.*<\/message>.*<context>.*<\/context>)/,
+          /(<context>[^]*<\/context>[^]*<message>[^]*<\/message>)|(<message>[^]*<\/message>[^]*<context>[^]*<\/context>)/,
           {
             message: t('settings.general.isUsingDefaultPrompt.errors.promptWithContext')
           }
@@ -40,7 +40,7 @@ const UseCustomPromtsSetting = () => {
       z
         .string()
         .min(1, { message: t('settings.general.isUsingDefaultPrompt.errors.promptEmpty') })
-        .regex(/<message>.*<\/message>/, {
+        .regex(/<message>[^]*<\/message>/, {
           message: t('settings.general.isUsingDefaultPrompt.errors.promptWithoutContext')
         }),
     [t]
@@ -121,7 +121,7 @@ const UseCustomPromtsSetting = () => {
   }, [isContextEnabled?.value])
 
   React.useEffect(() => {
-    setIsUseCustomPromtsSwitch(
+    setIsUseCustomPromptsSwitch(
       !!(customPromptWithContext?.value && customPromptWithContext.value !== '') ||
         !!(customPromptWithoutContext?.value && customPromptWithoutContext.value !== '')
     )
@@ -148,8 +148,8 @@ const UseCustomPromtsSetting = () => {
     <CustomSwitch
       label={t('settings.general.isUsingDefaultPrompt.label')}
       description={t('settings.general.isUsingDefaultPrompt.description')}
-      isSelected={isUseCustomPromtsSwitch}
-      onChange={(e) => setIsUseCustomPromtsSwitch(e.target.checked)}
+      isSelected={isUseCustomPromptsSwitch}
+      onChange={(e) => setIsUseCustomPromptsSwitch(e.target.checked)}
     >
       <Textarea
         className="w-full rounded"
@@ -197,4 +197,4 @@ const UseCustomPromtsSetting = () => {
   )
 }
 
-export default UseCustomPromtsSetting
+export default UseCustomPromptsSetting

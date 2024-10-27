@@ -6,7 +6,7 @@ export interface SettingsItem {
 export enum SettingsKeys {
   language = 'language',
   theme = 'theme',
-  isPageOverlayEnable = 'isPageOverlayEnable',
+  isPageOverlayEnabled = 'isPageOverlayEnabled',
   isContextInPromptEnabled = 'isContextInPromptEnabled',
   customPromptWithContext = 'customPromptWithContext',
   customPromptWithoutContext = 'customPromptWithoutContext'

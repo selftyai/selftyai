@@ -11,13 +11,16 @@ import CustomSwitch from '@/sidebar/components/CustomSwitch'
 const IsOverlayEnabledSetting = () => {
   const { t } = useTranslation()
 
-  const isOverlayEnabled = useLiveQuery(() => db.settings.get(SettingsKeys.isPageOverlayEnable), [])
+  const isOverlayEnabled = useLiveQuery(
+    () => db.settings.get(SettingsKeys.isPageOverlayEnabled),
+    []
+  )
 
   const handleIsOverlayEnabledChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked
 
     await db.settings.put({
-      key: SettingsKeys.isPageOverlayEnable,
+      key: SettingsKeys.isPageOverlayEnabled,
       value: isChecked ? 'true' : 'false'
     })
     sendMessageToContentScript({

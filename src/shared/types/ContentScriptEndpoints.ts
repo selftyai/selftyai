@@ -5,7 +5,7 @@ export enum ContentScriptServerEndpoints {
   setIsContextInPromptEnabled = 'setIsContextInPromptEnabled'
 }
 
-export interface ContentScriptMessage {
+export interface ContentScriptMessage<T = unknown> {
   type: ContentScriptServerEndpoints
-  payload: unknown
+  payload: T
 }

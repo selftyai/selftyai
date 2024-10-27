@@ -58,7 +58,7 @@ export const PageContentProvider: React.FC<{ children: ReactNode }> = ({ childre
   React.useEffect(() => {
     sendMessageAsync<string>({
       type: ServerEndpoints.getSettings,
-      payload: SettingsKeys.isPageOverlayEnable
+      payload: SettingsKeys.isPageOverlayEnabled
     }).then((value: string) => {
       if (value === 'true' || value === 'default') setIsPageOverlayEnabled(true)
       if (value === 'false') setIsPageOverlayEnabled(false)

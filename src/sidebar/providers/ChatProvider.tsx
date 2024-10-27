@@ -209,7 +209,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             ? customPromptWithContext?.value || defaultMessageWithContext
             : customPromptWithoutContext?.value || defaultMessageWithoutContext
 
-        return getFullPrompt(promptTemplate, trimmedMessage, messageContext?.trim())
+        return getFullPrompt(promptTemplate, trimmedMessage, messageContext?.trim() ?? '')
       }
 
       const prompt = getPrompt()
