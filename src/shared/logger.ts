@@ -9,7 +9,7 @@ const logger = {
   error: (...message: any) => console.error(...message),
   warn: (...message: any) => {
     if (process.env.NODE_ENV === 'production') return
-    
+
     console.warn(...message)
   }
 }
