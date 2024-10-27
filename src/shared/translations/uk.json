@@ -45,6 +45,7 @@
     "ollamaConnectionError": "Ollama не підключено. Будь ласка, перевірте вашу базову URL-адресу та спробуйте ще раз. Якщо ви не використовуєте виділений сервер, переконайтеся, що ви встановили Ollama на вашому локальному комп'ютері."
   },
   "generatingResponse": "{{ model }} міркує <Loader />",
+  "runTool": "{{ model }} використовує {{ toolName }} <Loader />",
   "responseMetadata": {
     "completionTokens": {
       "label": "Токени завершення",
@@ -137,7 +138,15 @@
       "groq": {
         "title": "Groq",
         "website": "groq.com",
-        "description": "Використовуйте моделі groq для генерації відповідей. Використовуйте свій API ключ для початку роботи."
+        "description": "Використовуйте моделі groq для генерації відповідей. Використовуйте свій API ключ для початку роботи.",
+        "apiKey": {
+          "label": "API ключ",
+          "description": "Введіть ваш API ключ Groq. Якщо у вас його немає, ви можете отримати його на їхньому <Link>вебсайті</Link>.",
+          "verify": "Перевірити з'єднання"
+        },
+        "connected": "З'єднання з Groq API успішно встановлено",
+        "disconnected": "З'єднання з Groq API не встановлено",
+        "invalidApiKey": "Невірний API ключ, будь ласка, перевірте і спробуйте ще раз"
       },
       "lmStudio": {
         "title": "LM Studio",
@@ -158,6 +167,40 @@
         "title": "Anthropic",
         "website": "anthropic.com/api",
         "description": "Генеруйте відповіді за допомогою Anthropic. Використовуйте свій API ключ для початку роботи."
+      }
+    },
+    "plugins": {
+      "title": "Плагіни",
+      "requestNewPlugin": "Запросити новий плагін",
+      "webSearch": {
+        "title": "Веб-пошук",
+        "google": {
+          "title": "Google",
+          "description": "Шукати в Інтернеті за допомогою Google.",
+          "action": "Налаштувати",
+          "apiKey": {
+            "label": "API ключ",
+            "description": "Введіть ваш API ключ Google Search. Якщо у вас його немає, ви можете отримати його <Link>тут</Link>."
+          },
+          "searchEngineId": {
+            "label": "ID пошукової системи",
+            "description": "Введіть ваш ID пошукової системи Google. Якщо у вас його немає, ви можете отримати його <Link>тут</Link>."
+          }
+        },
+        "duckduckgo": {
+          "title": "DuckDuckGo",
+          "description": "Шукати в Інтернеті за допомогою DuckDuckGo.",
+          "action": "Налаштувати"
+        },
+        "tavily": {
+          "title": "Tavily",
+          "description": "Шукати в Інтернеті за допомогою Tavily.",
+          "action": "Налаштувати",
+          "apiKey": {
+            "label": "API ключ",
+            "description": "Введіть ваш API ключ Tavily. Якщо у вас його немає, ви можете отримати його на їхньому <Link>вебсайті</Link>."
+          }
+        }
       }
     },
     "general": {
@@ -216,6 +259,28 @@
   "newConversation": "Нова бесіда",
   "unpinnedConversation": "Бесіда успішно відкріплена",
   "pinnedConversation": "Бесіда успішно закріплена",
+  "webSearchResults": "Результати веб-пошуку",
+  "error": {
+    "title": "Виникла помилка",
+    "reloadPage": "Перезавантажити сторінку",
+    "reportABug": "Повідомити про помилку"
+  },
+  "tools_zero": "Виберіть інструменти",
+  "tools_one": "1 інструмент",
+  "tools_two": "2 інструменти",
+  "tools_few": "{{ count }} інструменти",
+  "tools_many": "{{ count }} інструментів",
+  "tools_other": "{{ count }} інструментів",
+  "supportToolInvocation": "Ця модель підтримує виклики інструментів.",
+  "tools": {
+    "web_search": "Веб-пошук ({{ provider }})",
+    "tavily_search": "Tavily",
+    "google_search": "Google"
+  },
+  "invokedTools": "Викликані інструменти",
+  "noPluginsAvailable": "Плагіни не доступні <SettingsLink>Перейти до налаштувань</SettingsLink>",
+  "groq": "Groq",
+  "readAloud": "Читати вголос",
   "pageContent": {
     "contextMenu": {
       "highlight": "Виділити область",

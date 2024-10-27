@@ -14,7 +14,7 @@ const Settings = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { t } = useTranslation()
 
-  const isSmallScreen = useMediaQuery('(max-width: 450px)')
+  const isSmallScreen = useMediaQuery(`(max-width: 580px)`)
 
   const tabs = [
     {
@@ -76,12 +76,12 @@ const Settings = () => {
             {(tab) => (
               <Tab
                 key={tab.id}
-                className="max-[450px]:px-3"
+                className="max-[580px]:px-3"
                 title={
                   <Tooltip isDisabled={!isSmallScreen} content={tab.title}>
                     <div className="flex items-center space-x-2">
                       <Icon icon={tab.icon} width={24} height={24} />
-                      <span className="max-[450px]:hidden">{tab.title}</span>
+                      <span className="max-[580px]:hidden">{tab.title}</span>
                     </div>
                   </Tooltip>
                 }
