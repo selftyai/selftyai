@@ -1,7 +1,8 @@
 export enum ContentScriptServerEndpoints {
   themeChanged = 'themeChanged',
   languageChanged = 'languageChanged',
-  setContextIsEnable = 'setContextIsEnable'
+  setPageOverlayIsEnable = 'setPageOverlayIsEnable',
+  setIsContextInPromptEnabled = 'setIsContextInPromptEnabled'
 }
 
 export interface ContentScriptMessage {

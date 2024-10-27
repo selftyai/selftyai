@@ -8,12 +8,14 @@ import { toast } from 'sonner'
 import { db } from '@/shared/db'
 import { File } from '@/shared/db/models/File'
 import type { Model } from '@/shared/db/models/Model'
+import { SettingsKeys } from '@/shared/db/models/SettingsItem'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 import { useChromePort } from '@/sidebar/hooks/useChromePort'
 import { useOllama } from '@/sidebar/providers/OllamaProvider'
 import { ConversationWithLastMessage } from '@/sidebar/types/ConversationWithLastMessage'
 import { ConversationWithModel } from '@/sidebar/types/ConversationWithModel'
 import { MessageWithFiles } from '@/sidebar/types/MessageWithFiles'
+import { getFullPrompt } from '@/sidebar/utils/parseMessage'
 
 const ModelContext = React.createContext<
   | {
@@ -41,6 +43,8 @@ const ChatContext = React.createContext<
       continueGenerating: () => void
       messageContext?: string
       setMessageContext: (context: string | undefined) => void
+      defaultMessageWithContext: string
+      defaultMessageWithoutContext: string
     }
   | undefined
 >(undefined)
@@ -73,6 +77,16 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const [selectedModel, setSelectedModel] = React.useState<Model>()
   const [messageContext, setMessageContext] = React.useState<string>()
+  const defaultMessageWithContext = useMemo(
+    () =>
+      `Here is the user's context and message. Use the information inside the context tag as background knowledge, and respond based on the user's input inside the message tag. <context></context><message></message>`,
+    []
+  )
+  const defaultMessageWithoutContext = useMemo(
+    () =>
+      `Here is the user's message. Respond based on the input inside the message tag. <message></message>`,
+    []
+  )
 
   const models = useMemo<Model[]>(() => {
     const newModels = [...(ollamaModels ?? [])]
@@ -122,6 +136,21 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     return messagesWithFiles
   }, [conversationId])
 
+  const customPromptWithContext = useLiveQuery(
+    () => db.settings.get(SettingsKeys.customPromptWithContext),
+    []
+  )
+
+  const customPromptWithoutContext = useLiveQuery(
+    () => db.settings.get(SettingsKeys.customPromptWithoutContext),
+    []
+  )
+
+  const isContextEnabled = useLiveQuery(async () => {
+    const setting = await db.settings.get(SettingsKeys.isContextInPromptEnabled)
+    return setting ? { value: setting.value === 'true' } : { value: true }
+  }, [])
+
   const conversations = useLiveQuery(async () => {
     const conversations = await db.conversations.toArray()
 
@@ -164,16 +193,23 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const sendMessage = useCallback(
     async (message: string, images: Omit<File, 'conversationId' | 'messageId'>[] = []) => {
       const trimmedMessage = message.trim()
-      if (!trimmedMessage || !selectedModel?.id) return
+      if (!trimmedMessage || !selectedModel || !selectedModel.id) return
 
-      const messageWithContext = messageContext
-        ? `Here is the user's context and message. Use the information inside the context tag as background knowledge, and respond based on the user's input inside the message tag. <context>${messageContext.trim()}</context><message>${trimmedMessage}</message>`
-        : `Here is the user's message. Respond based on the input inside the message tag. <message>${trimmedMessage}</message>`
+      const getPrompt = (): string => {
+        const promptTemplate =
+          isContextEnabled?.value && messageContext
+            ? customPromptWithContext?.value || defaultMessageWithContext
+            : customPromptWithoutContext?.value || defaultMessageWithoutContext
+
+        return getFullPrompt(promptTemplate, trimmedMessage, messageContext?.trim())
+      }
+
+      const prompt = getPrompt()
 
       sendPortMessage(ServerEndpoints.sendMessage, {
         conversationId: selectedConversation?.id,
         modelId: selectedModel.id,
-        message: messageWithContext,
+        message: prompt,
         files: images
       })
 
@@ -221,7 +257,17 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
       // setMessageContext(undefined)
     },
-    [selectedModel, sendPortMessage, selectedConversation, setMessageContext, messageContext]
+    [
+      selectedModel,
+      sendPortMessage,
+      selectedConversation?.id,
+      isContextEnabled?.value,
+      messageContext,
+      customPromptWithContext?.value,
+      defaultMessageWithContext,
+      customPromptWithoutContext?.value,
+      defaultMessageWithoutContext
+    ]
   )
 
   const selectModel = useCallback(
@@ -325,7 +371,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       stopGenerating,
       continueGenerating,
       messageContext,
-      setMessageContext
+      setMessageContext,
+      defaultMessageWithContext,
+      defaultMessageWithoutContext
     }),
     [
       messages,
@@ -340,7 +388,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       stopGenerating,
       continueGenerating,
       messageContext,
-      setMessageContext
+      setMessageContext,
+      defaultMessageWithContext,
+      defaultMessageWithoutContext
     ]
   )
 

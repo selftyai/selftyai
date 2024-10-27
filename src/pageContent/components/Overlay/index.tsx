@@ -5,9 +5,9 @@ interface OverlayProps {
 }
 
 export const Overlay: React.FC<OverlayProps> = ({ children }) => {
-  const { isContextEnabled } = usePageContent()
+  const { isPageOverlayEnabled } = usePageContent()
   return (
-    isContextEnabled && (
+    isPageOverlayEnabled && (
       <div
         id="selftyai-overlay"
         style={{

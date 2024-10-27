@@ -30,7 +30,7 @@ const PullModel = () => {
             <Button
               as={Link}
               className="bg-default-foreground text-background"
-              endContent={<Icon className="h-3 w-3" icon="solar:link-linear" />}
+              endContent={<Icon className="h-3 min-w-3" icon="solar:link-linear" />}
               radius="md"
               size="sm"
               href="https://ollama.com/library"

@@ -165,6 +165,29 @@
       "isPageOverlayEnabled": {
         "label": "Enable page overlay",
         "description": "Enable or disable the page overlay with the context menu etc."
+      },
+      "isUsingContextInPrompt": {
+        "label": "Use context in prompt",
+        "description": "Use context in prompts or disable it. This can improve the quality of responses."
+      },
+      "isUsingDefaultPrompt": {
+        "label": "Use custom default prompt",
+        "description": "Use default prompt or write custom one.",
+        "placeholder": "Enter a custom prompt here",
+        "tooltip": "You can customize the default prompt here. Use <context></context> and <message></message> tags to include context and message in the prompt. The context and user prompt will be inserted into these tags.",
+        "promptWithContextSwitch": {
+          "label": "Configure custom prompt with context",
+          "tooltip": "You can choose which prompt you want to customize here."
+        },
+        "errors": {
+          "promptEmpty": "Prompt cannot be empty",
+          "promptWithContext": "Prompt must contain <context> and <message> tags in any order",
+          "promptWithoutContext": "Prompt must contain <message> tag"
+        }
+      },
+      "toasts": {
+        "saved": "Successfully saved prompt",
+        "reseted": "Successfully reset prompt"
       }
     }
   },
@@ -189,13 +212,17 @@
   "fullPage": "Full page",
   "copied": "Copied!",
   "copy": "Copy",
+  "reset": "Reset",
   "newConversation": "New conversation",
   "unpinnedConversation": "Conversation unpinned successfully",
   "pinnedConversation": "Conversation pinned successfully",
   "pageContent": {
     "contextMenu": {
       "highlight": "Highlight the area",
-      "askAI": "Ask AI"
+      "askAI": {
+        "tooltip": "Ask AI",
+        "isContextInPromptFalseTooltip": "Context is disabled in app settings. Enable it to use this feature."
+      }
     }
   }
 }

@@ -1,6 +1,8 @@
 import { createRoot } from 'react-dom/client'
 
-import App from '@/pageContent/PageOverlay'
+import ContextMenu from '@/pageContent/components/ContextMenu'
+import { Overlay } from '@/pageContent/components/Overlay'
+import ProvidersWrapper from '@/pageContent/providers'
 import { PageOverlayRefProvider } from '@/pageContent/providers/PageOverlayRefProvider'
 import '@/shared/i18n'
 
@@ -20,6 +22,10 @@ shadowRoot.appendChild(linkEl)
 const root = createRoot(shadowRoot)
 root.render(
   <PageOverlayRefProvider>
-    <App />
+    <ProvidersWrapper>
+      <Overlay>
+        <ContextMenu />
+      </Overlay>
+    </ProvidersWrapper>
   </PageOverlayRefProvider>
 )

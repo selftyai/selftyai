@@ -5,8 +5,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import Tooltip from '@/pageContent/PageOverlay/ContextMenu/CustomTooltip'
+import Tooltip from '@/pageContent/components/ContextMenu/CustomTooltip'
 import useContextMenuState from '@/pageContent/hooks/useContextMenu'
+import { usePageContent } from '@/pageContent/providers/PageContentProvider'
 import { SidePanelAction } from '@/server/types/sidePanel/SidePanelActions'
 import logo from '@/shared/assets/logo.svg'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
@@ -18,8 +19,10 @@ const ContextMenu: React.FC = () => {
   const { t } = useTranslation()
 
   const { menuPosition, selectedText, closeOverlay } = useContextMenuState()
+  const { isContextInPromptEnabled } = usePageContent()
 
   const handleSendMessage = () => {
+    if (!isContextInPromptEnabled) return
     sendMessage(ServerEndpoints.sidePanelHandler, { action: SidePanelAction.OPEN })
 
     sendMessage(ServerEndpoints.setMessageContext, { context: selectedText })
@@ -41,13 +44,20 @@ const ContextMenu: React.FC = () => {
           exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.125, ease: 'easeOut' } }}
           transition={{ type: 'spring', stiffness: 232, damping: 17 }}
         >
-          <Tooltip content={t('pageContent.contextMenu.askAI')}>
+          <Tooltip
+            content={
+              isContextInPromptEnabled
+                ? t('pageContent.contextMenu.askAI.tooltip')
+                : t('pageContent.contextMenu.askAI.isContextInPromptFalseTooltip')
+            }
+          >
             <Button
               isIconOnly
               size="sm"
               variant="light"
               className="border-none text-base"
               onClick={handleSendMessage}
+              disabled={!isContextInPromptEnabled}
             >
               <Image width={35} height={35} src={logo} removeWrapper />
             </Button>
