@@ -40,9 +40,9 @@ const ChatContext = React.createContext<
       deleteConversation: (id?: number) => Promise<void>
       pinConversation: (id?: number) => Promise<void>
       unpinConversation: (id?: number) => Promise<void>
-      regenerateResponse: () => void
+      regenerateResponse: (messageId: number) => void
       stopGenerating: () => void
-      continueGenerating: () => void
+      continueGenerating: (messageId: number) => void
       setMessageContext: (context: string | undefined) => void
       setTools: (tools: string[]) => void
     }
@@ -174,6 +174,10 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       const trimmedMessage = message.trim()
       if (!trimmedMessage || !selectedModel?.id) return
 
+      const branchRecord = selectedConversation
+        ? await db.branches.where({ conversationId: selectedConversation.id! }).first()
+        : undefined
+
       const messageWithContext = messageContext
         ? `Here is the user's context and message. Use the information inside the context tag as background knowledge, and respond based on the user's input inside the message tag. <context>${messageContext.trim()}</context><message>${trimmedMessage}</message>`
         : `Here is the user's message. Respond based on the input inside the message tag. <message>${trimmedMessage}</message>`
@@ -183,7 +187,8 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         modelId: selectedModel.id,
         message: messageWithContext,
         files: images,
-        tools
+        tools,
+        parentMessageId: branchRecord?.branchPath[branchRecord?.branchPath.length - 1]
       })
 
       setMessageContext(undefined)
@@ -253,25 +258,33 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     [models, selectedModel, selectModel]
   )
 
-  const regenerateResponse = useCallback(() => {
-    if (!selectedConversation?.id || !selectedModel?.id) return
+  const regenerateResponse = useCallback(
+    (messageId: number) => {
+      if (!selectedConversation?.id || !selectedModel?.id) return
 
-    sendPortMessage(ServerEndpoints.regenerateResponse, {
-      conversationId: selectedConversation.id,
-      modelId: selectedModel.id,
-      tools
-    })
-  }, [sendPortMessage, selectedModel, selectedConversation, tools])
+      sendPortMessage(ServerEndpoints.regenerateResponse, {
+        conversationId: selectedConversation.id,
+        modelId: selectedModel.id,
+        tools,
+        messageId
+      })
+    },
+    [sendPortMessage, selectedModel, selectedConversation, tools]
+  )
 
-  const continueGenerating = useCallback(() => {
-    if (!selectedConversation?.id || !selectedModel?.id) return
+  const continueGenerating = useCallback(
+    (messageId: number) => {
+      if (!selectedConversation?.id || !selectedModel?.id) return
 
-    sendPortMessage(ServerEndpoints.continueGenerating, {
-      conversationId: selectedConversation?.id,
-      modelId: selectedModel.id,
-      tools
-    })
-  }, [selectedConversation, sendPortMessage, selectedModel, tools])
+      sendPortMessage(ServerEndpoints.continueGenerating, {
+        conversationId: selectedConversation?.id,
+        modelId: selectedModel.id,
+        tools,
+        messageId
+      })
+    },
+    [selectedConversation, sendPortMessage, selectedModel, tools]
+  )
 
   const stopGenerating = useCallback(() => {
     if (!selectedConversation) return

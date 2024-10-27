@@ -2,31 +2,34 @@ import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts
 import { AgentExecutor, createToolCallingAgent } from 'langchain/agents'
 
 import { MessageEvent } from '@/server/types/MessageEvent'
+import createOrUpdateToolInvocation from '@/server/utils/chat/createOrUpdateToolInvocation'
+import getMappedMessages from '@/server/utils/chat/getMappedMessages'
 import getProvider from '@/server/utils/chat/getProvider'
+import getTools from '@/server/utils/chat/getTools'
 import { db } from '@/shared/db'
 import { Conversation } from '@/shared/db/models/Conversation'
+import { Message } from '@/shared/db/models/Message'
+import logger from '@/shared/logger'
 
-import createOrUpdateToolInvocation from './createOrUpdateToolInvocation'
-import getMappedMessages from './getMappedMessages'
-import getTools from './getTools'
+import collectMessagesForBranch from './collectMessagesForBranch'
 
 interface StreamChatMessageProps {
   conversation: Conversation
   modelId: number
   port: chrome.runtime.Port
-  useLastMessage?: boolean
   tools: string[]
+  assistantMessage: Message
 }
 
 export default async function streamChatMessage({
   conversation,
   modelId,
   port,
-  useLastMessage = false,
-  tools
+  tools,
+  assistantMessage
 }: StreamChatMessageProps): Promise<boolean> {
   if (!conversation.id) {
-    console.warn('[streamChatMessage] Conversation not found:', conversation.id)
+    logger.warn('[streamChatMessage] Conversation not found:', conversation.id)
     return false
   }
 
@@ -36,33 +39,27 @@ export default async function streamChatMessage({
   const model = await db.models.where({ id: modelId }).first()
 
   if (!model) {
-    console.warn('[streamChatMessage] Model not found:', modelId)
+    logger.warn('[streamChatMessage] Model not found:', modelId)
     return false
   }
 
-  const assistantMessageId = useLastMessage
-    ? (await db.messages.where({ conversationId, role: 'assistant' }).last())?.id
-    : await db.messages.add({
-        role: 'assistant',
-        content: '',
-        conversationId,
-        modelId,
-        availableTools: tools
-      })
+  // const assistantMessageId = useLastMessage
+  //   ? (await db.messages.where({ conversationId, role: 'assistant' }).last())?.id
+  //   : await db.messages.add({
+  //       role: 'assistant',
+  //       content: '',
+  //       conversationId,
+  //       modelId,
+  //       availableTools: tools,
+  //       parentMessageId
+  //     })
 
-  if (!assistantMessageId) {
-    console.warn('[streamChatMessage] Assistant message not found')
+  if (!assistantMessage.id) {
+    logger.warn('[streamChatMessage] Assistant message not found')
     return false
   }
 
-  const assistantMessage = await db.messages.where({ id: assistantMessageId }).first()
-
-  if (!assistantMessage) {
-    console.warn('[streamChatMessage] Assistant message not found:', assistantMessageId)
-    return false
-  }
-
-  await db.messages.where({ conversationId, role: 'assistant' }).modify({
+  await db.messages.update(assistantMessage.id!, {
     error: undefined,
     finishReason: undefined,
     availableTools: tools
@@ -74,14 +71,11 @@ export default async function streamChatMessage({
     }
   })
 
-  const messages = await db.messages.where({ conversationId }).toArray()
+  const messages = await collectMessagesForBranch(assistantMessage)
   const files = await db.files.where({ conversationId }).toArray()
 
   const mappedMessages = getMappedMessages(
-    messages.slice(
-      0,
-      useLastMessage && assistantMessage.content.length > 0 ? messages.length : messages.length - 1
-    ),
+    messages.slice(0, assistantMessage.content.length > 0 ? messages.length : messages.length - 1),
     files
   )
 
@@ -152,11 +146,11 @@ export default async function streamChatMessage({
                 toolName: runName || tool.name || 'unknown',
                 runId,
                 input,
-                messageId: assistantMessageId
+                messageId: assistantMessage.id!
               })
             },
             handleLLMNewToken: async (token: string) => {
-              await db.messages.update(assistantMessageId, {
+              await db.messages.update(assistantMessage.id!, {
                 content: assistantMessage.content + token
               })
               assistantMessage.content += token
@@ -165,7 +159,7 @@ export default async function streamChatMessage({
               const finishReason = abortController?.signal.aborted ? 'aborted' : 'error'
               const errorName = abortController?.signal.aborted ? 'AbortedError' : err.message
 
-              await db.messages.update(assistantMessageId, {
+              await db.messages.update(assistantMessage.id!, {
                 finishReason,
                 error: errorName
               })
@@ -180,7 +174,7 @@ export default async function streamChatMessage({
                   generating: false
                 })
 
-                await db.messages.update(assistantMessageId, {
+                await db.messages.update(assistantMessage.id!, {
                   promptTokens: message.usage_metadata.input_tokens,
                   completionTokens: message.usage_metadata.output_tokens,
                   totalTokens: message.usage_metadata.total_tokens,
@@ -197,7 +191,7 @@ export default async function streamChatMessage({
       const finishReason = abortController?.signal.aborted ? 'aborted' : 'error'
       const errorName = abortController?.signal.aborted ? 'AbortedError' : error.message
 
-      await db.messages.update(assistantMessageId, {
+      await db.messages.update(assistantMessage.id!, {
         finishReason,
         error: errorName
       })

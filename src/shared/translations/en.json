@@ -254,5 +254,6 @@
   "invokedTools": "Invoked tools",
   "noPluginsAvailable": "No plugins available <SettingsLink>Go to settings</SettingsLink>",
   "groq": "Groq",
-  "readAloud": "Read aloud"
+  "readAloud": "Read aloud",
+  "searchingForWeb": "Searching for web results..."
 }

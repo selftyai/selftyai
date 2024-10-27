@@ -21,7 +21,7 @@ export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   attempts?: number
   messageClassName?: string
   isGenerating?: boolean
-  statusText?: JSX.Element
+  statusText?: string
   messageLength?: number
   metadata?: Record<string, string>
   tools: ToolInvocation[]
@@ -54,7 +54,6 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
       canContinue,
       onRegenerate,
       canRegenerate,
-      isLastMessage,
       tools,
       ...props
     },
@@ -162,31 +161,6 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
             <div ref={messageRef} className={'text-small'}>
               {typeof message === 'string' ? <Markdown message={message} /> : message}
             </div>
-            {attempts > 1 && !hasFailed && (
-              <div className="flex w-full items-center justify-end">
-                <button
-                  onClick={() => onAttemptChange?.(currentAttempt > 1 ? currentAttempt - 1 : 1)}
-                >
-                  <Icon
-                    className="cursor-pointer text-default-400 hover:text-default-500"
-                    icon="gravity-ui:circle-arrow-left"
-                  />
-                </button>
-                <button
-                  onClick={() =>
-                    onAttemptChange?.(currentAttempt < attempts ? currentAttempt + 1 : attempts)
-                  }
-                >
-                  <Icon
-                    className="cursor-pointer text-default-400 hover:text-default-500"
-                    icon="gravity-ui:circle-arrow-right"
-                  />
-                </button>
-                <p className="px-1 text-tiny font-medium text-default-500">
-                  {currentAttempt}/{attempts}
-                </p>
-              </div>
-            )}
             {showFeedback && (
               <div className="flex items-center gap-2 pt-2">
                 <Tooltip content={t(speaking ? 'stopButton' : 'readAloud')} placement="bottom">
@@ -234,8 +208,11 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                     placement="top"
                     showArrow
                   >
-                    <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-default/40">
-                      <Icon className="text-lg text-default-600" icon="gravity-ui:circle-info" />
+                    <div className="inline-flex h-8 w-8 min-w-8 items-center justify-center rounded-full bg-default/40 px-4">
+                      <Icon
+                        className="min-w-8 text-lg text-default-600"
+                        icon="gravity-ui:circle-info"
+                      />
                     </div>
                   </Tooltip>
                 )}
@@ -258,8 +235,8 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                     }
                     placement="top"
                   >
-                    <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-default/40">
-                      <Icon className="text-lg text-default-600" icon="lucide:toy-brick" />
+                    <div className="inline-flex h-8 w-8 min-w-8 items-center justify-center rounded-full bg-default/40">
+                      <Icon className="min-w-8 text-lg text-default-600" icon="lucide:toy-brick" />
                     </div>
                   </Tooltip>
                 )}
@@ -277,22 +254,46 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                     </Button>
                   </Tooltip>
                 )}
-                {isLastMessage && (
-                  <Tooltip content={t('regenerateButton')} placement="bottom">
-                    <Button
-                      isIconOnly
-                      radius="full"
-                      size="sm"
-                      variant="flat"
-                      isDisabled={!canRegenerate}
-                      onPress={onRegenerate}
+                <Tooltip content={t('regenerateButton')} placement="bottom">
+                  <Button
+                    isIconOnly
+                    radius="full"
+                    size="sm"
+                    variant="flat"
+                    isDisabled={!canRegenerate}
+                    onPress={onRegenerate}
+                  >
+                    <Icon
+                      className="text-lg text-default-600"
+                      icon="gravity-ui:arrows-rotate-right"
+                    />
+                  </Button>
+                </Tooltip>
+
+                {attempts > 1 && !hasFailed && (
+                  <div className="ml-auto flex w-full items-center justify-end">
+                    <button
+                      onClick={() => onAttemptChange?.(currentAttempt > 1 ? currentAttempt - 1 : 1)}
                     >
                       <Icon
-                        className="text-lg text-default-600"
-                        icon="gravity-ui:arrows-rotate-right"
+                        className="h-4 w-4 cursor-pointer text-default-400 hover:text-default-500"
+                        icon="gravity-ui:circle-arrow-left"
                       />
-                    </Button>
-                  </Tooltip>
+                    </button>
+                    <button
+                      onClick={() =>
+                        onAttemptChange?.(currentAttempt < attempts ? currentAttempt + 1 : attempts)
+                      }
+                    >
+                      <Icon
+                        className="h-4 w-4 cursor-pointer text-default-400 hover:text-default-500"
+                        icon="gravity-ui:circle-arrow-right"
+                      />
+                    </button>
+                    <p className="px-1 text-small font-medium text-default-500">
+                      {currentAttempt}/{attempts}
+                    </p>
+                  </div>
                 )}
               </div>
             )}

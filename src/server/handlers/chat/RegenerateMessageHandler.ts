@@ -4,6 +4,8 @@ import generateTitle from '@/server/utils/chat/generateTitle'
 import getOrCreateConversation from '@/server/utils/chat/getOrCreateConversation'
 import streamChatMessage from '@/server/utils/chat/streamChatMessage'
 import { db } from '@/shared/db'
+import { Message } from '@/shared/db/models/Message'
+import logger from '@/shared/logger'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
 interface RegenerateMessageRequest {
@@ -19,6 +21,7 @@ interface RegenerateMessageRequest {
    * Array of tools to use for the message
    */
   tools: string[]
+  messageId: number
 }
 
 class RegenerateMessageHandler extends AbstractHandler<
@@ -27,7 +30,7 @@ class RegenerateMessageHandler extends AbstractHandler<
 > {
   public async handle(request: ExtendedEvent<RegenerateMessageRequest>): Promise<void> {
     if (request.type === ServerEndpoints.regenerateResponse) {
-      const { conversationId, modelId } = request.payload
+      const { conversationId, modelId, messageId } = request.payload
 
       const conversation = await getOrCreateConversation({
         id: conversationId,
@@ -48,14 +51,40 @@ class RegenerateMessageHandler extends AbstractHandler<
         modelId
       })
 
-      // Remove the last message
-      await db.messages.where({ id: lastMessage.id }).delete()
+      const lastUserMessage = await db.messages.get(messageId)
+
+      if (!lastUserMessage) {
+        logger.warn(
+          '[RegenerateMessageHandler] No user message found in conversation:',
+          conversationId
+        )
+        return
+      }
+
+      const assistantMessageId = await db.messages.add({
+        role: 'assistant',
+        content: '',
+        conversationId: conversation.id!,
+        modelId,
+        availableTools: request.payload.tools,
+        parentMessageId: lastUserMessage.id
+      })
+
+      const branch = await db.branches.where({ conversationId: conversation.id }).first()
+
+      if (branch) {
+        console.log('branch', branch)
+        await db.branches.where({ id: branch.id }).modify({
+          branchPath: [...branch.branchPath.slice(0, -1), assistantMessageId]
+        })
+      }
 
       const success = await streamChatMessage({
         conversation,
         modelId,
         port: request.port,
-        tools: request.payload.tools
+        tools: request.payload.tools,
+        assistantMessage: (await db.messages.get(assistantMessageId)) as Message
       })
 
       if (success) {

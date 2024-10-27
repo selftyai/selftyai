@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Image, Link } from '@nextui-org/react'
+import { Image, Link, Tooltip } from '@nextui-org/react'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import { useTranslation } from 'react-i18next'
 
@@ -20,8 +20,9 @@ const ToolInvocationItem: React.FC<ToolInvocationItemProps> = ({ invocation }) =
   const { t } = useTranslation()
   const { theme } = useTheme()
 
-  const parsedOutput =
-    invocation.status !== 'error' ? (JSON.parse(invocation.output) as SearchToolResponse[]) : []
+  const parsedOutput = ['loading', 'error'].includes(invocation.status)
+    ? []
+    : (JSON.parse(invocation.output || '[]') as SearchToolResponse[])
 
   return (
     <div className="flex flex-col gap-2">
@@ -30,6 +31,9 @@ const ToolInvocationItem: React.FC<ToolInvocationItemProps> = ({ invocation }) =
           <Icon icon="akar-icons:globe" className="h-4 w-4 rounded-small text-foreground" />
         </div>
         <p className="text-base font-semibold">{t('webSearchResults')}</p>
+        <Tooltip content={invocation.input} placement="top">
+          <Icon icon="akar-icons:info" className="h-4 w-4 text-content3-foreground/80" />
+        </Tooltip>
       </div>
       <OverlayScrollbarsComponent
         options={{
@@ -47,6 +51,11 @@ const ToolInvocationItem: React.FC<ToolInvocationItemProps> = ({ invocation }) =
           {invocation.status === 'error' && (
             <div className="group relative flex w-full flex-col gap-2 rounded-medium border border-danger-100 bg-content2 bg-danger-100/50 px-4 py-3 text-foreground sm:flex-row">
               <div className="text-small">{invocation.error}</div>
+            </div>
+          )}
+          {invocation.status === 'loading' && (
+            <div className="group relative flex w-full flex-col gap-2 rounded-medium border border-primary-100 bg-content2 bg-primary-100/50 px-4 py-3 text-foreground sm:flex-row">
+              <div className="text-small">{t('searchingForWeb')}</div>
             </div>
           )}
           {parsedOutput.map((result, index) => {
