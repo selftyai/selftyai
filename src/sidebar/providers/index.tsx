@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 
+import { BranchProvider } from '@/sidebar/providers/BranchProvider'
 import ChatProvider from '@/sidebar/providers/ChatProvider'
 import GroqProvider from '@/sidebar/providers/GroqProvider'
 import LanguageProvider from '@/sidebar/providers/LanguageProvider'
@@ -13,7 +14,9 @@ const ProvidersWrapper = () => {
         <OllamaProvider>
           <GroqProvider>
             <ChatProvider>
-              <Outlet />
+              <BranchProvider>
+                <Outlet />
+              </BranchProvider>
             </ChatProvider>
           </GroqProvider>
         </OllamaProvider>

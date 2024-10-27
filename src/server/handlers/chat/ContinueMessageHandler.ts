@@ -19,6 +19,10 @@ interface ContinueMessageRequest {
    * Array of tools to use for the message
    */
   tools: string[]
+  /**
+   * Message ID to continue from
+   */
+  messageId: number
 }
 
 class ContinueMessageHandler extends AbstractHandler<
@@ -27,7 +31,7 @@ class ContinueMessageHandler extends AbstractHandler<
 > {
   public async handle(request: ExtendedEvent<ContinueMessageRequest>): Promise<void> {
     if (request.type === ServerEndpoints.continueGenerating) {
-      const { conversationId, modelId } = request.payload
+      const { conversationId, modelId, messageId } = request.payload
 
       const conversation = await getOrCreateConversation({
         id: conversationId,
@@ -41,12 +45,22 @@ class ContinueMessageHandler extends AbstractHandler<
         modelId
       })
 
+      const assistantMessage = await db.messages.get(messageId)
+
+      if (!assistantMessage) {
+        console.warn(
+          '[ContinueGenerating] No assistant message found in conversation:',
+          conversationId
+        )
+        return
+      }
+
       const success = await streamChatMessage({
         conversation,
         modelId,
         port: request.port,
-        useLastMessage: true,
-        tools: request.payload.tools
+        tools: request.payload.tools,
+        assistantMessage
       })
 
       if (success) {

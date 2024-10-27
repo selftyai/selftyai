@@ -9,6 +9,10 @@ export default async function generateTitle(conversationId: number) {
     return false
   }
 
+  if (conversation.title !== 'New chat') {
+    return false
+  }
+
   const model = await db.models.where({ id: conversation.modelId }).first()
 
   if (!model) {

@@ -48,7 +48,11 @@ describe('generateTitle', () => {
   })
 
   it('should return false if model is not found', async () => {
-    ;(db.conversations.where({}).first as Mock).mockResolvedValue({ id: 1, modelId: 2 })
+    ;(db.conversations.where({}).first as Mock).mockResolvedValue({
+      id: 1,
+      modelId: 2,
+      title: 'New chat'
+    })
     ;(db.models.where({}).first as Mock).mockResolvedValue(null)
 
     const result = await generateTitle(1)
@@ -59,7 +63,11 @@ describe('generateTitle', () => {
   })
 
   it('should return false if user message is not found', async () => {
-    ;(db.conversations.where({}).first as Mock).mockResolvedValue({ id: 1, modelId: 2 })
+    ;(db.conversations.where({}).first as Mock).mockResolvedValue({
+      id: 1,
+      modelId: 2,
+      title: 'New chat'
+    })
     ;(db.models.where({}).first as Mock).mockResolvedValue({
       id: 2,
       provider: 'testProvider',
@@ -78,7 +86,11 @@ describe('generateTitle', () => {
       invoke: vi.fn().mockResolvedValue({ text: 'Generated Title' })
     }
 
-    ;(db.conversations.where({}).first as Mock).mockResolvedValue({ id: 1, modelId: 2 })
+    ;(db.conversations.where({}).first as Mock).mockResolvedValue({
+      id: 1,
+      modelId: 2,
+      title: 'New chat'
+    })
     ;(db.models.where({}).first as Mock).mockResolvedValue({
       id: 2,
       provider: 'testProvider',

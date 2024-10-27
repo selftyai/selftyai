@@ -5,6 +5,7 @@ import getOrCreateConversation from '@/server/utils/chat/getOrCreateConversation
 import streamChatMessage from '@/server/utils/chat/streamChatMessage'
 import { db } from '@/shared/db'
 import { File } from '@/shared/db/models/File'
+import { Message } from '@/shared/db/models/Message'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
 
 interface GenerateMessageRequest {
@@ -28,6 +29,10 @@ interface GenerateMessageRequest {
    * Array of tools to use for the message
    */
   tools: string[]
+  /**
+   * Parent message ID
+   */
+  parentMessageId?: number
 }
 
 class GenerateMessageHandler extends AbstractHandler<
@@ -36,7 +41,7 @@ class GenerateMessageHandler extends AbstractHandler<
 > {
   public async handle(request: ExtendedEvent<GenerateMessageRequest>): Promise<void> {
     if (request.type === ServerEndpoints.sendMessage) {
-      const { conversationId, message, modelId, files } = request.payload
+      const { conversationId, message, modelId, files, parentMessageId } = request.payload
 
       const conversation = await getOrCreateConversation({
         id: conversationId,
@@ -55,7 +60,8 @@ class GenerateMessageHandler extends AbstractHandler<
         conversationId: conversation.id!,
         modelId,
         role: 'user',
-        content: message
+        content: message,
+        parentMessageId
       })
 
       if (files.length > 0) {
@@ -75,11 +81,29 @@ class GenerateMessageHandler extends AbstractHandler<
         }
       })
 
+      const assistantMessageId = await db.messages.add({
+        role: 'assistant',
+        content: '',
+        conversationId: conversation.id!,
+        modelId,
+        availableTools: request.payload.tools,
+        parentMessageId: messageId
+      })
+
+      const branch = await db.branches.where({ conversationId: conversation.id }).first()
+
+      if (branch) {
+        await db.branches.where({ conversationId: conversation.id }).modify({
+          branchPath: [...branch.branchPath, assistantMessageId]
+        })
+      }
+
       const success = await streamChatMessage({
         conversation,
         modelId,
         port: request.port,
-        tools: request.payload.tools
+        tools: request.payload.tools,
+        assistantMessage: (await db.messages.get(assistantMessageId)) as Message
       })
 
       if (success) {

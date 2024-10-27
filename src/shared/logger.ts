@@ -6,7 +6,8 @@ const logger = {
 
     console.log(...message)
   },
-  error: (...message: any) => console.error(...message)
+  error: (...message: any) => console.error(...message),
+  warn: (...message: any) => console.warn(...message)
 }
 
 export default logger
