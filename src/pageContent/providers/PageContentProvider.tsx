@@ -64,7 +64,7 @@ export const PageContentProvider: React.FC<{ children: ReactNode }> = ({ childre
       })
 
       if (response.error) {
-        throw Error(`Error fetching ${key}: ${response.error}`)
+        throw new Error(`Error fetching ${key}: ${response.error}`)
       }
 
       setter(response.value === 'true' || response.value === 'default')
