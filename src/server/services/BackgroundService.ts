@@ -42,7 +42,7 @@ class BackgroundService {
     const ongoingConversations = conversations.filter((conversation) => conversation.generating)
     await this.abortOngoingConversations(ongoingConversations)
 
-    // Base settings
+    // Base settings initialization
     const contextInPromptSetting = await db.settings.get({
       key: SettingsKeys.isContextInPromptEnabled
     })
@@ -50,9 +50,9 @@ class BackgroundService {
       await db.settings.put({ key: SettingsKeys.isContextInPromptEnabled, value: 'true' })
     }
 
-    const pageOverlaySetting = await db.settings.get({ key: SettingsKeys.isPageOverlayEnable })
+    const pageOverlaySetting = await db.settings.get({ key: SettingsKeys.isPageOverlayEnabled })
     if (!pageOverlaySetting) {
-      await db.settings.put({ key: SettingsKeys.isPageOverlayEnable, value: 'true' })
+      await db.settings.put({ key: SettingsKeys.isPageOverlayEnabled, value: 'true' })
     }
   }
 
