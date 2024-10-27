@@ -281,6 +281,7 @@
   "noPluginsAvailable": "Плагіни не доступні <SettingsLink>Перейти до налаштувань</SettingsLink>",
   "groq": "Groq",
   "readAloud": "Читати вголос",
+  "searchingForWeb": "Шукаю результати в Інтернеті... (╹ -╹)?",
   "pageContent": {
     "contextMenu": {
       "highlight": "Виділити область",
