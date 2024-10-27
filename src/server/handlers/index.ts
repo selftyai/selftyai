@@ -8,6 +8,7 @@ import CurrentLanguageHandler from '@/server/handlers/i18n/CurrentLanguageHandle
 import DeleteModelHandler from '@/server/handlers/ollama/DeleteModelHandler'
 import PullModelHandler from '@/server/handlers/ollama/PullModelHandler'
 import OllamaVerifyConnectionHandler from '@/server/handlers/ollama/VerifyConnectionHandler'
+import GetSettingsHandler from '@/server/handlers/settings/GetSettingsHandler'
 import SidePanelHandler from '@/server/handlers/sidePanel/SidePanelHandler'
 import GetThemeHandler from '@/server/handlers/theme/GetThemeHandler'
 import SetThemeHandler from '@/server/handlers/theme/SetThemeHandler'
@@ -38,6 +39,9 @@ export function createMessageHandlerChain() {
     new CurrentLanguageHandler(),
     // Theme handlers
     new GetThemeHandler(),
-    new SetThemeHandler()
+    new SetThemeHandler(),
+
+    // Settings handler
+    new GetSettingsHandler()
   )
 }

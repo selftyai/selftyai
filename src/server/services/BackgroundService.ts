@@ -5,6 +5,7 @@ import checkOngoingPullModels from '@/server/utils/ollama/checkOngoingPullModels
 import monitorPullingModels from '@/server/utils/ollama/monitorPullingModels'
 import { db } from '@/shared/db'
 import { Conversation } from '@/shared/db/models/Conversation'
+import { SettingsKeys } from '@/shared/db/models/SettingsItem'
 import printBuildInfo from '@/shared/printBuildInfo'
 
 import monitorGroqModels from '../utils/groq/monitorGroqModels'
@@ -40,6 +41,19 @@ class BackgroundService {
     const conversations = await db.conversations.toArray()
     const ongoingConversations = conversations.filter((conversation) => conversation.generating)
     await this.abortOngoingConversations(ongoingConversations)
+
+    // Base settings initialization
+    const contextInPromptSetting = await db.settings.get({
+      key: SettingsKeys.isContextInPromptEnabled
+    })
+    if (!contextInPromptSetting) {
+      await db.settings.put({ key: SettingsKeys.isContextInPromptEnabled, value: 'true' })
+    }
+
+    const pageOverlaySetting = await db.settings.get({ key: SettingsKeys.isPageOverlayEnabled })
+    if (!pageOverlaySetting) {
+      await db.settings.put({ key: SettingsKeys.isPageOverlayEnabled, value: 'true' })
+    }
   }
 
   private async abortOngoingConversations(ongoingConversations: Conversation[]) {

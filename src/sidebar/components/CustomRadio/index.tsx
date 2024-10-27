@@ -2,15 +2,13 @@ import type { RadioProps } from '@nextui-org/react'
 import { Image, useRadio, VisuallyHidden } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 
-import darkTheme from '@/shared/assets/dark-theme.svg'
-import lightTheme from '@/shared/assets/light-theme.svg'
-
-interface ThemeCustomRadioProps extends RadioProps {
-  variant: 'light' | 'dark'
+interface CustomRadioProps extends RadioProps {
+  imageSrc: string
+  imageWrapperClassName?: string
 }
 
-export const ThemeCustomRadio = (props: ThemeCustomRadioProps) => {
-  const { variant } = props
+export const CustomRadio = (props: CustomRadioProps) => {
+  const { imageSrc, imageWrapperClassName, ...rest } = props
   const {
     Component,
     children,
@@ -21,13 +19,8 @@ export const ThemeCustomRadio = (props: ThemeCustomRadioProps) => {
     getLabelProps,
     getLabelWrapperProps,
     getControlProps
-  } = useRadio(props)
+  } = useRadio(rest)
   const wrapperProps = getWrapperProps()
-
-  const themeVariant = {
-    light: lightTheme,
-    dark: darkTheme
-  }
 
   return (
     <Component
@@ -62,9 +55,11 @@ export const ThemeCustomRadio = (props: ThemeCustomRadioProps) => {
           <span className="text-small text-foreground opacity-70">{description}</span>
         )}
       </div>
-      <div className="absolute left-[32px] top-[37px]">
-        <Image src={themeVariant[variant]} />
-      </div>
+      {imageSrc && (
+        <div className={cn('absolute top-[37px]', imageWrapperClassName)}>
+          <Image src={imageSrc} alt="Radio option illustration" loading="lazy" />
+        </div>
+      )}
     </Component>
   )
 }

@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => {
             bundle: true,
             outfile: `dist/contentScript.js`,
             format: 'iife',
-            minify: true,
+            minify: !isDevelopment,
             target: 'es2020',
             loader: {
               '.ts': 'ts',

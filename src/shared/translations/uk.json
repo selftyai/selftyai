@@ -1,0 +1,294 @@
+{
+  "extensionName": "Selfty AI",
+  "disclaimer": "LLM можуть помилятися. Перевіряйте інформацію, яку вони надають.",
+  "prompts": [
+    {
+      "id": "prompt1",
+      "text": "Допоможи мені написати блог-пост",
+      "icon": "solar:pen-2-bold",
+      "color": "text-primary-700"
+    },
+    {
+      "id": "prompt2",
+      "text": "Проаналізуй дані з опитування",
+      "icon": "solar:chart-bold-duotone",
+      "color": "text-danger-600"
+    },
+    {
+      "id": "prompt3",
+      "text": "Створи презентацію про AI та ML",
+      "icon": "solar:presentation-graph-bold",
+      "color": "text-warning-600"
+    },
+    {
+      "id": "prompt4",
+      "text": "Напиши код для веб-застосунку",
+      "icon": "solar:code-2-bold",
+      "color": "text-success-600"
+    }
+  ],
+  "selectModel": "Виберіть модель",
+  "noModelsAvailable": "Моделі не доступні <SettingsLink>Перейти до налаштувань</SettingsLink>",
+  "ollama": "Ollama",
+  "promptPlaceholder": "Введіть запит тут",
+  "promptButton": "Генерувати",
+  "stopButton": "Зупинити",
+  "continueButton": "Продовжити генерацію",
+  "regenerateButton": "Згенерувати заново",
+  "copyButton": "Копіювати",
+  "addImage": "Додати зображення",
+  "errors": {
+    "NetworkError": "Виникла помилка мережі. Будь ласка, перевірте ваше з'єднання і спробуйте ще раз.",
+    "AbortedError": "Запит було скасовано. Щоб продовжити, натисніть кнопку продовження або напишіть нове повідомлення.",
+    "default": "Виникла помилка. Будь ласка, спробуйте ще раз.",
+    "ollamaOriginError": "Ollama недоступний з поточного джерела. Перевірте налаштування CORS.",
+    "ollamaConnectionError": "Ollama не підключено. Будь ласка, перевірте вашу базову URL-адресу та спробуйте ще раз. Якщо ви не використовуєте виділений сервер, переконайтеся, що ви встановили Ollama на вашому локальному комп'ютері."
+  },
+  "generatingResponse": "{{ model }} міркує <Loader />",
+  "runTool": "{{ model }} використовує {{ toolName }} <Loader />",
+  "responseMetadata": {
+    "completionTokens": {
+      "label": "Токени завершення",
+      "tooltip": "Кількість токенів, які згенерувала модель.",
+      "unit": "{{ value }} токенів"
+    },
+    "promptTokens": {
+      "label": "Токени запиту",
+      "tooltip": "Кількість токенів у підказці.",
+      "unit": "{{ value }} токенів"
+    },
+    "totalTokens": {
+      "label": "Всього токенів",
+      "tooltip": "Загальна кількість токенів (підказка + завершення).",
+      "unit": "{{ value }} токенів"
+    },
+    "waitTime": {
+      "label": "Час очікування",
+      "tooltip": "Час, необхідний для підключення до моделі і початку генерації відповіді.",
+      "unit": "{{ value }} секунд"
+    },
+    "responseTime": {
+      "label": "Час відповіді",
+      "tooltip": "Час, необхідний для генерації відповіді.",
+      "unit": "{{ value }} секунд"
+    }
+  },
+  "settings": {
+    "title": "Налаштування",
+    "appearance": {
+      "title": "Зовнішній вигляд",
+      "theme": {
+        "label": "Тема",
+        "description": "Виберіть тему для розширення.",
+        "options": {
+          "light": "Світла",
+          "dark": "Темна"
+        }
+      },
+      "language": {
+        "label": "Мова інтерфейсу",
+        "description": "Виберіть мову для розширення.",
+        "options": {
+          "en": "Англійська",
+          "uk": "Українська"
+        }
+      }
+    },
+    "integrations": {
+      "title": "Інтеграції",
+      "ollama": {
+        "title": "Ollama",
+        "website": "ollama.com",
+        "description": "Ollama – це потужний інструмент штучного інтелекту, який дозволяє запускати моделі на вашому комп'ютері.",
+        "corsTopic": "Налаштуйте Cross-Origin доступ для правильного функціонування Ollama. Слідуйте <Link>інструкції</Link>, якщо ви ще не налаштували його.",
+        "modelsLocationTopic": "Якщо ви використовуєте Ollama на локальній машині та хочете змінити місце збереження моделей, дотримуйтесь <Link>цієї інструкції</Link>.",
+        "configurations": {
+          "title": "Конфігурації",
+          "baseURL": {
+            "label": "Базова URL-адреса",
+            "description": "За замовчуванням базова URL-адреса встановлена на <strong>http://127.0.0.1:11434</strong>. Якщо у вас є виділений сервер, ви можете змінити базову URL-адресу тут.",
+            "required": "Базова URL-адреса є обов'язковою",
+            "needToVerify": "З'єднання не підтверджене"
+          },
+          "saveAndVerify": "Зберегти і перевірити",
+          "verify": "Перевірити"
+        },
+        "models": {
+          "title": "Керування моделями",
+          "button": "Моделі",
+          "pullModel": {
+            "description": "Завантажити модель з бібліотеки Ollama",
+            "library": "Бібліотека",
+            "modelTag": "Тег моделі",
+            "pull": "Завантажити",
+            "placeholder": "Наприклад, llama3.2:latest, gemma2 тощо."
+          }
+        },
+        "hasVision": "Ця модель має можливість розпізнавати зображення.",
+        "noModels": "Моделей не знайдено.",
+        "search": "Пошук за тегом...",
+        "connected": "З'єднання з сервером Ollama успішно встановлено",
+        "disconnected": "З'єднання з сервером Ollama не встановлено",
+        "baseURLChanged": "Базова URL-адреса успішно змінена",
+        "modelDeleted": "Модель {{ name }} успішно видалена",
+        "modelPulled": "Модель {{ name }} успішно завантажена і з'явиться у списку моделей найближчим часом",
+        "modelPulling": "Модель {{ name }} завантажується",
+        "modelAlreadyPulled": "Модель {{ name }} вже завантажена"
+      },
+      "groq": {
+        "title": "Groq",
+        "website": "groq.com",
+        "description": "Використовуйте моделі groq для генерації відповідей. Використовуйте свій API ключ для початку роботи.",
+        "apiKey": {
+          "label": "API ключ",
+          "description": "Введіть ваш API ключ Groq. Якщо у вас його немає, ви можете отримати його на їхньому <Link>вебсайті</Link>.",
+          "verify": "Перевірити з'єднання"
+        },
+        "connected": "З'єднання з Groq API успішно встановлено",
+        "disconnected": "З'єднання з Groq API не встановлено",
+        "invalidApiKey": "Невірний API ключ, будь ласка, перевірте і спробуйте ще раз"
+      },
+      "lmStudio": {
+        "title": "LM Studio",
+        "website": "lmstudio.ai",
+        "description": "Використовуйте моделі LM Studio для генерації відповідей. Використовуйте свій API ключ для початку роботи."
+      },
+      "aimlapi": {
+        "title": "AI/ML API",
+        "website": "aimlapi.com",
+        "description": "Генеруйте відповіді за допомогою AI/ML. Використовуйте свій API ключ для початку роботи."
+      },
+      "openai": {
+        "title": "OpenAI",
+        "website": "platform.openai.com",
+        "description": "Генеруйте відповіді за допомогою OpenAI. Використовуйте свій API ключ для початку роботи."
+      },
+      "anthropic": {
+        "title": "Anthropic",
+        "website": "anthropic.com/api",
+        "description": "Генеруйте відповіді за допомогою Anthropic. Використовуйте свій API ключ для початку роботи."
+      }
+    },
+    "plugins": {
+      "title": "Плагіни",
+      "requestNewPlugin": "Запросити новий плагін",
+      "webSearch": {
+        "title": "Веб-пошук",
+        "google": {
+          "title": "Google",
+          "description": "Шукати в Інтернеті за допомогою Google.",
+          "action": "Налаштувати",
+          "apiKey": {
+            "label": "API ключ",
+            "description": "Введіть ваш API ключ Google Search. Якщо у вас його немає, ви можете отримати його <Link>тут</Link>."
+          },
+          "searchEngineId": {
+            "label": "ID пошукової системи",
+            "description": "Введіть ваш ID пошукової системи Google. Якщо у вас його немає, ви можете отримати його <Link>тут</Link>."
+          }
+        },
+        "duckduckgo": {
+          "title": "DuckDuckGo",
+          "description": "Шукати в Інтернеті за допомогою DuckDuckGo.",
+          "action": "Налаштувати"
+        },
+        "tavily": {
+          "title": "Tavily",
+          "description": "Шукати в Інтернеті за допомогою Tavily.",
+          "action": "Налаштувати",
+          "apiKey": {
+            "label": "API ключ",
+            "description": "Введіть ваш API ключ Tavily. Якщо у вас його немає, ви можете отримати його на їхньому <Link>вебсайті</Link>."
+          }
+        }
+      }
+    },
+    "general": {
+      "title": "Загальні",
+      "isPageOverlayEnabled": {
+        "label": "Увімкнути оверлей сторінки",
+        "description": "Вмикає або вимикає оверлей на сторінці з контекстним меню тощо."
+      },
+      "isUsingContextInPrompt": {
+        "label": "Використовувати контекст у запитах",
+        "description": "Використовуйте контекст у запитах або вимкніть його. Це може покращити якість відповідей."
+      },
+      "isUsingDefaultPrompt": {
+        "label": "Використовувати кастомізований стандартний запит",
+        "description": "Використовуйте запит за умовчанням або напишіть свій власний.",
+        "placeholder": "Введіть текст стандартного запиту тут",
+        "tooltip": "Ви можете налаштувати стандартні запити тут. Використовуйте теги <context></context> та <message></message> для включення контексту та повідомлення у запит. Контекст та запит користувача будуть вставлені у ці теги.",
+        "promptWithContextSwitch": {
+          "label": "Налаштувати кастомізований запит з контекстом",
+          "tooltip": "Ви можете вибрати, який саме запит ви хочете налаштувати тут."
+        },
+        "errors": {
+          "promptEmpty": "Запит не може бути порожнім",
+          "promptWithContext": "Запит повинен містити теги <context> та <message> у будь-якому порядку",
+          "promptWithoutContext": "Запит повинен містити тег <message>"
+        }
+      },
+      "toasts": {
+        "saved": "Запит успішно збережено",
+        "reseted": "Запит успішно скинуто"
+      }
+    }
+  },
+  "connected": "Підключено",
+  "disconnected": "Відключено",
+  "cancel": "Скасувати",
+  "save": "Зберегти",
+  "configure": "Налаштувати",
+  "delete": "Видалити",
+  "comingSoon": "Скоро буде",
+  "unpin": "Відкріпити",
+  "pin": "Закріпити",
+  "newChat": "Нова бесіда",
+  "pinned": "Закріплено",
+  "today": "Сьогодні",
+  "yesterday": "Вчора",
+  "previous7Days": "Останні 7 днів",
+  "previous30Days": "Останні 30 днів",
+  "other": "Більше 30 днів тому",
+  "noConversations": "Немає бесід",
+  "showMore": "Показати більше",
+  "fullPage": "На весь екран",
+  "copied": "Скопійовано!",
+  "copy": "Скопіювати",
+  "reset": "Скинути",
+  "newConversation": "Нова бесіда",
+  "unpinnedConversation": "Бесіда успішно відкріплена",
+  "pinnedConversation": "Бесіда успішно закріплена",
+  "webSearchResults": "Результати веб-пошуку",
+  "error": {
+    "title": "Виникла помилка",
+    "reloadPage": "Перезавантажити сторінку",
+    "reportABug": "Повідомити про помилку"
+  },
+  "tools_zero": "Виберіть інструменти",
+  "tools_one": "1 інструмент",
+  "tools_two": "2 інструменти",
+  "tools_few": "{{ count }} інструменти",
+  "tools_many": "{{ count }} інструментів",
+  "tools_other": "{{ count }} інструментів",
+  "supportToolInvocation": "Ця модель підтримує виклики інструментів.",
+  "tools": {
+    "web_search": "Веб-пошук ({{ provider }})",
+    "tavily_search": "Tavily",
+    "google_search": "Google"
+  },
+  "invokedTools": "Викликані інструменти",
+  "noPluginsAvailable": "Плагіни не доступні <SettingsLink>Перейти до налаштувань</SettingsLink>",
+  "groq": "Groq",
+  "readAloud": "Читати вголос",
+  "searchingForWeb": "Шукаю результати в Інтернеті... (╹ -╹)?",
+  "pageContent": {
+    "contextMenu": {
+      "highlight": "Виділити область",
+      "askAI": {
+        "tooltip": "Запитати AI",
+        "isContextInPromptFalseTooltip": "Контекст вимкнено в налаштуваннях додатку. Увімкніть його, щоб використовувати цю функцію."
+      }
+    }
+  }
+}
