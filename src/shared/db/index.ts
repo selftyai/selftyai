@@ -2,6 +2,7 @@ import Dexie from 'dexie'
 
 import { addTimestampHooks } from '@/shared/db/hooks'
 import migrations from '@/shared/db/migrations'
+import { Branch } from '@/shared/db/models/Branch'
 import { Conversation } from '@/shared/db/models/Conversation'
 import { File } from '@/shared/db/models/File'
 import { Integration } from '@/shared/db/models/Integration'
@@ -20,6 +21,7 @@ class SelftyDatabase extends Dexie {
   ollamaPullingModels!: Dexie.Table<OllamaPullModel, number>
   settings!: Dexie.Table<SettingsItem, string>
   toolInvocations!: Dexie.Table<ToolInvocation, number>
+  branches!: Dexie.Table<Branch, number>
 
   constructor() {
     super('SelftyDatabase')

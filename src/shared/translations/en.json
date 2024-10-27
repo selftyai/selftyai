@@ -281,6 +281,7 @@
   "noPluginsAvailable": "No plugins available <SettingsLink>Go to settings</SettingsLink>",
   "groq": "Groq",
   "readAloud": "Read aloud",
+  "searchingForWeb": "Searching for web results...",
   "pageContent": {
     "contextMenu": {
       "highlight": "Highlight the area",

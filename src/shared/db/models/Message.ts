@@ -6,6 +6,7 @@ export interface Message extends TimestampedEntity {
   role: 'user' | 'assistant'
   modelId: number
   conversationId: number
+  parentMessageId?: number
   waitingTime?: number
   responseTime?: number
   promptTokens?: number
