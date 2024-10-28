@@ -92,6 +92,9 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       `Here is the user's message. Respond based on the input inside the message tag. <message></message>`,
     []
   )
+
+  const defaultModelSetting = useLiveQuery(() => db.settings.get(SettingsKeys.defaultModel), [])
+
   const [tools, setTools] = React.useState<string[]>([])
 
   const models = useMemo<Model[]>(() => {
@@ -104,11 +107,15 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         .map(({ name, provider }) => `${name}-${provider}`)
         .includes(`${selectedModel.name}-${selectedModel.provider}`)
     ) {
-      setSelectedModel(undefined)
+      setSelectedModel(
+        defaultModelSetting
+          ? newModels.find((m) => m.model === defaultModelSetting.value)
+          : undefined
+      )
     }
 
     return newModels
-  }, [ollamaModels, selectedModel, groqModels])
+  }, [ollamaModels, groqModels, selectedModel, defaultModelSetting])
 
   const selectedConversation = useLiveQuery(async () => {
     if (!conversationId) return undefined
@@ -153,6 +160,12 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     () => db.settings.get(SettingsKeys.customPromptWithoutContext),
     []
   )
+
+  React.useEffect(() => {
+    if (defaultModelSetting) {
+      setSelectedModel(models.find((m) => m.model === defaultModelSetting.value))
+    }
+  }, [defaultModelSetting, models])
 
   const isContextEnabled = useLiveQuery(async () => {
     const setting = await db.settings.get(SettingsKeys.isContextInPromptEnabled)
