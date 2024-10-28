@@ -1,3 +1,4 @@
+import DefaultModelSetting from '@/sidebar/components/Settings/General/SettingItems/DefaultModelSetting'
 import IsContextEnabledSetting from '@/sidebar/components/Settings/General/SettingItems/IsContextEnabledSetting'
 import IsOverlayEnabledSetting from '@/sidebar/components/Settings/General/SettingItems/IsOverlayEnabledSetting'
 import UseCustomPromptsSetting from '@/sidebar/components/Settings/General/SettingItems/UseCustomPromptsSetting'
@@ -8,6 +9,7 @@ const GeneralSettings: React.FC = () => {
       <IsOverlayEnabledSetting />
       <IsContextEnabledSetting />
       <UseCustomPromptsSetting />
+      <DefaultModelSetting />
     </div>
   )
 }

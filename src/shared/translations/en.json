@@ -228,6 +228,10 @@
           "promptWithoutContext": "Prompt must contain <message> tag"
         }
       },
+      "defaultModel": {
+        "label": "Set default LLM",
+        "description": "Select a default model to use when generating responses."
+      },
       "toasts": {
         "saved": "Successfully saved prompt",
         "reseted": "Successfully reset prompt"

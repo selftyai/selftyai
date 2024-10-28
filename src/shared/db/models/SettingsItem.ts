@@ -9,5 +9,6 @@ export enum SettingsKeys {
   isPageOverlayEnabled = 'isPageOverlayEnabled',
   isContextInPromptEnabled = 'isContextInPromptEnabled',
   customPromptWithContext = 'customPromptWithContext',
-  customPromptWithoutContext = 'customPromptWithoutContext'
+  customPromptWithoutContext = 'customPromptWithoutContext',
+  defaultModel = 'defaultModel'
 }
