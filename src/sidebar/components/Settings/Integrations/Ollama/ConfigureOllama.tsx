@@ -113,7 +113,7 @@ const ConfigureOllama = () => {
           }}
           endContent={
             <Button
-              className="bg-default-foreground text-background"
+              className="shrink-0 bg-default-foreground text-background"
               radius="md"
               size="sm"
               color="secondary"
@@ -150,7 +150,7 @@ const ConfigureOllama = () => {
 
   return (
     <>
-      <div className="flex flex-row gap-2">
+      <div className="flex flex-row flex-wrap gap-2">
         <Switch isSelected={integration?.active} onValueChange={toggleOllama} size="sm" />
         {integration?.active && (
           <React.Fragment>

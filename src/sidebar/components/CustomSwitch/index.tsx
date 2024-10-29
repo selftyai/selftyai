@@ -42,19 +42,19 @@ const CustomSwitch = ({ label, description, children, ...switchProps }: CustomSw
         className={slots.base({
           class: cn(
             'flex w-full max-w-full flex-col gap-2 rounded-lg hover:bg-content2',
-            'cursor-pointer justify-between gap-2 p-4 data-[selected=true]:shadow-md'
+            'cursor-pointer justify-between gap-2 p-4 data-[selected=true]:shadow-md max-[480px]:p-3'
           )
         })}
       >
-        <div className="inline-flex w-full flex-row items-center justify-between">
+        <div className="inline-flex w-full flex-row items-center justify-between max-[480px]:flex-wrap">
           <div className="flex flex-col gap-1">
-            <p className="text-medium">{label}</p>
+            <p className="text-medium max-[480px]:text-sm">{label}</p>
             {description && <p className="text-tiny text-default-400">{description}</p>}
           </div>
           <div
             {...getWrapperProps()}
             className={slots.wrapper({
-              class: 'h-4 overflow-visible p-0 group-data-[selected=true]:bg-foreground'
+              class: 'mt-3 h-4 overflow-visible p-0 group-data-[selected=true]:bg-foreground'
             })}
           >
             <div
@@ -88,7 +88,7 @@ const CustomSwitch = ({ label, description, children, ...switchProps }: CustomSw
               transition={{ duration: 0.3 }}
               className="w-full overflow-hidden"
             >
-              <div className="p-4">{children}</div>
+              <div className="p-4 max-[480px]:p-3">{children}</div>
             </motion.div>
           )}
         </AnimatePresence>

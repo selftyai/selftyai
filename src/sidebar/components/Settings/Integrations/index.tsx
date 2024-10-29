@@ -117,7 +117,7 @@ const Integrations = ({ className, ...props }: IntegrationsProps) => {
 
   return (
     <OverlayScrollbarsComponent
-      className={cn('p-2', className)}
+      className={cn('max-h-[75dvh] px-2', className)}
       options={{
         scrollbars: {
           autoHide: 'scroll',

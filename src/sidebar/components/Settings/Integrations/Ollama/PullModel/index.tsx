@@ -23,13 +23,13 @@ const PullModel = () => {
       <Spacer y={3} />
       <Card className="mt-4 bg-default-100" shadow="none">
         <CardBody className="px-4">
-          <div className="flex items-start justify-between pb-3">
-            <p className="mt-1.5 text-sm font-medium text-default-700">
+          <div className="flex items-center justify-between pb-3">
+            <p className="text-sm font-medium text-default-700">
               {t('settings.integrations.ollama.models.pullModel.description')}
             </p>
             <Button
               as={Link}
-              className="bg-default-foreground text-background"
+              className="shrink-0 bg-default-foreground text-background"
               endContent={<Icon className="h-3 min-w-3" icon="solar:link-linear" />}
               radius="md"
               size="sm"

@@ -33,13 +33,13 @@ const Settings = () => {
       id: 'integrations',
       title: t('settings.integrations.title'),
       icon: 'fluent:glance-horizontal-sparkles-24-regular',
-      children: <Integrations className="max-h-[75dvh]" />
+      children: <Integrations />
     },
     {
       id: 'plugins',
       title: t('settings.plugins.title'),
       icon: 'lucide:toy-brick',
-      children: <Plugins className="max-h-[75dvh]" />
+      children: <Plugins />
     }
   ]
 
@@ -76,10 +76,9 @@ const Settings = () => {
             {(tab) => (
               <Tab
                 key={tab.id}
-                className="max-[580px]:px-3"
                 title={
                   <Tooltip isDisabled={!isSmallScreen} content={tab.title}>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 max-[580px]:px-3">
                       <Icon icon={tab.icon} width={24} height={24} />
                       <span className="max-[580px]:hidden">{tab.title}</span>
                     </div>

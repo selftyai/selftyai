@@ -166,21 +166,27 @@ const UseCustomPromptsSetting = () => {
         isSelected={isMessageWithContextSwitch}
         onChange={(e) => setIsMessageWithContextSwitch(e.target.checked)}
       >
-        <div className="flex items-center gap-2 text-xs">
-          {t('settings.general.isUsingDefaultPrompt.promptWithContextSwitch.label')}
-          <Tooltip
-            content={t('settings.general.isUsingDefaultPrompt.promptWithContextSwitch.tooltip')}
-          >
-            <Icon icon="lucide:info" className="h-5 w-5" />
-          </Tooltip>
-        </div>
+        <Tooltip
+          content={t('settings.general.isUsingDefaultPrompt.promptWithContextSwitch.tooltip')}
+          offset={15}
+        >
+          <div className="flex items-center gap-2 text-xs">
+            {t('settings.general.isUsingDefaultPrompt.promptWithContextSwitch.label')}
+          </div>
+        </Tooltip>
       </Switch>
+
       <div className="mt-2 flex items-center justify-between gap-2">
         <Tooltip content={t('settings.general.isUsingDefaultPrompt.tooltip')} className="max-w-md">
           <Icon icon="lucide:info" className="h-5 w-5" />
         </Tooltip>
         <div className="flex gap-2">
-          <Button variant="light" onClick={handleResetPrompt} isDisabled={isButtonsDisabled}>
+          <Button
+            variant="light"
+            onClick={handleResetPrompt}
+            isDisabled={isButtonsDisabled}
+            className="max-[480px]:h-8 max-[480px]:px-3 max-[480px]:text-sm"
+          >
             {t('reset')}
           </Button>
           <Button
@@ -188,6 +194,7 @@ const UseCustomPromptsSetting = () => {
             variant="light"
             onClick={handleSaveCustomPrompt}
             isDisabled={isButtonsDisabled}
+            className="max-[480px]:h-8 max-[480px]:px-3 max-[480px]:text-sm"
           >
             {t('save')}
           </Button>
