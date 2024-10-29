@@ -12,14 +12,6 @@ import { ThemeCustomRadio } from '@/sidebar/components/CustomRadio/ThemeCustomRa
 import { useLanguage } from '@/sidebar/providers/LanguageProvider'
 import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
-//
-//
-// To Do:
-// Make responsive design for customSwitch and Default Prompt
-// 480px break point
-//
-//
-
 interface AppearanceSettingCardProps {
   className?: string
 }
