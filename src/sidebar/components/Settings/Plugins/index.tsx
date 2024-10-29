@@ -139,7 +139,7 @@ const Plugins = ({ className, ...props }: PluginsProps) => {
 
   return (
     <OverlayScrollbarsComponent
-      className={cn('max-w-4xl p-2', className)}
+      className={cn('max-h-[75dvh] max-w-4xl px-2', className)}
       options={{
         scrollbars: {
           autoHide: 'scroll',

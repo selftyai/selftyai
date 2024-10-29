@@ -107,15 +107,11 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         .map(({ name, provider }) => `${name}-${provider}`)
         .includes(`${selectedModel.name}-${selectedModel.provider}`)
     ) {
-      setSelectedModel(
-        defaultModelSetting
-          ? newModels.find((m) => m.model === defaultModelSetting.value)
-          : undefined
-      )
+      setSelectedModel(undefined)
     }
 
     return newModels
-  }, [ollamaModels, groqModels, selectedModel, defaultModelSetting])
+  }, [ollamaModels, groqModels, selectedModel])
 
   const selectedConversation = useLiveQuery(async () => {
     if (!conversationId) return undefined
@@ -162,10 +158,10 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   )
 
   React.useEffect(() => {
-    if (defaultModelSetting) {
-      setSelectedModel(models.find((m) => m.model === defaultModelSetting.value))
+    if (defaultModelSetting && !selectedConversation) {
+      setSelectedModel((prev) => prev ?? models.find((m) => m.model === defaultModelSetting.value))
     }
-  }, [defaultModelSetting, models])
+  }, [defaultModelSetting, models, selectedConversation])
 
   const isContextEnabled = useLiveQuery(async () => {
     const setting = await db.settings.get(SettingsKeys.isContextInPromptEnabled)
@@ -245,7 +241,7 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     [
       selectedModel,
       sendPortMessage,
-      selectedConversation?.id,
+      selectedConversation,
       isContextEnabled?.value,
       messageContext,
       customPromptWithContext?.value,

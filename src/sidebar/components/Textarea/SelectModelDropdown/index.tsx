@@ -66,8 +66,9 @@ const SelectModelDropdown = memo(
             size="sm"
             startContent={<Icon className="text-medium text-warning-500" icon="proicons:sparkle" />}
             variant="flat"
+            className="h-auto min-h-8 whitespace-normal py-1"
           >
-            {selectedModel ? selectedModel.name : t('selectModel')}
+            <p className="break-words">{selectedModel ? selectedModel.name : t('selectModel')}</p>
           </Button>
         </DropdownTrigger>
         <DropdownMenu

@@ -15,7 +15,6 @@ export const parseMessageWithContext = (input: string): ParsedMessage => {
 
 export const getFullPrompt = (promptMessage: string, message: string, context?: string): string => {
   return promptMessage
-
-    .replace('<message></message>', `<message>${message}</message>`)
-    .replace('<context></context>', `<context>${context}</context>`)
+    .replace('<message></message>', message)
+    .replace('<context></context>', context || '')
 }

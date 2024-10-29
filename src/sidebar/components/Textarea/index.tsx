@@ -198,7 +198,7 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
             )
           }
         />
-        <div className="flex w-full flex-wrap items-end justify-between gap-2 px-4 pb-4">
+        <div className="flex w-full flex-wrap items-end justify-between gap-2 px-3 pb-4">
           <div className="inline-flex flex-wrap gap-2">
             <SelectModelDropdown
               models={models}
