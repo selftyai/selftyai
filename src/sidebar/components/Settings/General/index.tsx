@@ -1,6 +1,6 @@
-
 import { cn } from '@nextui-org/react'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
+
 import DefaultModelSetting from '@/sidebar/components/Settings/General/SettingItems/DefaultModelSetting'
 import IsContextEnabledSetting from '@/sidebar/components/Settings/General/SettingItems/IsContextEnabledSetting'
 import IsOverlayEnabledSetting from '@/sidebar/components/Settings/General/SettingItems/IsOverlayEnabledSetting'

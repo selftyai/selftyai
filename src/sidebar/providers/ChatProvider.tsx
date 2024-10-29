@@ -113,7 +113,6 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     return newModels
   }, [ollamaModels, groqModels, selectedModel])
 
-
   const selectedConversation = useLiveQuery(async () => {
     if (!conversationId) return undefined
 
