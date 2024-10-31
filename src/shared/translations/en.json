@@ -285,6 +285,12 @@
   "noPluginsAvailable": "No plugins available <SettingsLink>Go to settings</SettingsLink>",
   "groq": "Groq",
   "readAloud": "Read aloud",
+  "readAloudSettings": {
+    "voiceName": "Voice name",
+    "selectVoice": "Select voice",
+    "rate": "Rate",
+    "volume": "Volume"
+  },
   "searchingForWeb": "Searching for web results...",
   "pageContent": {
     "contextMenu": {

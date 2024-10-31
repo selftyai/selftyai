@@ -285,6 +285,12 @@
   "noPluginsAvailable": "Плагіни не доступні <SettingsLink>Перейти до налаштувань</SettingsLink>",
   "groq": "Groq",
   "readAloud": "Читати вголос",
+  "readAloudSettings": {
+    "voiceName": "Ім'я голосу",
+    "selectVoice": "Вибрати голос",
+    "rate": "Швидкість",
+    "volume": "Гучність"
+  },
   "searchingForWeb": "Шукаю результати в Інтернеті... (╹ -╹)?",
   "pageContent": {
     "contextMenu": {
