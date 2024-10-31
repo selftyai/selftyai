@@ -5,6 +5,7 @@ import ChatProvider from '@/sidebar/providers/ChatProvider'
 import GroqProvider from '@/sidebar/providers/GroqProvider'
 import LanguageProvider from '@/sidebar/providers/LanguageProvider'
 import OllamaProvider from '@/sidebar/providers/OllamaProvider'
+import ReadAloudProvider from '@/sidebar/providers/ReadAloudProvider'
 import ThemeProvider from '@/sidebar/providers/ThemeProvider'
 
 const ProvidersWrapper = () => {
@@ -15,7 +16,9 @@ const ProvidersWrapper = () => {
           <GroqProvider>
             <ChatProvider>
               <BranchProvider>
-                <Outlet />
+                <ReadAloudProvider>
+                  <Outlet />
+                </ReadAloudProvider>
               </BranchProvider>
             </ChatProvider>
           </GroqProvider>

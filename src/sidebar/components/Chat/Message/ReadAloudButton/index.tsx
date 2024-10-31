@@ -13,6 +13,13 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import useReadAloud from '@/sidebar/hooks/useReadAloud'
+import {
+  useReadAloudContext,
+  MIN_VOLUME,
+  MAX_VOLUME,
+  MIN_RATE,
+  MAX_RATE
+} from '@/sidebar/providers/ReadAloudProvider'
 
 interface ReadAloudButtonProps {
   message: React.ReactNode | string
@@ -21,18 +28,12 @@ interface ReadAloudButtonProps {
 const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
   const { t } = useTranslation()
 
-  const {
-    speaking,
-    voice,
-    voices,
-    volume,
-    rate,
-    isLoading,
-    setVolume,
-    setRate,
-    setVoiceByName,
-    handleReadAloud
-  } = useReadAloud(message)
+  const { volume, rate, setVolume, setRate } = useReadAloudContext()
+
+  const { speaking, voice, voices, isLoading, setVoiceByName, handleReadAloud } = useReadAloud(
+    message,
+    { rate, volume }
+  )
 
   const transformVoiceName = React.useCallback((voice: chrome.tts.TtsVoice | string): string => {
     const removeGoogle = (name: string) => name.replace('Google', '').trim()
@@ -92,8 +93,8 @@ const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
                 size="sm"
                 color="foreground"
                 showOutline={true}
-                minValue={0.1}
-                maxValue={2}
+                minValue={MIN_RATE}
+                maxValue={MAX_RATE}
                 classNames={{
                   label: 'text-xs',
                   value: 'text-xs'
@@ -107,8 +108,8 @@ const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
                 size="sm"
                 color="foreground"
                 showOutline={true}
-                minValue={0}
-                maxValue={1}
+                minValue={MIN_VOLUME}
+                maxValue={MAX_VOLUME}
                 classNames={{
                   label: 'text-xs',
                   value: 'text-xs'

@@ -6,15 +6,18 @@ import { removeMarkdownSymbols } from '@/sidebar/utils/parseMessage'
 const SPEAK_ATTEMPTS = 3
 const SPEAK_RETRY_DELAY = 600
 
-const useReadAloud = (message: React.ReactNode | string) => {
+interface UseReadAloudOptions {
+  rate?: number
+  volume?: number
+}
+
+const useReadAloud = (message: React.ReactNode | string, options?: UseReadAloudOptions) => {
   const [speaking, setSpeaking] = React.useState(false)
-  const [volume, setVolume] = React.useState(1.0)
-  const [rate, setRate] = React.useState(1.0)
   const [voice, setVoice] = React.useState<chrome.tts.TtsVoice | undefined>(undefined)
   const [voices, setVoices] = React.useState<chrome.tts.TtsVoice[]>([])
   const [isLoading, setIsLoading] = React.useState(false)
 
-  const parseMessage = (message: React.ReactNode | string): string => {
+  const parseMessage = React.useCallback((message: React.ReactNode | string): string => {
     let stringValue = typeof message === 'string' ? message : ''
     if (!stringValue && Array.isArray(message)) {
       message.forEach((child) => {
@@ -23,7 +26,7 @@ const useReadAloud = (message: React.ReactNode | string) => {
       })
     }
     return stringValue
-  }
+  }, [])
 
   React.useEffect(() => {
     const stringValue = parseMessage(message)
@@ -51,7 +54,7 @@ const useReadAloud = (message: React.ReactNode | string) => {
     }
 
     chrome.i18n.detectLanguage(stringValue, handleLanguageDetection)
-  }, [message])
+  }, [message, parseMessage])
 
   React.useEffect(() => {
     const handleBeforeUnload = () => {
@@ -95,8 +98,8 @@ const useReadAloud = (message: React.ReactNode | string) => {
     const speakText = () => {
       chrome.tts.speak(plainText, {
         lang: voice.lang,
-        rate: rate,
-        volume: volume,
+        rate: options?.rate ?? 1.0,
+        volume: options?.volume ?? 1.0,
         onEvent: function (event) {
           logger.info('TTS event:', event.type, 'isLoading', isLoading)
           if (event.type === 'interrupted' && isLoading) {
@@ -138,7 +141,7 @@ const useReadAloud = (message: React.ReactNode | string) => {
       logger.info(`Attempt ${attempt} to start TTS`)
       speakText()
     }, SPEAK_RETRY_DELAY)
-  }, [message, rate, speaking, voice, volume])
+  }, [message, options, parseMessage, speaking, voice])
 
   const setVoiceByName = React.useCallback(
     (voiceName: string) => {
@@ -152,11 +155,7 @@ const useReadAloud = (message: React.ReactNode | string) => {
     speaking,
     voice,
     voices,
-    volume,
-    rate,
     isLoading,
-    setVolume,
-    setRate,
     setVoiceByName,
     handleReadAloud
   }
