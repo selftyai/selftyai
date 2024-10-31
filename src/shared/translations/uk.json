@@ -286,7 +286,7 @@
   "groq": "Groq",
   "readAloud": "Читати вголос",
   "readAloudSettings": {
-    "voiceName": "Ім'я голосу",
+    "voiceName": "Назва голосу",
     "selectVoice": "Вибрати голос",
     "rate": "Швидкість",
     "volume": "Гучність"
