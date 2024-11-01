@@ -95,13 +95,13 @@ const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
                 showOutline={true}
                 minValue={MIN_RATE}
                 maxValue={MAX_RATE}
+                defaultValue={rate}
                 classNames={{
                   label: 'text-xs',
                   value: 'text-xs'
                 }}
                 step={0.1}
-                value={rate}
-                onChange={(value) => setRate(Array.isArray(value) ? value[0] : value)}
+                onChangeEnd={(value) => setRate(Array.isArray(value) ? value[0] : value)}
               />
               <Slider
                 label={t('readAloudSettings.volume')}
@@ -110,13 +110,13 @@ const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
                 showOutline={true}
                 minValue={MIN_VOLUME}
                 maxValue={MAX_VOLUME}
+                defaultValue={volume}
                 classNames={{
                   label: 'text-xs',
                   value: 'text-xs'
                 }}
                 step={0.1}
-                value={volume}
-                onChange={(value) => setVolume(Array.isArray(value) ? value[0] : value)}
+                onChangeEnd={(value) => setVolume(Array.isArray(value) ? value[0] : value)}
               />
               <div className="flex items-center justify-center">
                 <Button
@@ -125,10 +125,10 @@ const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
                   radius="full"
                   size="sm"
                   variant="flat"
-                  onPress={speaking ? () => chrome.tts.stop() : handleReadAloud}
+                  onPress={speaking ? () => chrome?.tts?.stop() : handleReadAloud}
                   className="min-w-24"
                 >
-                  {speaking && !isLoading ? (
+                  {speaking ? (
                     <Icon className="text-lg text-default-600" icon="solar:stop-bold" />
                   ) : (
                     <Icon className="text-lg text-default-600" icon="solar:play-bold" />

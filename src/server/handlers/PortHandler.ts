@@ -30,6 +30,11 @@ class PortHandler {
 
   private onDisconnect(port: chrome.runtime.Port) {
     logger.info('[PortHandler] Port disconnected:', port)
+
+    if (port.name === 'sidebar') {
+      chrome.tts.stop()
+    }
+
     const index = this.connectedPorts.indexOf(port)
     if (index > -1) {
       this.connectedPorts.splice(index, 1)

@@ -2,44 +2,64 @@ import React from 'react'
 import { createContext, useContext } from 'react'
 import { z } from 'zod'
 
+import logger from '@/shared/logger'
+
 export const MIN_VOLUME = 0.1
 export const MAX_VOLUME = 1.0
 export const MIN_RATE = 0.1
 export const MAX_RATE = 2.0
 
 interface ReadAloudContextType {
-  rate: number
-  volume: number
+  readonly rate: number
+  readonly volume: number
   setRate: (value: number) => void
   setVolume: (value: number) => void
 }
 
 const ReadAloudContext = createContext<ReadAloudContextType | undefined>(undefined)
 
-const volumeSchema = z.number().min(0.1).max(1.0)
-const rateSchema = z.number().min(0.1).max(2.0)
+const volumeSchema = z
+  .number()
+  .min(MIN_VOLUME, `Volume must be at least ${MIN_VOLUME}`)
+  .max(MAX_VOLUME, `Volume cannot exceed ${MAX_VOLUME}`)
+const rateSchema = z
+  .number()
+  .min(MIN_RATE, `Rate must be at least ${MIN_RATE}`)
+  .max(MAX_RATE, `Rate cannot exceed ${MAX_RATE}`)
 
 const ReadAloudProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [volume, setVolumeState] = React.useState(1.0)
   const [rate, setRateState] = React.useState(1.0)
 
   const validatedSetVolume = React.useCallback((value: number) => {
-    volumeSchema.parse(value)
-    setVolumeState(value)
+    try {
+      volumeSchema.parse(value)
+      setVolumeState(value)
+    } catch (error) {
+      logger.error('Invalid volume value:', error)
+    }
   }, [])
 
   const validatedSetRate = React.useCallback((value: number) => {
-    rateSchema.parse(value)
-    setRateState(value)
+    try {
+      rateSchema.parse(value)
+      setRateState(value)
+    } catch (error) {
+      logger.error('Invalid rate value:', error)
+    }
   }, [])
 
-  return (
-    <ReadAloudContext.Provider
-      value={{ volume, rate, setVolume: validatedSetVolume, setRate: validatedSetRate }}
-    >
-      {children}
-    </ReadAloudContext.Provider>
+  const contextValue = React.useMemo(
+    () => ({
+      volume,
+      rate,
+      setVolume: validatedSetVolume,
+      setRate: validatedSetRate
+    }),
+    [volume, rate, validatedSetVolume, validatedSetRate]
   )
+
+  return <ReadAloudContext.Provider value={contextValue}>{children}</ReadAloudContext.Provider>
 }
 
 export default ReadAloudProvider

@@ -17,15 +17,28 @@ const useReadAloud = (message: React.ReactNode | string, options?: UseReadAloudO
   const [voices, setVoices] = React.useState<chrome.tts.TtsVoice[]>([])
   const [isLoading, setIsLoading] = React.useState(false)
 
+  const startEventReceivedRef = React.useRef(false)
+  const attemptRef = React.useRef(0)
+  const isLoadingRef = React.useRef(false)
+
   const parseMessage = React.useCallback((message: React.ReactNode | string): string => {
-    let stringValue = typeof message === 'string' ? message : ''
-    if (!stringValue && Array.isArray(message)) {
-      message.forEach((child) => {
-        const childString = typeof child === 'string' ? child : child?.props?.children?.toString()
-        if (childString) stringValue += childString + ' '
-      })
+    let stringValue = ''
+    const traverse = (node: React.ReactNode): void => {
+      if (typeof node === 'string') {
+        stringValue += node + ' '
+        return
+      }
+      if (React.isValidElement(node) && node.props.children) {
+        React.Children.forEach(node.props.children, (child) => traverse(child))
+        return
+      }
+      if (Array.isArray(node)) {
+        node.forEach((child) => traverse(child))
+        return
+      }
     }
-    return stringValue
+    traverse(message)
+    return stringValue.trim()
   }, [])
 
   React.useEffect(() => {
@@ -89,34 +102,28 @@ const useReadAloud = (message: React.ReactNode | string, options?: UseReadAloudO
       return
     }
 
-    let attempt = 0
-    let startEventReceived = false
-    let isLoading = true
-    setIsLoading(isLoading)
-    setSpeaking(true)
-
     const speakText = () => {
       chrome.tts.speak(plainText, {
         lang: voice.lang,
         rate: options?.rate ?? 1.0,
         volume: options?.volume ?? 1.0,
         onEvent: function (event) {
-          logger.info('TTS event:', event.type, 'isLoading', isLoading)
-          if (event.type === 'interrupted' && isLoading) {
-            return logger.info('TTS interrupted')
+          logger.info('TTS event:', event.type)
+          if (event.type === 'interrupted' && isLoadingRef.current) {
+            return
           }
 
           if (event.type === 'start') {
-            startEventReceived = true
-            isLoading = false
-            setSpeaking(true)
+            startEventReceivedRef.current = true
             setIsLoading(false)
+            isLoadingRef.current = false
+            setSpeaking(true)
           }
 
           if (['cancelled', 'interrupted', 'error', 'end'].includes(event.type)) {
-            isLoading = false
             setSpeaking(false)
             setIsLoading(false)
+            isLoadingRef.current = false
 
             if (event.type === 'error') {
               logger.error('TTS error:', event)
@@ -126,19 +133,25 @@ const useReadAloud = (message: React.ReactNode | string, options?: UseReadAloudO
       })
     }
 
+    setIsLoading(true)
+    attemptRef.current = 0
+    startEventReceivedRef.current = false
+    isLoadingRef.current = true
+
     const intervalId = setInterval(() => {
-      if (startEventReceived || attempt >= SPEAK_ATTEMPTS) {
+      if (startEventReceivedRef.current || attemptRef.current >= SPEAK_ATTEMPTS) {
         clearInterval(intervalId)
-        if (!startEventReceived) {
+        if (!startEventReceivedRef.current) {
           logger.error(`Unable to start TTS after ${SPEAK_ATTEMPTS} attempts`)
           setSpeaking(false)
           setIsLoading(false)
+          isLoadingRef.current = false
         }
         return
       }
 
-      attempt += 1
-      logger.info(`Attempt ${attempt} to start TTS`)
+      attemptRef.current += 1
+      logger.info(`Attempt ${attemptRef.current} to start TTS`)
       speakText()
     }, SPEAK_RETRY_DELAY)
   }, [message, options, parseMessage, speaking, voice])

@@ -5,6 +5,8 @@ import Chat from '@/sidebar/pages/Chat'
 import Settings from '@/sidebar/pages/Settings'
 import ProvidersWrapper from '@/sidebar/providers'
 
+chrome.runtime.connect({ name: 'sidebar' })
+
 const AppRoutes = () => (
   <HashRouter>
     <Routes>
