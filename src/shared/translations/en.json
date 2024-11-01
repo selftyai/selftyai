@@ -285,6 +285,22 @@
   "noPluginsAvailable": "No plugins available <SettingsLink>Go to settings</SettingsLink>",
   "groq": "Groq",
   "readAloud": "Read aloud",
+  "readAloudSettings": {
+    "voiceName": "Voice name",
+    "selectVoice": "Select voice",
+    "rate": "Rate",
+    "volume": "Volume",
+    "errors": {
+      "volume": {
+        "min": "Volume must be at least {{ min }}",
+        "max": "Volume cannot exceed {{ max }}"
+      },
+      "rate": {
+        "min": "Rate must be at least {{ min }}",
+        "max": "Rate cannot exceed {{ max }}"
+      }
+    }
+  },
   "searchingForWeb": "Searching for web results...",
   "pageContent": {
     "contextMenu": {

@@ -30,6 +30,13 @@ class PortHandler {
 
   private onDisconnect(port: chrome.runtime.Port) {
     logger.info('[PortHandler] Port disconnected:', port)
+
+    try {
+      chrome.tts.stop()
+    } catch (error) {
+      logger.warn('[PortHandler] Failed to stop TTS:', error)
+    }
+
     const index = this.connectedPorts.indexOf(port)
     if (index > -1) {
       this.connectedPorts.splice(index, 1)
