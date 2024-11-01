@@ -95,13 +95,13 @@ const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
                 showOutline={true}
                 minValue={MIN_RATE}
                 maxValue={MAX_RATE}
-                defaultValue={rate}
+                value={rate}
                 classNames={{
                   label: 'text-xs',
                   value: 'text-xs'
                 }}
                 step={0.1}
-                onChangeEnd={(value) => setRate(Array.isArray(value) ? value[0] : value)}
+                onChange={(value) => setRate(Array.isArray(value) ? value[0] : value)}
               />
               <Slider
                 label={t('readAloudSettings.volume')}
@@ -110,13 +110,13 @@ const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
                 showOutline={true}
                 minValue={MIN_VOLUME}
                 maxValue={MAX_VOLUME}
-                defaultValue={volume}
+                value={volume}
                 classNames={{
                   label: 'text-xs',
                   value: 'text-xs'
                 }}
                 step={0.1}
-                onChangeEnd={(value) => setVolume(Array.isArray(value) ? value[0] : value)}
+                onChange={(value) => setVolume(Array.isArray(value) ? value[0] : value)}
               />
               <div className="flex items-center justify-center">
                 <Button

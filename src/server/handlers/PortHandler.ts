@@ -31,8 +31,10 @@ class PortHandler {
   private onDisconnect(port: chrome.runtime.Port) {
     logger.info('[PortHandler] Port disconnected:', port)
 
-    if (port.name === 'sidebar') {
+    try {
       chrome.tts.stop()
+    } catch (error) {
+      logger.warn('[PortHandler] Failed to stop TTS:', error)
     }
 
     const index = this.connectedPorts.indexOf(port)

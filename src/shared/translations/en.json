@@ -289,7 +289,17 @@
     "voiceName": "Voice name",
     "selectVoice": "Select voice",
     "rate": "Rate",
-    "volume": "Volume"
+    "volume": "Volume",
+    "errors": {
+      "volume": {
+        "min": "Volume must be at least {{ min }}",
+        "max": "Volume cannot exceed {{ max }}"
+      },
+      "rate": {
+        "min": "Rate must be at least {{ min }}",
+        "max": "Rate cannot exceed {{ max }}"
+      }
+    }
   },
   "searchingForWeb": "Searching for web results...",
   "pageContent": {

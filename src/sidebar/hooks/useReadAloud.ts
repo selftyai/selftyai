@@ -17,6 +17,8 @@ const useReadAloud = (message: React.ReactNode | string, options?: UseReadAloudO
   const [voices, setVoices] = React.useState<chrome.tts.TtsVoice[]>([])
   const [isLoading, setIsLoading] = React.useState(false)
 
+  const intervalIdRef = React.useRef<NodeJS.Timeout | null>(null)
+
   const startEventReceivedRef = React.useRef(false)
   const attemptRef = React.useRef(0)
   const isLoadingRef = React.useRef(false)
@@ -78,7 +80,11 @@ const useReadAloud = (message: React.ReactNode | string, options?: UseReadAloudO
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
-      chrome.tts.stop()
+
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current)
+        intervalIdRef.current = null
+      }
     }
   }, [])
 
@@ -103,10 +109,12 @@ const useReadAloud = (message: React.ReactNode | string, options?: UseReadAloudO
     }
 
     const speakText = () => {
+      const { rate = 1.0, volume = 1.0 } = options || {}
+
       chrome.tts.speak(plainText, {
         lang: voice.lang,
-        rate: options?.rate ?? 1.0,
-        volume: options?.volume ?? 1.0,
+        rate: rate,
+        volume: volume,
         onEvent: function (event) {
           logger.info('TTS event:', event.type)
           if (event.type === 'interrupted' && isLoadingRef.current) {
@@ -138,9 +146,10 @@ const useReadAloud = (message: React.ReactNode | string, options?: UseReadAloudO
     startEventReceivedRef.current = false
     isLoadingRef.current = true
 
-    const intervalId = setInterval(() => {
+    intervalIdRef.current = setInterval(() => {
       if (startEventReceivedRef.current || attemptRef.current >= SPEAK_ATTEMPTS) {
-        clearInterval(intervalId)
+        clearInterval(intervalIdRef.current!)
+        intervalIdRef.current = null
         if (!startEventReceivedRef.current) {
           logger.error(`Unable to start TTS after ${SPEAK_ATTEMPTS} attempts`)
           setSpeaking(false)

@@ -1,5 +1,5 @@
-import React from 'react'
-import { createContext, useContext } from 'react'
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
 import logger from '@/shared/logger'
@@ -18,38 +18,54 @@ interface ReadAloudContextType {
 
 const ReadAloudContext = createContext<ReadAloudContextType | undefined>(undefined)
 
-const volumeSchema = z
-  .number()
-  .min(MIN_VOLUME, `Volume must be at least ${MIN_VOLUME}`)
-  .max(MAX_VOLUME, `Volume cannot exceed ${MAX_VOLUME}`)
-const rateSchema = z
-  .number()
-  .min(MIN_RATE, `Rate must be at least ${MIN_RATE}`)
-  .max(MAX_RATE, `Rate cannot exceed ${MAX_RATE}`)
-
 const ReadAloudProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [volume, setVolumeState] = React.useState(1.0)
-  const [rate, setRateState] = React.useState(1.0)
+  const { t } = useTranslation()
+  const [volume, setVolumeState] = useState(1.0)
+  const [rate, setRateState] = useState(1.0)
 
-  const validatedSetVolume = React.useCallback((value: number) => {
-    try {
-      volumeSchema.parse(value)
-      setVolumeState(value)
-    } catch (error) {
-      logger.error('Invalid volume value:', error)
-    }
-  }, [])
+  const volumeSchema = useMemo(
+    () =>
+      z
+        .number()
+        .min(MIN_VOLUME, t('readAloudSettings.errors.volume.min', { min: MIN_VOLUME }))
+        .max(MAX_VOLUME, t('readAloudSettings.errors.volume.max', { max: MAX_VOLUME })),
+    [t]
+  )
 
-  const validatedSetRate = React.useCallback((value: number) => {
-    try {
-      rateSchema.parse(value)
-      setRateState(value)
-    } catch (error) {
-      logger.error('Invalid rate value:', error)
-    }
-  }, [])
+  const rateSchema = useMemo(
+    () =>
+      z
+        .number()
+        .min(MIN_RATE, t('readAloudSettings.errors.rate.min', { min: MIN_RATE }))
+        .max(MAX_RATE, t('readAloudSettings.errors.rate.max', { max: MAX_RATE })),
+    [t]
+  )
 
-  const contextValue = React.useMemo(
+  const validatedSetVolume = useCallback(
+    (value: number) => {
+      try {
+        volumeSchema.parse(value)
+        setVolumeState(value)
+      } catch (error) {
+        logger.error('Invalid volume value:', error)
+      }
+    },
+    [volumeSchema]
+  )
+
+  const validatedSetRate = useCallback(
+    (value: number) => {
+      try {
+        rateSchema.parse(value)
+        setRateState(value)
+      } catch (error) {
+        logger.error('Invalid rate value:', error)
+      }
+    },
+    [rateSchema]
+  )
+
+  const contextValue = useMemo(
     () => ({
       volume,
       rate,
