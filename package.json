@@ -53,7 +53,7 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.0.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/chrome": "^0.0.277",
+    "@types/chrome": "^0.0.280",
     "@types/firefox-webext-browser": "^120.0.4",
     "@types/node": "^22.5.5",
     "@types/react": "^18.3.11",
