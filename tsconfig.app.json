@@ -23,7 +23,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["chrome"]
+    "types": ["chrome", "firefox-webext-browser"]
   },
   "include": ["src"]
 }

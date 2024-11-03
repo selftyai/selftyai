@@ -14,4 +14,5 @@ export interface GithubState {
 
 export interface GithubActions {
   setActive: () => void
+  setApiKey: (apiKey: string) => void
 }

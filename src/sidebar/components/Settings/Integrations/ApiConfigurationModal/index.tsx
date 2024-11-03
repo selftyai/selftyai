@@ -28,6 +28,7 @@ interface ApiConfigurationModelProps extends React.PropsWithChildren {
   IntegrationIcon?: React.ReactNode
   active?: boolean
   onActiveToggle?: () => void
+  onSave?: (apiKey: string) => void
 }
 
 const ApiConfigurationModel = memo(
@@ -42,7 +43,8 @@ const ApiConfigurationModel = memo(
     children,
     IntegrationIcon,
     active,
-    onActiveToggle
+    onActiveToggle,
+    onSave: _onSave
   }: ApiConfigurationModelProps) => {
     const { isOpen, onOpenChange } = useDisclosure()
     const { t } = useTranslation()
@@ -66,6 +68,7 @@ const ApiConfigurationModel = memo(
         })
       }
 
+      _onSave?.(input)
       onOpenChange()
     }
 
@@ -86,7 +89,7 @@ const ApiConfigurationModel = memo(
       <div className="inline-flex gap-2">
         <Switch
           size="sm"
-          isDisabled={!integration}
+          isDisabled={!connected}
           isSelected={active || false}
           onChange={onEnableChange}
         />

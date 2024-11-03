@@ -54,6 +54,7 @@ export const useGroqStore = create<GroqState & GroqActions>((set, get) => {
       set({ verifyingConnection: true })
       useChromeStore.getState().sendMessage(ServerEndpoints.groqVerifyConnection, { url: apiKey })
     },
-    setActive: () => set({ active: !get().active })
+    setActive: () => set({ active: !get().active }),
+    setApiKey: (apiKey: string) => set({ apiKey })
   }
 })

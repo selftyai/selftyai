@@ -8,6 +8,7 @@ import monitorPullingModels from '@/server/utils/ollama/monitorPullingModels'
 import { db } from '@/shared/db'
 import { Conversation } from '@/shared/db/models/Conversation'
 import { SettingsKeys } from '@/shared/db/models/SettingsItem'
+import logger from '@/shared/logger'
 import printBuildInfo from '@/shared/printBuildInfo'
 
 class BackgroundService {
@@ -34,7 +35,14 @@ class BackgroundService {
   }
 
   private setupSidePanel() {
-    chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
+    try {
+      chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
+      browser?.action?.onClicked?.addListener(() => {
+        browser.sidebarAction.toggle()
+      })
+    } catch (error) {
+      logger.warn('Failed to setup side panel', error)
+    }
   }
 
   private async initializeDatabase() {
@@ -73,9 +81,7 @@ class BackgroundService {
   }
 
   private async modelMonitoring() {
-    await monitorGroqModels()
-    await monitorGithubModels()
-    await monitorPullingModels()
+    await Promise.race([monitorGroqModels(), monitorGithubModels(), monitorPullingModels()])
   }
 
   private startModelMonitoring() {

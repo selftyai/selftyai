@@ -31,6 +31,7 @@ export const useGithubStore = create<GithubState & GithubActions>((set, get) => 
 
   return {
     ...INITIAL_STATE,
-    setActive: () => set({ active: !get().active })
+    setActive: () => set({ active: !get().active }),
+    setApiKey: (apiKey: string) => set({ apiKey })
   }
 })

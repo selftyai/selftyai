@@ -17,4 +17,5 @@ export interface GroqState {
 export interface GroqActions {
   verifyConnection: (url: string) => Promise<void>
   setActive: () => void
+  setApiKey: (apiKey: string) => void
 }

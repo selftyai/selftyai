@@ -5,12 +5,26 @@ import ApiConfigurationModel from '@/sidebar/components/Settings/Integrations/Ap
 import { useGroqStore } from '@/sidebar/stores/groqStore'
 
 const ConfigureGroq = () => {
-  const { integration, active, connected, verifyingConnection, verifyConnection, setActive } =
-    useGroqStore()
+  const {
+    integration,
+    active,
+    apiKey,
+    connected,
+    verifyingConnection,
+    verifyConnection,
+    setActive,
+    setApiKey
+  } = useGroqStore()
 
   return (
     <ApiConfigurationModel
-      integration={integration}
+      integration={
+        integration && {
+          ...integration,
+          apiKey,
+          active
+        }
+      }
       integrationName={Integrations.groq}
       configureUrl="https://console.groq.com/keys"
       connected={connected}
@@ -25,6 +39,7 @@ const ConfigureGroq = () => {
         />
       }
       onActiveToggle={setActive}
+      onSave={setApiKey}
     />
   )
 }
