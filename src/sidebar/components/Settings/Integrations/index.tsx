@@ -10,6 +10,8 @@ import IntegrationItem from '@/sidebar/components/Settings/Integrations/Integrat
 import ConfigureOllama from '@/sidebar/components/Settings/Integrations/Ollama/ConfigureOllama'
 import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
+import ConfigureGithubModels from './GithubModels'
+
 interface IntegrationsProps {
   className?: string
 }
@@ -48,6 +50,56 @@ const Integrations = ({ className, ...props }: IntegrationsProps) => {
         />
       ),
       actionButtons: <ConfigureGroq />
+    },
+    {
+      id: 'githubModels',
+      title: t('settings.integrations.githubModels.title'),
+      subTitle: (
+        <Link href="https://github.com/marketplace/models" target="_blank">
+          {t('settings.integrations.githubModels.website')}
+        </Link>
+      ),
+      description: t('settings.integrations.githubModels.description'),
+      icon: 'simple-icons:github',
+      actionButtons: <ConfigureGithubModels />
+    },
+    {
+      id: 'mistral',
+      title: t('settings.integrations.mistral.title'),
+      subTitle: (
+        <Link href="https://mistral.ai/" target="_blank">
+          {t('settings.integrations.mistral.website')}
+        </Link>
+      ),
+      description: t('settings.integrations.mistral.description'),
+      icon: (
+        <Image
+          src="https://www.google.com/s2/favicons?domain=https://mistral.ai/&sz=128"
+          width="32"
+          height="32"
+        />
+      ),
+      actionButtons: (
+        <Chip color="secondary" variant="dot">
+          {t('comingSoon')}
+        </Chip>
+      )
+    },
+    {
+      id: 'gemini',
+      title: t('settings.integrations.gemini.title'),
+      subTitle: (
+        <Link href="https://ai.google.dev/" target="_blank">
+          {t('settings.integrations.gemini.website')}
+        </Link>
+      ),
+      description: t('settings.integrations.gemini.description'),
+      icon: 'simple-icons:googlegemini',
+      actionButtons: (
+        <Chip color="secondary" variant="dot">
+          {t('comingSoon')}
+        </Chip>
+      )
     },
     {
       id: 'lmStudio',

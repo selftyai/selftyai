@@ -11,13 +11,19 @@ import type { Model } from '@/shared/db/models/Model'
 import { SettingsKeys } from '@/shared/db/models/SettingsItem'
 import logger from '@/shared/logger'
 import { ServerEndpoints } from '@/shared/types/ServerEndpoints'
+import { defaultPrompts } from '@/sidebar/constants/chat'
 import { useChromePort } from '@/sidebar/hooks/useChromePort'
-import { useGroq } from '@/sidebar/providers/GroqProvider'
-import { useOllama } from '@/sidebar/providers/OllamaProvider'
+// import { useOllama } from '@/sidebar/providers/OllamaProvider'
+import { useChatStore } from '@/sidebar/stores/chatStore'
 import { ConversationWithLastMessage } from '@/sidebar/types/ConversationWithLastMessage'
 import { ConversationWithModel } from '@/sidebar/types/ConversationWithModel'
 import { MessageWithFiles } from '@/sidebar/types/MessageWithFiles'
+import deleteConversationWithRelations from '@/sidebar/utils/chat/deleteConversation'
+import getConversations from '@/sidebar/utils/chat/getConversations'
+import getMessagesByConversationId from '@/sidebar/utils/chat/getMessagesByConversationId'
 import { getFullPrompt } from '@/sidebar/utils/parseMessage'
+
+import { useOllama } from './OllamaProvider'
 
 const ModelContext = React.createContext<
   | {
@@ -30,9 +36,9 @@ const ModelContext = React.createContext<
 
 const ChatContext = React.createContext<
   | {
-      conversations?: ConversationWithLastMessage[]
+      conversations: ConversationWithLastMessage[]
       selectedConversation?: ConversationWithModel
-      messages?: MessageWithFiles[]
+      messages: MessageWithFiles[]
       messageContext?: string
       tools: string[]
       sendMessage: (
@@ -46,8 +52,6 @@ const ChatContext = React.createContext<
       stopGenerating: () => void
       continueGenerating: (messageId: number) => void
       setMessageContext: (context: string | undefined) => void
-      defaultMessageWithContext: string
-      defaultMessageWithoutContext: string
       setTools: (tools: string[]) => void
     }
   | undefined
@@ -72,127 +76,82 @@ export const useChat = () => {
 const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { sendMessage: sendPortMessage, addMessageListener } = useChromePort()
 
-  const { t } = useTranslation()
-
   const { conversationId } = useParams()
   const navigator = useNavigate()
+  const { t } = useTranslation()
 
   const { models: ollamaModels } = useOllama()
-  const { models: groqModels } = useGroq()
+  const {
+    models: allModels,
+    selectedModel,
+    context,
+    tools,
+    setModel,
+    setContext,
+    setTools
+  } = useChatStore()
 
-  const [selectedModel, setSelectedModel] = React.useState<Model>()
-  const [messageContext, setMessageContext] = React.useState<string>()
-  const defaultMessageWithContext = useMemo(
-    () =>
-      `Here is the user's context and message. Use the information inside the context tag as background knowledge, and respond based on the user's input inside the message tag. <context></context><message></message>`,
-    []
-  )
-  const defaultMessageWithoutContext = useMemo(
-    () =>
-      `Here is the user's message. Respond based on the input inside the message tag. <message></message>`,
-    []
-  )
-
-  const defaultModelSetting = useLiveQuery(() => db.settings.get(SettingsKeys.defaultModel), [])
-
-  const [tools, setTools] = React.useState<string[]>([])
-
-  const models = useMemo<Model[]>(() => {
-    const newModels = [...(ollamaModels ?? []), ...(groqModels ?? [])]
-
-    if (
-      ollamaModels &&
-      selectedModel &&
-      !newModels
-        .map(({ name, provider }) => `${name}-${provider}`)
-        .includes(`${selectedModel.name}-${selectedModel.provider}`)
-    ) {
-      setSelectedModel(undefined)
-    }
-
-    return newModels
-  }, [ollamaModels, groqModels, selectedModel])
+  const models = useMemo(() => [...(ollamaModels ?? []), ...allModels], [ollamaModels, allModels])
 
   const selectedConversation = useLiveQuery(async () => {
     if (!conversationId) return undefined
 
-    const data = await db.conversations.where({ id: Number(conversationId) }).first()
+    const conversation = await db.conversations.where({ id: Number(conversationId) }).first()
 
-    if (!data) {
+    if (!conversation) {
       navigator('/')
       return undefined
     }
 
-    const model = await db.models.get(data.modelId)
-    setSelectedModel(model)
+    const model = await db.models.get(conversation.modelId)
+    setModel(model)
 
-    return { ...data, model }
+    return { ...conversation, model }
   }, [conversationId])
 
-  const messages = useLiveQuery(async () => {
-    if (!conversationId) return []
+  const conversationsQuery = useLiveQuery(getConversations, [])
+  const conversations = useMemo(() => conversationsQuery ?? [], [conversationsQuery])
 
-    const messages = await db.messages.where({ conversationId: Number(conversationId) }).toArray()
-    const files = await db.files.where({ conversationId: Number(conversationId) }).toArray()
-    const tools = await db.toolInvocations.toArray()
-
-    const messagesWithFiles: MessageWithFiles[] = messages.map((message) => {
-      return {
-        ...message,
-        files: files.filter((file) => file.messageId === message.id),
-        tools: tools.filter((tool) => tool.messageId === message.id)
-      }
-    })
-
-    return messagesWithFiles
-  }, [conversationId])
-
-  const customPromptWithContext = useLiveQuery(
-    () => db.settings.get(SettingsKeys.customPromptWithContext),
-    []
+  const messagesQuery = useLiveQuery(
+    async () => getMessagesByConversationId(selectedConversation?.id ?? -1),
+    [selectedConversation]
   )
+  const messages = useMemo(() => messagesQuery ?? [], [messagesQuery])
 
-  const customPromptWithoutContext = useLiveQuery(
-    () => db.settings.get(SettingsKeys.customPromptWithoutContext),
-    []
-  )
+  const settingsQuery = useLiveQuery(async () => {
+    const settings = await db.settings
+      .where('key')
+      .anyOf([
+        SettingsKeys.customPromptWithContext,
+        SettingsKeys.customPromptWithoutContext,
+        SettingsKeys.defaultModel,
+        SettingsKeys.isContextInPromptEnabled
+      ])
+      .toArray()
 
-  React.useEffect(() => {
-    if (defaultModelSetting && !selectedConversation) {
-      setSelectedModel((prev) => prev ?? models.find((m) => m.model === defaultModelSetting.value))
-    }
-  }, [defaultModelSetting, models, selectedConversation])
-
-  const isContextEnabled = useLiveQuery(async () => {
-    const setting = await db.settings.get(SettingsKeys.isContextInPromptEnabled)
-    return setting ? { value: setting.value === 'true' } : { value: true }
-  }, [])
-
-  const conversations = useLiveQuery(async () => {
-    const conversations = await db.conversations.toArray()
-
-    const conversationsWithLastMessage: ConversationWithLastMessage[] = await Promise.all(
-      conversations.map(async (conversation) => {
-        const lastMessage = await db.messages.where({ conversationId: conversation.id }).last()
-
-        return {
-          ...conversation,
-          lastMessageAt: lastMessage?.updatedAt
-        }
-      })
+    return settings.reduce(
+      (acc, setting) => {
+        acc[setting.key] = setting.value
+        return acc
+      },
+      {} as Record<string, string>
     )
-
-    return conversationsWithLastMessage
   }, [])
+  const settings = useMemo(() => settingsQuery ?? {}, [settingsQuery])
 
   React.useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const removeListener = addMessageListener((message: any) => {
+    if (settings?.defaultModel && !selectedConversation) {
+      setModel(selectedModel ?? models.find((m) => m.model === settings?.defaultModel))
+    }
+  }, [settings, selectedModel, models, selectedConversation, setModel])
+
+  React.useEffect(() => {
+    const removeListener = addMessageListener((message) => {
       const { type, payload } = message
 
       const messageTypes = {
         selectConversation: () => navigator(`/${payload.conversationId}`),
-        [ServerEndpoints.setMessageContext]: () => setMessageContext(payload.context)
+        [ServerEndpoints.setMessageContext]: () => setContext(payload.context)
       }
 
       const messageType = messageTypes[type as keyof typeof messageTypes]
@@ -218,11 +177,11 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
       const getPrompt = (): string => {
         const promptTemplate =
-          isContextEnabled?.value && messageContext
-            ? customPromptWithContext?.value || defaultMessageWithContext
-            : customPromptWithoutContext?.value || defaultMessageWithoutContext
+          settings?.isContextEnabled === 'true' && context
+            ? settings?.customPromptWithContext || defaultPrompts.withContext
+            : settings?.customPromptWithoutContext || defaultPrompts.withoutContext
 
-        return getFullPrompt(promptTemplate, trimmedMessage, messageContext?.trim() ?? '')
+        return getFullPrompt(promptTemplate, trimmedMessage, context?.trim() ?? '')
       }
 
       const prompt = getPrompt()
@@ -236,44 +195,29 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         parentMessageId: branchRecord?.branchPath[branchRecord?.branchPath.length - 1]
       })
 
-      setMessageContext(undefined)
+      setContext(undefined)
     },
-    [
-      selectedModel,
-      sendPortMessage,
-      selectedConversation,
-      isContextEnabled?.value,
-      messageContext,
-      customPromptWithContext?.value,
-      defaultMessageWithContext,
-      customPromptWithoutContext?.value,
-      defaultMessageWithoutContext,
-      tools
-    ]
+    [selectedModel, sendPortMessage, selectedConversation, context, setContext, tools, settings]
   )
 
   const selectModel = useCallback(
     (model: string) => {
       const newSelectedModel = models.find((m) => m.model === model)
 
-      setSelectedModel(newSelectedModel === selectedModel ? undefined : newSelectedModel)
+      setModel(newSelectedModel === selectedModel ? undefined : newSelectedModel)
     },
-    [models, selectedModel]
+    [models, selectedModel, setModel]
   )
 
   const deleteConversation = useCallback(
     async (id?: number) => {
       if (!id) return
 
-      await db.files.where({ conversationId: id }).delete()
-      await db.messages.where({ conversationId: id }).delete()
-      await db.conversations.delete(id)
+      await deleteConversationWithRelations(id)
 
-      if (selectedConversation?.id === id) {
-        navigator('/')
-      }
-
-      toast.success('Conversation deleted successfully')
+      toast.success(t('deletedConversation'), {
+        position: 'top-center'
+      })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [sendPortMessage, selectedConversation]
@@ -353,7 +297,6 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       messages,
       sendMessage,
       conversations,
-      conversationId,
       deleteConversation,
       pinConversation,
       unpinConversation,
@@ -361,10 +304,8 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       regenerateResponse,
       stopGenerating,
       continueGenerating,
-      messageContext,
-      setMessageContext,
-      defaultMessageWithContext,
-      defaultMessageWithoutContext,
+      messageContext: context,
+      setMessageContext: setContext,
       setTools,
       tools
     }),
@@ -372,7 +313,6 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       messages,
       conversations,
       sendMessage,
-      conversationId,
       deleteConversation,
       pinConversation,
       unpinConversation,
@@ -380,10 +320,8 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       regenerateResponse,
       stopGenerating,
       continueGenerating,
-      messageContext,
-      setMessageContext,
-      defaultMessageWithContext,
-      defaultMessageWithoutContext,
+      context,
+      setContext,
       setTools,
       tools
     ]

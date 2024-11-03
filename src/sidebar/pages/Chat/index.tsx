@@ -91,9 +91,7 @@ const Chat = () => {
                     className="h-auto cursor-pointer bg-default-100 px-[20px] py-[16px] hover:bg-default-100/80"
                     shadow="none"
                     isPressable
-                    onPress={() => {
-                      setPrompt(message.text)
-                    }}
+                    onPress={() => setPrompt(message.text)}
                   >
                     <CardHeader className="p-0 pb-[9px]">
                       {<Icon className={message.color} icon={message.icon} width={24} />}
@@ -106,7 +104,7 @@ const Chat = () => {
           )}
 
           <div className="mt-auto flex max-w-full flex-col gap-2 px-2.5">
-            <Textarea selectedPrompt={prompt} />
+            <Textarea selectedPrompt={prompt} cleatPrompt={() => setPrompt('')} />
             <p className="hidden px-2 text-center text-xs font-medium leading-5 text-default-500 sm:block">
               {t('disclaimer')}
             </p>

@@ -5,10 +5,10 @@
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "icons": {
-    "16": "/icons/icon16.png",
-    "32": "/icons/icon32.png",
-    "48": "/icons/icon48.png",
-    "128": "/icons/icon128.png"
+    "16": "logo.png",
+    "32": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
   },
   "background": {
     "service_worker": "background.js",
@@ -39,5 +39,12 @@
       "resources": ["assets/styles/overlay.css"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "options_ui": {
+    "page": "index.html?fullscreen#/settings",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "__MSG_extensionAction__"
+  }
 }

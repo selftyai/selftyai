@@ -1,14 +1,14 @@
 import { createHandlerChains, createMessageHandlerChain } from '@/server/handlers'
 import MessageHandler from '@/server/handlers/MessageHandler'
 import PortHandler from '@/server/handlers/PortHandler'
+import monitorGithubModels from '@/server/utils/github/monitorGithubModels'
+import monitorGroqModels from '@/server/utils/groq/monitorGroqModels'
 import checkOngoingPullModels from '@/server/utils/ollama/checkOngoingPullModels'
 import monitorPullingModels from '@/server/utils/ollama/monitorPullingModels'
 import { db } from '@/shared/db'
 import { Conversation } from '@/shared/db/models/Conversation'
 import { SettingsKeys } from '@/shared/db/models/SettingsItem'
 import printBuildInfo from '@/shared/printBuildInfo'
-
-import monitorGroqModels from '../utils/groq/monitorGroqModels'
 
 class BackgroundService {
   private portHandler: PortHandler
@@ -74,6 +74,7 @@ class BackgroundService {
 
   private async modelMonitoring() {
     await monitorGroqModels()
+    await monitorGithubModels()
     await monitorPullingModels()
   }
 

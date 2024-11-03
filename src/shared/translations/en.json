@@ -148,6 +148,25 @@
         "disconnected": "Connection with Groq API is not established",
         "invalidApiKey": "Invalid API key, please check and try again"
       },
+      "githubModels": {
+        "title": "GitHub Models API",
+        "website": "github.com",
+        "description": "Use GitHub models to generate responses. Use your API key to get started.",
+        "apiKey": {
+          "label": "PAT (Personal Access Token)",
+          "description": "Enter your Github PAT. If you don't have one, you can get it <Link>here</Link>. Note that the PAT shouldn't have <danger>any scopes</danger>."
+        }
+      },
+      "mistral": {
+        "title": "Mistral",
+        "website": "mistral.ai",
+        "description": "Use Mistral models to generate responses. Use your API key to get started."
+      },
+      "gemini": {
+        "title": "Gemini",
+        "website": "ai.google.dev",
+        "description": "Use Gemini models to generate responses. Use your API key to get started."
+      },
       "lmStudio": {
         "title": "LM Studio",
         "website": "lmstudio.ai",
@@ -310,5 +329,7 @@
         "isContextInPromptFalseTooltip": "Context is disabled in app settings. Enable it to use this feature."
       }
     }
-  }
+  },
+  "githubModels": "GitHub Models",
+  "deletedConversation": "Conversation deleted successfully"
 }

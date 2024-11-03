@@ -4,5 +4,8 @@
   },
   "extensionDescription": {
     "message": "Selfty AI is a browser extension with an chat sidebar with your self-hosted AI. Such as Ollama, LM Studio, etc."
+  },
+  "extensionAction": {
+    "message": "Toggle Selfty AI Sidebar"
   }
 }

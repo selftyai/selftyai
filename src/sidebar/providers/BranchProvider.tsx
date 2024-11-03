@@ -1,5 +1,4 @@
-import { useLiveQuery } from 'dexie-react-hooks'
-import React, { useEffect, useState, useContext, createContext, useCallback } from 'react'
+import React, { useContext, createContext, useCallback, useState, useEffect } from 'react'
 
 import { db } from '@/shared/db'
 import { BranchPath } from '@/shared/db/models/Branch'
@@ -10,6 +9,7 @@ import findDefaultBranch from '@/sidebar/utils/findDefaultBranch'
 interface BranchContextType {
   branchPath: BranchPath
   updateBranchPath: (newBranchPath: BranchPath) => Promise<void>
+  isLoading: boolean
 }
 
 const BranchContext = createContext<BranchContextType | undefined>(undefined)
@@ -17,50 +17,68 @@ const BranchContext = createContext<BranchContextType | undefined>(undefined)
 export const BranchProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { selectedConversation, messages } = useChat()
   const [branchPath, setBranchPath] = useState<BranchPath>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const branch = useLiveQuery(async () => {
-    if (!selectedConversation) return
+  useEffect(() => {
+    async function getDefaultBranchPath() {
+      const messageTree = buildMessageTree(messages)
+      return findDefaultBranch(messageTree)
+    }
 
-    return (await db.branches.where({ conversationId: selectedConversation.id }).first()) ?? null
-  }, [selectedConversation])
+    async function loadBranchPath() {
+      if (!selectedConversation || !messages) {
+        setBranchPath([])
+        setIsLoading(false)
+        return
+      }
+
+      setIsLoading(true)
+      const branch = await db.branches.where({ conversationId: selectedConversation.id }).first()
+
+      if (!branch) {
+        const defaultBranch = await getDefaultBranchPath()
+        await db.branches.add({
+          conversationId: selectedConversation.id!,
+          branchPath: defaultBranch
+        })
+        setBranchPath(defaultBranch)
+        setIsLoading(false)
+        return
+      }
+
+      if (!branch.branchPath.length) {
+        const defaultBranch = await getDefaultBranchPath()
+        await db.branches.where({ id: branch.id }).modify({
+          branchPath: defaultBranch
+        })
+        setBranchPath(defaultBranch)
+        setIsLoading(false)
+        return
+      }
+
+      setBranchPath(branch.branchPath)
+      setIsLoading(false)
+    }
+
+    loadBranchPath()
+  }, [selectedConversation, messages])
 
   const updateBranchPath = useCallback(
     async (newBranchPath: BranchPath) => {
-      setBranchPath(newBranchPath)
+      if (!selectedConversation) return
 
-      if (!branch) return
+      const branch = await db.branches.where({ conversationId: selectedConversation?.id }).first()
 
       await db.branches.where({ id: branch?.id }).modify({
         branchPath: newBranchPath
       })
+      setBranchPath(newBranchPath)
     },
-    [branch]
+    [selectedConversation]
   )
 
-  useEffect(() => {
-    const loadBranchPath = async () => {
-      if (!selectedConversation || !messages || branch === undefined) return
-
-      if (branch && branch.branchPath.length > 0) {
-        setBranchPath(branch.branchPath)
-        return
-      }
-
-      const messageTree = buildMessageTree(messages)
-      const defaultBranch = findDefaultBranch(messageTree)
-      setBranchPath(defaultBranch)
-
-      await db.branches.add({
-        conversationId: selectedConversation.id!,
-        branchPath: defaultBranch
-      })
-    }
-
-    loadBranchPath()
-  }, [selectedConversation, messages, branch])
-
   return (
-    <BranchContext.Provider value={{ branchPath, updateBranchPath }}>
+    <BranchContext.Provider value={{ branchPath, updateBranchPath, isLoading }}>
       {children}
     </BranchContext.Provider>
   )

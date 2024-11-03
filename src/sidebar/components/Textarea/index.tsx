@@ -15,9 +15,10 @@ import SelectToolDropdown from './SelectToolDropdown'
 
 interface TextAreaProps {
   selectedPrompt?: string
+  cleatPrompt?: () => void
 }
 
-const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
+const TextArea = memo(({ selectedPrompt, cleatPrompt }: TextAreaProps) => {
   const {
     sendMessage,
     messages,
@@ -49,6 +50,7 @@ const TextArea = memo(({ selectedPrompt }: TextAreaProps) => {
       sendMessage(prompt, images)
       setPrompt('')
       setImages([])
+      cleatPrompt?.()
     }
   }
 
