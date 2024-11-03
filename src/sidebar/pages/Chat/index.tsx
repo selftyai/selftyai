@@ -104,7 +104,7 @@ const Chat = () => {
           )}
 
           <div className="mt-auto flex max-w-full flex-col gap-2 px-2.5">
-            <Textarea selectedPrompt={prompt} cleatPrompt={() => setPrompt('')} />
+            <Textarea selectedPrompt={prompt} clearPrompt={() => setPrompt('')} />
             <p className="hidden px-2 text-center text-xs font-medium leading-5 text-default-500 sm:block">
               {t('disclaimer')}
             </p>
