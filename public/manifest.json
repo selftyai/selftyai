@@ -5,12 +5,13 @@
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "icons": {
-    "16": "/icons/icon16.png",
-    "32": "/icons/icon32.png",
-    "48": "/icons/icon48.png",
-    "128": "/icons/icon128.png"
+    "16": "logo.png",
+    "32": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
   },
   "background": {
+    "scripts": ["background.js"],
     "service_worker": "background.js",
     "type": "module"
   },
@@ -24,7 +25,7 @@
     "default_path": "index.html"
   },
   "sidebar_action": {
-    "default_icon": "/icons/icon32.png",
+    "default_icon": "logo.png",
     "default_title": "__MSG_extensionName__",
     "default_panel": "index.html"
   },
@@ -39,5 +40,18 @@
       "resources": ["assets/styles/overlay.css"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "options_ui": {
+    "page": "index.html?fullscreen#/settings",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "__MSG_extensionAction__"
+  },
+  "applications": {
+    "gecko": {
+      "id": "selftyai@selftyai.com",
+      "strict_min_version": "42.0"
+    }
+  }
 }

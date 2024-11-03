@@ -2,5 +2,6 @@ export enum Integrations {
   ollama = 'ollama',
   tavily = 'tavily',
   google = 'google',
-  groq = 'groq'
+  groq = 'groq',
+  githubModels = 'githubModels'
 }

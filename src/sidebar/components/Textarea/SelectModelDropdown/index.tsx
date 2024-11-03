@@ -14,6 +14,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { Model } from '@/shared/db/models/Model'
+import { Integrations } from '@/shared/types/Integrations'
 
 interface SelectModelDropdownProps {
   models: Model[]
@@ -41,9 +42,11 @@ const SelectModelDropdown = memo(
 
     const getIcon = (provider: string) => {
       switch (provider) {
-        case 'ollama':
+        case Integrations.ollama:
           return <Icon className="text-large text-default-500" icon="simple-icons:ollama" />
-        case 'groq':
+        case Integrations.githubModels:
+          return <Icon className="text-large text-default-500" icon="simple-icons:github" />
+        case Integrations.groq:
           return (
             <Image
               src="https://www.google.com/s2/favicons?domain=https://groq.com/&sz=128"

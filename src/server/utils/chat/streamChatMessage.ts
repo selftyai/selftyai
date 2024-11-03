@@ -1,4 +1,8 @@
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+  SystemMessagePromptTemplate
+} from '@langchain/core/prompts'
 import { AgentExecutor, createToolCallingAgent } from 'langchain/agents'
 
 import { MessageEvent } from '@/server/types/MessageEvent'
@@ -92,14 +96,15 @@ export default async function streamChatMessage({
     modifiedModel.bindTools = (tools: any[], options: any) => {
       return llm?.bindTools?.(tools, {
         ...options,
-        recursionLimit: 5,
+        recursionLimit: 2,
         signal: abortController.signal
       })
     }
 
     const messagePlaceholders = new MessagesPlaceholder('chat_history')
+    const systemMessageTemplate = SystemMessagePromptTemplate.fromTemplate('{system_message}')
     const prompt = ChatPromptTemplate.fromMessages([
-      conversation.systemMessage ? ['system', conversation.systemMessage] : '',
+      systemMessageTemplate,
       messagePlaceholders,
       ['placeholder', '{agent_scratchpad}']
     ])
@@ -119,12 +124,13 @@ export default async function streamChatMessage({
       agentExecutor = new AgentExecutor({
         agent: agentWithTool,
         tools,
-        maxIterations: 5
+        maxIterations: 2
       })
     }
     const chainWithoutTools = prompt.pipe(
       llm.bind({
-        signal: abortController?.signal
+        signal: abortController?.signal,
+        maxConcurrency: 1
       })
     )
 
@@ -132,7 +138,8 @@ export default async function streamChatMessage({
 
     await executor.invoke(
       {
-        chat_history: mappedMessages
+        chat_history: mappedMessages,
+        system_message: conversation.systemMessage
       },
       {
         signal: abortController.signal,
@@ -175,10 +182,18 @@ export default async function streamChatMessage({
                 })
 
                 await db.messages.update(assistantMessage.id!, {
-                  promptTokens: message.usage_metadata.input_tokens,
-                  completionTokens: message.usage_metadata.output_tokens,
-                  totalTokens: message.usage_metadata.total_tokens,
-                  finishReason: message.response_metadata.done_reason
+                  promptTokens:
+                    message.usage_metadata?.input_tokens ||
+                    message.response_metadata?.estimatedTokenUsage?.promptTokens,
+                  completionTokens:
+                    message.usage_metadata?.output_tokens ||
+                    message.response_metadata?.estimatedTokenUsage?.completionTokens,
+                  totalTokens:
+                    message.usage_metadata?.total_tokens ||
+                    message.response_metadata?.estimatedTokenUsage?.totalTokens,
+                  finishReason:
+                    message.response_metadata?.done_reason ||
+                    message.response_metadata?.finish_reason
                 })
               }
             }

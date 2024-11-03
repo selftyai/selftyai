@@ -148,6 +148,25 @@
         "disconnected": "З'єднання з Groq API не встановлено",
         "invalidApiKey": "Невірний API ключ, будь ласка, перевірте і спробуйте ще раз"
       },
+      "githubModels": {
+        "title": "GitHub моделі",
+        "website": "github.com",
+        "description": "Використовуйте моделі з GitHub для генерації відповідей. Використовуйте свій API ключ для початку роботи.",
+        "apiKey": {
+          "label": "PAT ключ",
+          "description": "Введіть ваш персональний ключ доступу (PAT) GitHub. Якщо у вас його немає, ви можете отримати його на <Link>вебсайті</Link> GitHub. "
+        }
+      },
+      "mistral": {
+        "title": "Mistral",
+        "website": "mistral.ai",
+        "description": "Використовуйте моделі Mistral для генерації відповідей. Використовуйте свій API ключ для початку роботи."
+      },
+      "gemini": {
+        "title": "Gemini",
+        "website": "ai.google.dev",
+        "description": "Використовуйте моделі Gemini для генерації відповідей. Використовуйте свій API ключ для початку роботи."
+      },
       "lmStudio": {
         "title": "LM Studio",
         "website": "lmstudio.ai",
@@ -310,5 +329,7 @@
         "isContextInPromptFalseTooltip": "Контекст вимкнено в налаштуваннях додатку. Увімкніть його, щоб використовувати цю функцію."
       }
     }
-  }
+  },
+  "githubModels": "GitHub моделі",
+  "deletedConversation": "Бесіда успішно видалена"
 }

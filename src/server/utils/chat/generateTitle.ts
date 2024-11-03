@@ -20,7 +20,7 @@ export default async function generateTitle(conversationId: number) {
     return false
   }
 
-  const provider = await getProvider(model.provider, model.name)
+  const provider = await getProvider(model.provider, model.model)
 
   const prompt = `
     Given the user's prompt, generate a concise and engaging chat title that captures the main idea. The title should:

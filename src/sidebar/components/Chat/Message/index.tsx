@@ -2,15 +2,16 @@ import { Icon } from '@iconify/react'
 import { Button, Tooltip, Badge } from '@nextui-org/react'
 import { cn } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
-import React from 'react'
+import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Model } from '@/shared/db/models/Model'
 import { ToolInvocation } from '@/shared/db/models/ToolInvocation'
 import ContextField from '@/sidebar/components/Chat/Message/ContextField'
+import GeneratedModel from '@/sidebar/components/Chat/Message/GeneratedModel'
 import Markdown from '@/sidebar/components/Chat/Message/Markdown'
 import ReadAloudButton from '@/sidebar/components/Chat/Message/ReadAloudButton'
-
-import ToolInvocations from './ToolInvocations'
+import ToolInvocations from '@/sidebar/components/Chat/Message/ToolInvocations'
 
 export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   avatar?: React.ReactNode
@@ -26,6 +27,7 @@ export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   messageLength?: number
   metadata?: Record<string, string>
   tools: ToolInvocation[]
+  model?: Model
   onAttemptChange?: (attempt: number) => void
   onMessageCopy?: (content: string | string[]) => void
   onContinueGenerating?: () => void
@@ -35,218 +37,232 @@ export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   isLastMessage?: boolean
 }
 
-const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
-  (
-    {
-      avatar,
-      message,
-      messageContext,
-      statusText,
-      showFeedback,
-      attempts = 1,
-      currentAttempt = 1,
-      status,
-      onMessageCopy,
-      onAttemptChange,
-      className,
-      messageClassName,
-      metadata,
-      onContinueGenerating,
-      canContinue,
-      onRegenerate,
-      canRegenerate,
-      tools,
-      ...props
-    },
-    ref
-  ) => {
-    const { t } = useTranslation()
-    const messageRef = React.useRef<HTMLDivElement>(null)
+const MessageCard = memo(
+  React.forwardRef<HTMLDivElement, MessageCardProps>(
+    (
+      {
+        avatar,
+        message,
+        messageContext,
+        statusText,
+        showFeedback,
+        attempts = 1,
+        currentAttempt = 1,
+        status,
+        onMessageCopy,
+        onAttemptChange,
+        className,
+        messageClassName,
+        metadata,
+        onContinueGenerating,
+        canContinue,
+        onRegenerate,
+        canRegenerate,
+        tools,
+        model,
+        ...props
+      },
+      ref
+    ) => {
+      const { t } = useTranslation()
+      const messageRef = React.useRef<HTMLDivElement>(null)
 
-    const { copied, copy } = useClipboard()
+      const { copied, copy } = useClipboard()
 
-    const hasFailed = status === 'error'
+      const hasFailed = status === 'error'
 
-    const handleCopy = React.useCallback(() => {
-      let stringValue = ''
+      const handleCopy = React.useCallback(() => {
+        let stringValue = ''
 
-      if (typeof message === 'string') {
-        stringValue = message
-      } else if (Array.isArray(message)) {
-        message.forEach((child) => {
-          const childString = typeof child === 'string' ? child : child?.props?.children?.toString()
+        if (typeof message === 'string') {
+          stringValue = message
+        } else if (Array.isArray(message)) {
+          message.forEach((child) => {
+            const childString =
+              typeof child === 'string' ? child : child?.props?.children?.toString()
 
-          if (childString) {
-            stringValue += childString + '\n'
-          }
-        })
-      }
+            if (childString) {
+              stringValue += childString + '\n'
+            }
+          })
+        }
 
-      const valueToCopy = stringValue || messageRef.current?.textContent || ''
+        const valueToCopy = stringValue || messageRef.current?.textContent || ''
 
-      copy(valueToCopy)
+        copy(valueToCopy)
 
-      onMessageCopy?.(valueToCopy)
-    }, [copy, message, onMessageCopy])
+        onMessageCopy?.(valueToCopy)
+      }, [copy, message, onMessageCopy])
 
-    return (
-      <div {...props} ref={ref} className={cn('flex gap-3', className)}>
-        <div className="relative flex-none">
-          <Badge
-            isOneChar
-            color="danger"
-            content={<Icon className="text-background" icon="gravity-ui:circle-exclamation-fill" />}
-            isInvisible={!hasFailed}
-            placement="bottom-right"
-            shape="circle"
-          >
-            {avatar}
-          </Badge>
-        </div>
-        <div className="w-full overflow-hidden">
-          <div
-            className={cn(
-              'group relative w-full rounded-medium bg-content2 px-4 py-3 text-default-600',
-              messageClassName
-            )}
-          >
-            <ContextField messageContext={messageContext} />
-            <ToolInvocations tools={tools} />
-            <div ref={messageRef} className={'text-small'}>
-              {typeof message === 'string' ? <Markdown message={message} /> : message}
-            </div>
-            {showFeedback && (
-              <div className="flex items-center gap-2 pt-2">
-                <ReadAloudButton message={message} />
-                <Tooltip content={t('copyButton')} placement="bottom">
-                  <Button isIconOnly radius="full" size="sm" variant="flat" onPress={handleCopy}>
-                    {copied ? (
-                      <Icon className="text-lg text-default-600" icon="gravity-ui:check" />
-                    ) : (
-                      <Icon className="text-lg text-default-600" icon="gravity-ui:copy" />
-                    )}
-                  </Button>
-                </Tooltip>
-                {metadata && !hasFailed && status !== 'aborted' && (
-                  <Tooltip
-                    content={
-                      <div className="flex flex-col gap-2 p-2.5">
-                        {Object.entries(metadata).map(([key, value]) => (
-                          <div key={key} className="flex gap-1">
-                            <span className="text-tiny text-default-500">
-                              {t(`responseMetadata.${key}.label`)}:
-                            </span>
-                            <span className="text-tiny text-default-600">
-                              {t(`responseMetadata.${key}.unit`, {
-                                value
-                              })}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    }
-                    placement="top"
-                    showArrow
-                  >
-                    <div className="inline-flex h-8 w-8 min-w-8 items-center justify-center rounded-full bg-default/40 px-4">
-                      <Icon
-                        className="min-w-8 text-lg text-default-600"
-                        icon="gravity-ui:circle-info"
-                      />
-                    </div>
+      return (
+        <div {...props} ref={ref} className={cn('flex gap-3', className)}>
+          <div className="relative flex-none">
+            <Badge
+              isOneChar
+              color="danger"
+              content={
+                <Icon className="text-background" icon="gravity-ui:circle-exclamation-fill" />
+              }
+              isInvisible={!hasFailed}
+              placement="bottom-right"
+              shape="circle"
+            >
+              {avatar}
+            </Badge>
+          </div>
+          <div className="w-full overflow-hidden">
+            <div
+              className={cn(
+                'group relative w-full rounded-medium bg-content2 px-4 py-3 text-default-600',
+                messageClassName
+              )}
+            >
+              <ContextField messageContext={messageContext} />
+              <ToolInvocations tools={tools} />
+              <div ref={messageRef} className="text-small">
+                {typeof message === 'string' ? <Markdown children={message} /> : message}
+              </div>
+              {showFeedback && (
+                <div className="flex items-center gap-2 pt-2">
+                  <ReadAloudButton message={message} />
+                  <Tooltip content={t('copyButton')} placement="bottom">
+                    <Button isIconOnly radius="full" size="sm" variant="flat" onPress={handleCopy}>
+                      {copied ? (
+                        <Icon className="text-lg text-default-600" icon="gravity-ui:check" />
+                      ) : (
+                        <Icon className="text-lg text-default-600" icon="gravity-ui:copy" />
+                      )}
+                    </Button>
                   </Tooltip>
-                )}
-                {tools.length > 0 && (
-                  <Tooltip
-                    showArrow
-                    content={
-                      <div className="flex flex-col gap-2 p-2.5">
-                        <p>{t('invokedTools')}</p>
-                        <ul className="list-inside list-disc">
-                          {tools.map((tool) => (
-                            <li key={tool.id}>
-                              {t(`tools.${tool.toolName}`, {
-                                provider: t(`tools.${tool.subName}`)
-                              })}
-                            </li>
+                  {metadata && !hasFailed && status !== 'aborted' && (
+                    <Tooltip
+                      content={
+                        <div className="flex flex-col gap-2 p-2.5">
+                          {Object.entries(metadata).map(([key, value]) => (
+                            <div key={key} className="flex gap-1">
+                              <span className="text-tiny text-default-500">
+                                {t(`responseMetadata.${key}.label`)}:
+                              </span>
+                              <span className="text-tiny text-default-600">
+                                {t(`responseMetadata.${key}.unit`, {
+                                  value
+                                })}
+                              </span>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
+                      }
+                      placement="top"
+                      showArrow
+                    >
+                      <div className="inline-flex h-8 w-8 min-w-8 items-center justify-center rounded-full bg-default/40 px-4">
+                        <Icon
+                          className="min-w-8 text-lg text-default-600"
+                          icon="gravity-ui:circle-info"
+                        />
                       </div>
-                    }
-                    placement="top"
-                  >
-                    <div className="inline-flex h-8 w-8 min-w-8 items-center justify-center rounded-full bg-default/40">
-                      <Icon className="min-w-8 text-lg text-default-600" icon="lucide:toy-brick" />
-                    </div>
-                  </Tooltip>
-                )}
-                {status === 'aborted' && (
-                  <Tooltip content={t('continueButton')} placement="bottom">
+                    </Tooltip>
+                  )}
+                  {tools.length > 0 && (
+                    <Tooltip
+                      showArrow
+                      content={
+                        <div className="flex flex-col gap-2 p-2.5">
+                          <p>{t('invokedTools')}</p>
+                          <ul className="list-inside list-disc">
+                            {tools.map((tool) => (
+                              <li key={tool.id}>
+                                {t(`tools.${tool.toolName}`, {
+                                  provider: t(`tools.${tool.subName}`)
+                                })}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      }
+                      placement="top"
+                    >
+                      <div className="inline-flex h-8 w-8 min-w-8 items-center justify-center rounded-full bg-default/40">
+                        <Icon
+                          className="min-w-8 text-lg text-default-600"
+                          icon="lucide:toy-brick"
+                        />
+                      </div>
+                    </Tooltip>
+                  )}
+                  {status === 'aborted' && (
+                    <Tooltip content={t('continueButton')} placement="bottom">
+                      <Button
+                        isIconOnly
+                        radius="full"
+                        size="sm"
+                        variant="flat"
+                        onPress={onContinueGenerating}
+                        isDisabled={!canContinue}
+                      >
+                        <Icon className="text-lg text-default-600" icon="gravity-ui:circle-play" />
+                      </Button>
+                    </Tooltip>
+                  )}
+                  <Tooltip content={t('regenerateButton')} placement="bottom">
                     <Button
                       isIconOnly
                       radius="full"
                       size="sm"
                       variant="flat"
-                      onPress={onContinueGenerating}
-                      isDisabled={!canContinue}
+                      isDisabled={!canRegenerate}
+                      onPress={onRegenerate}
                     >
-                      <Icon className="text-lg text-default-600" icon="gravity-ui:circle-play" />
+                      <Icon
+                        className="text-lg text-default-600"
+                        icon="gravity-ui:arrows-rotate-right"
+                      />
                     </Button>
                   </Tooltip>
-                )}
-                <Tooltip content={t('regenerateButton')} placement="bottom">
-                  <Button
-                    isIconOnly
-                    radius="full"
-                    size="sm"
-                    variant="flat"
-                    isDisabled={!canRegenerate}
-                    onPress={onRegenerate}
-                  >
-                    <Icon
-                      className="text-lg text-default-600"
-                      icon="gravity-ui:arrows-rotate-right"
-                    />
-                  </Button>
-                </Tooltip>
+                  {model && <GeneratedModel model={model} />}
 
-                {attempts > 1 && !hasFailed && (
-                  <div className="ml-auto flex w-full items-center justify-end">
-                    <button
-                      onClick={() => onAttemptChange?.(currentAttempt > 1 ? currentAttempt - 1 : 1)}
-                    >
-                      <Icon
-                        className="h-4 w-4 cursor-pointer text-default-400 hover:text-default-500"
-                        icon="gravity-ui:circle-arrow-left"
-                      />
-                    </button>
-                    <button
-                      onClick={() =>
-                        onAttemptChange?.(currentAttempt < attempts ? currentAttempt + 1 : attempts)
-                      }
-                    >
-                      <Icon
-                        className="h-4 w-4 cursor-pointer text-default-400 hover:text-default-500"
-                        icon="gravity-ui:circle-arrow-right"
-                      />
-                    </button>
-                    <p className="px-1 text-small font-medium text-default-500">
-                      {currentAttempt}/{attempts}
-                    </p>
-                  </div>
-                )}
+                  {attempts > 1 && !hasFailed && (
+                    <div className="ml-auto flex w-full items-center justify-end">
+                      <button
+                        onClick={() =>
+                          onAttemptChange?.(currentAttempt > 1 ? currentAttempt - 1 : 1)
+                        }
+                      >
+                        <Icon
+                          className="h-4 w-4 cursor-pointer text-default-400 hover:text-default-500"
+                          icon="gravity-ui:circle-arrow-left"
+                        />
+                      </button>
+                      <button
+                        onClick={() =>
+                          onAttemptChange?.(
+                            currentAttempt < attempts ? currentAttempt + 1 : attempts
+                          )
+                        }
+                      >
+                        <Icon
+                          className="h-4 w-4 cursor-pointer text-default-400 hover:text-default-500"
+                          icon="gravity-ui:circle-arrow-right"
+                        />
+                      </button>
+                      <p className="px-1 text-small font-medium text-default-500">
+                        {currentAttempt}/{attempts}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {hasFailed && (
+              <div className="group relative mt-2 flex w-full flex-col gap-2 rounded-medium border border-danger-100 bg-content2 bg-danger-100/50 px-4 py-3 text-foreground sm:flex-row">
+                <div className="text-small">{statusText}</div>
               </div>
             )}
           </div>
-          {hasFailed && (
-            <div className="group relative flex w-full flex-col gap-2 rounded-medium border border-danger-100 bg-content2 bg-danger-100/50 px-4 py-3 text-foreground sm:flex-row">
-              <div className="text-small">{statusText}</div>
-            </div>
-          )}
         </div>
-      </div>
-    )
-  }
+      )
+    }
+  )
 )
 
 export default MessageCard

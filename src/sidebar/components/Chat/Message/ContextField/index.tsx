@@ -35,7 +35,7 @@ const ContextField = ({ messageContext }: ContextFieldProps) => {
           <ModalContent>
             <ModalHeader>{'Message Context'}</ModalHeader>
             <ModalBody className="flex flex-1 flex-col p-6 pt-0 text-base">
-              <Markdown message={messageContext} />
+              <Markdown children={messageContext} />
             </ModalBody>
           </ModalContent>
         </Modal>

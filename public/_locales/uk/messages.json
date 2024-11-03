@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Selfty AI"
+  },
+  "extensionDescription": {
+    "message": "Selfty AI - це розширення браузера з бічною панеллю чату з вашим AI, розміщеним на власному сервері. Наприклад, Ollama, LM Studio тощо."
+  },
+  "extensionAction": {
+    "message": "Перемкнути бічну панель Selfty AI"
+  }
+}

@@ -73,9 +73,8 @@ class RegenerateMessageHandler extends AbstractHandler<
       const branch = await db.branches.where({ conversationId: conversation.id }).first()
 
       if (branch) {
-        console.log('branch', branch)
         await db.branches.where({ id: branch.id }).modify({
-          branchPath: [...branch.branchPath.slice(0, -1), assistantMessageId]
+          branchPath: []
         })
       }
 

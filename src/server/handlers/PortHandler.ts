@@ -32,7 +32,7 @@ class PortHandler {
     logger.info('[PortHandler] Port disconnected:', port)
 
     try {
-      chrome.tts.stop()
+      chrome?.tts?.stop()
     } catch (error) {
       logger.warn('[PortHandler] Failed to stop TTS:', error)
     }

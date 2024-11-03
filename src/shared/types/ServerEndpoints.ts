@@ -16,6 +16,9 @@ export enum ServerEndpoints {
   // Groq
   groqVerifyConnection = 'groqVerifyConnection',
 
+  // Github Models
+  githubModelsVerifyConnection = 'githubModelsVerifyConnection',
+
   //SidePanel
   sidePanelHandler = 'sidePanelHandler',
 

@@ -9,11 +9,10 @@ import { z } from 'zod'
 import { db } from '@/shared/db'
 import { SettingsKeys } from '@/shared/db/models/SettingsItem'
 import CustomSwitch from '@/sidebar/components/CustomSwitch'
-import { useChat } from '@/sidebar/providers/ChatProvider'
+import { defaultPrompts } from '@/sidebar/constants/chat'
 
 const UseCustomPromptsSetting = () => {
   const { t } = useTranslation()
-  const { defaultMessageWithContext, defaultMessageWithoutContext } = useChat()
   const [textAreaPrompt, setTextAreaPrompt] = React.useState<string>('')
   const [isMessageWithContextSwitch, setIsMessageWithContextSwitch] = React.useState<boolean>()
 
@@ -65,19 +64,13 @@ const UseCustomPromptsSetting = () => {
     const prompt = isMessageWithContextSwitch
       ? customPromptWithContext?.value !== undefined && customPromptWithContext?.value !== ''
         ? customPromptWithContext.value
-        : defaultMessageWithContext
+        : defaultPrompts.withContext
       : customPromptWithoutContext?.value !== undefined && customPromptWithoutContext?.value !== ''
         ? customPromptWithoutContext.value
-        : defaultMessageWithoutContext
+        : defaultPrompts.withoutContext
 
     setTextAreaPrompt(prompt)
-  }, [
-    customPromptWithContext,
-    customPromptWithoutContext,
-    defaultMessageWithContext,
-    defaultMessageWithoutContext,
-    isMessageWithContextSwitch
-  ])
+  }, [customPromptWithContext, customPromptWithoutContext, isMessageWithContextSwitch])
 
   const validatePrompt = React.useCallback(() => {
     const promptSchema = isMessageWithContextSwitch
@@ -105,16 +98,11 @@ const UseCustomPromptsSetting = () => {
   // useEffect for dynamic disable  buttons
   React.useEffect(() => {
     const basePrompt = isMessageWithContextSwitch
-      ? defaultMessageWithContext
-      : defaultMessageWithoutContext
+      ? defaultPrompts.withContext
+      : defaultPrompts.withoutContext
 
     setIsButtonsDisabled(textAreaPrompt === basePrompt)
-  }, [
-    textAreaPrompt,
-    isMessageWithContextSwitch,
-    defaultMessageWithContext,
-    defaultMessageWithoutContext
-  ])
+  }, [textAreaPrompt, isMessageWithContextSwitch])
 
   React.useEffect(() => {
     setIsMessageWithContextSwitch(isContextEnabled?.value === 'true')
