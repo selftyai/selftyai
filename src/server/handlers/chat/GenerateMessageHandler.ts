@@ -94,7 +94,7 @@ class GenerateMessageHandler extends AbstractHandler<
 
       if (branch) {
         await db.branches.where({ conversationId: conversation.id }).modify({
-          branchPath: [...branch.branchPath, assistantMessageId]
+          branchPath: []
         })
       }
 

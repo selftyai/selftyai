@@ -1,10 +1,11 @@
-import { Avatar, AvatarIcon, Image } from '@nextui-org/react'
+import { Avatar, Image } from '@nextui-org/react'
 import i18next from 'i18next'
 import React, { memo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import logo from '@/shared/assets/logo.svg'
 import MessageCard from '@/sidebar/components/Chat/Message'
+import GeneratedModel from '@/sidebar/components/Chat/Message/GeneratedModel'
 import Markdown from '@/sidebar/components/Chat/Message/Markdown'
 import { ConversationWithModel } from '@/sidebar/types/ConversationWithModel'
 import { TreeNode } from '@/sidebar/types/TreeNode'
@@ -18,11 +19,13 @@ interface MessageGroupProps extends React.PropsWithChildren {
   canRegenerate: boolean
   isGenerating: boolean
   conversation: ConversationWithModel
+  isLastMessage: boolean
 
   onAttemptChange: (attempt: number) => void
   onMessageCopy: () => void
   onContinueGenerating: () => void
   onRegenerate: () => void
+  onEdit: (newMessage: string) => void
 }
 
 const preprocessMarkdown = (markdownText: string) => {
@@ -51,10 +54,12 @@ const MessageGroup = memo(
     canRegenerate,
     isGenerating,
     conversation,
+    isLastMessage,
     onAttemptChange,
     onMessageCopy,
     onContinueGenerating,
-    onRegenerate
+    onRegenerate,
+    onEdit
   }: MessageGroupProps) => {
     const { t } = useTranslation()
     const parsedContent = parseMessageWithContext(node.content)
@@ -64,7 +69,7 @@ const MessageGroup = memo(
         preprocessMarkdown(node.content)
       ) : (
         <React.Fragment key={`message-${node.id}`}>
-          <Markdown children={parsedContent.message} />
+          <Markdown className="w-fit" children={parsedContent.message} />
           {node.files.length > 0 && (
             <div className="inline-flex gap-2">
               {node.files.map((file, fileIndex) => (
@@ -123,31 +128,26 @@ const MessageGroup = memo(
           <MessageCard
             tools={node.tools}
             avatar={
-              node.role === 'user' ? (
-                <Avatar
-                  isBordered
-                  size="sm"
-                  icon={<AvatarIcon />}
-                  classNames={{
-                    base: 'bg-gradient-to-br from-[#FFB457] to-[#FF705B]',
-                    icon: 'text-black/80'
-                  }}
+              node.role === 'assistant' ? (
+                <GeneratedModel
+                  model={
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    conversation.model || ({ provider: 'default', name: t('Assistant') } as any)
+                  }
+                  showBadge={node.finishReason === 'error'}
                 />
-              ) : (
-                <Avatar
-                  src={logo}
-                  size="sm"
-                  radius="full"
-                  className="bg-foreground dark:bg-background"
-                  isBordered
-                />
-              )
+              ) : null
             }
             attempts={attempts}
             currentAttempt={currentAttempt}
             message={message}
             messageContext={parsedContent.context}
-            messageClassName={node.role === 'user' ? 'bg-content3 text-content3-foreground' : ''}
+            messageClassName={
+              node.role === 'user'
+                ? 'bg-content3 text-content3-foreground px-4 py-3 ml-auto w-fit ml-auto'
+                : ''
+            }
+            className={node.role === 'user' ? 'flex-row items-start justify-end gap-1.5' : ''}
             showFeedback={node.role === 'assistant' && (!!node.promptTokens || !!node.finishReason)}
             status={node.finishReason}
             onAttemptChange={onAttemptChange}
@@ -165,9 +165,13 @@ const MessageGroup = memo(
                 // responseTime: rest.responseTime ? `${rest.responseTime / 1000}` : 0
               } as Record<string, string>
             }
+            canEdit={node.role === 'user' && node.files.length === 0}
             onRegenerate={onRegenerate}
             canRegenerate={canRegenerate}
             model={conversation.model}
+            onEdit={onEdit}
+            isGenerating={isGenerating}
+            isLastMessage={isLastMessage}
           />
         )}
         {children}

@@ -1,39 +1,65 @@
 import { Icon } from '@iconify/react'
-import { Image, Tooltip } from '@nextui-org/react'
+import { Badge, Avatar } from '@nextui-org/react'
 
 import { Model } from '@/shared/db/models/Model'
 import { Integrations } from '@/shared/types/Integrations'
 
 interface GeneratedModelProps {
   model: Model
+  showBadge?: boolean
 }
 
-const GeneratedModel = ({ model }: GeneratedModelProps) => {
+const GeneratedModel = ({ model, showBadge }: GeneratedModelProps) => {
   const icons = {
     [Integrations.githubModels]: (
-      <Icon className="min-w-6 text-large text-default-500" icon="simple-icons:github" />
-    ),
-    [Integrations.ollama]: (
-      <Icon className="min-w-6 text-large text-default-500" icon="simple-icons:ollama" />
-    ),
-    [Integrations.groq]: (
-      <Image
-        src="https://www.google.com/s2/favicons?domain=https://groq.com/&sz=128"
-        width={24}
-        height={24}
-        className="min-w-6"
-        fallbackSrc={<Icon className="text-large text-default-500" icon="majesticons:robot-line" />}
+      <Avatar
+        size="sm"
+        isBordered
+        className="h-4 w-4"
+        icon={<Icon className="text-large" icon="simple-icons:github" />}
       />
     ),
-    default: <Icon className="text-large text-default-500" icon="majesticons:robot-line" />
+    [Integrations.ollama]: (
+      <Avatar
+        isBordered
+        className="h-4 w-4"
+        size="sm"
+        icon={<Icon className="text-large" icon="simple-icons:ollama" />}
+      />
+    ),
+    [Integrations.groq]: (
+      <Avatar
+        isBordered
+        size="sm"
+        className="h-4 w-4"
+        src="https://www.google.com/s2/favicons?domain=https://groq.com/&sz=128"
+        fallback={<Icon className="text-large" icon="majesticons:robot-line" />}
+      />
+    ),
+    default: (
+      <Avatar
+        isBordered
+        className="h-4 w-4"
+        size="sm"
+        icon={<Icon className="text-large" icon="majesticons:robot-line" />}
+      />
+    )
   }
 
   return (
     <div className="flex items-center space-x-2">
-      {icons[model.provider as keyof typeof icons] ?? icons.default}
-      <Tooltip content={model.name} placement="top">
-        <span className="line-clamp-1">{model.name}</span>
-      </Tooltip>
+      <Badge
+        isOneChar
+        color="danger"
+        content={<Icon className="text-background" icon="gravity-ui:circle-exclamation-fill" />}
+        isInvisible={!showBadge}
+        placement="bottom-right"
+        shape="circle"
+      >
+        {icons[model.provider as keyof typeof icons] ?? icons.default}
+      </Badge>
+
+      <span className="line-clamp-1 text-small font-medium">{model.name}</span>
     </div>
   )
 }

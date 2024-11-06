@@ -331,5 +331,9 @@
     }
   },
   "githubModels": "GitHub моделі",
-  "deletedConversation": "Бесіда успішно видалена"
+  "deletedConversation": "Бесіда успішно видалена",
+  "send": "Надіслати",
+  "editMessage": "Редагувати повідомлення",
+  "newMessage": "Введіть нове повідомлення",
+  "rename": "Перейменувати"
 }

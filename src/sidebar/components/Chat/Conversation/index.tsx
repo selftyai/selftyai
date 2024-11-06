@@ -19,7 +19,7 @@ const Conversation = memo(
   React.forwardRef<HTMLDivElement, ConversationProps>(({ messages, isGenerating }, ref) => {
     const { t } = useTranslation()
     const { selectedModel } = useModels()
-    const { selectedConversation, continueGenerating, regenerateResponse } = useChat()
+    const { selectedConversation, continueGenerating, regenerateResponse, sendMessage } = useChat()
     const { branchPath, updateBranchPath } = useBranch()
 
     const messageTree = useMemo(() => buildMessageTree(messages || []), [messages])
@@ -37,19 +37,21 @@ const Conversation = memo(
       parent: TreeNode | null = null
     ): React.ReactNode {
       return nodes.map((node) => {
+        if (!branchPath.includes(node.id!)) return null
+
         const newPath = [...path, node.id!]
+
+        const parentNode = parent || { children: nodes }
 
         return (
           <MessageGroup
             key={node.id}
             node={node}
-            attempts={parent ? parent.children.length : 1}
+            attempts={parentNode.children.length || 1}
             currentAttempt={
-              parent
-                ? parent.children.findIndex(
-                    (child) => child.id === branchPath[newPath.length - 1]
-                  ) + 1
-                : 1
+              parentNode.children.findIndex(
+                (child) => child.id === branchPath[newPath.length - 1]
+              ) + 1 || 1
             }
             isGenerating={
               isGenerating &&
@@ -61,18 +63,18 @@ const Conversation = memo(
             canContinue={!!selectedModel}
             canRegenerate={!!selectedModel}
             onAttemptChange={(attempt) => {
-              if (!parent) return
-
               updateBranchPath(
                 selectBranch(messageTree, [
                   ...newPath.slice(0, -1),
-                  parent.children[attempt - 1].id!
+                  parentNode.children[attempt - 1].id!
                 ])
               )
             }}
             onMessageCopy={handleMessageCopy}
             onContinueGenerating={() => continueGenerating(node.id!)}
             onRegenerate={() => parent && regenerateResponse(parent.id!)}
+            onEdit={(newMessage) => sendMessage(newMessage, node.files, parent?.id || null)}
+            isLastMessage={newPath.length === branchPath.length}
           >
             {node?.children.length > 0 &&
               renderMessages(

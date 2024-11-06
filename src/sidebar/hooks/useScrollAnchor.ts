@@ -27,7 +27,8 @@ export const useScrollAnchor = () => {
 
   const handleScroll = useCallback((target: HTMLElement) => {
     const { scrollTop, scrollHeight, clientHeight } = target
-    const isAtBottom = scrollHeight - clientHeight <= scrollTop + 1
+    const buttonSize = 40
+    const isAtBottom = scrollHeight - clientHeight - buttonSize <= scrollTop + 1
     const hasScroll = scrollHeight > clientHeight
 
     setIsAtBottom(isAtBottom)

@@ -7,11 +7,10 @@ import { useTranslation } from 'react-i18next'
 import { File } from '@/shared/db/models/File'
 import ContextField from '@/sidebar/components/Textarea/ContextField'
 import PromptInput from '@/sidebar/components/Textarea/PromptInput'
+import SelectModelDropdown from '@/sidebar/components/Textarea/SelectModelDropdown'
+import SelectToolDropdown from '@/sidebar/components/Textarea/SelectToolDropdown'
 import { useEnterSubmit } from '@/sidebar/hooks/useEnterSubmit'
 import { useChat, useModels } from '@/sidebar/providers/ChatProvider'
-
-import SelectModelDropdown from './SelectModelDropdown'
-import SelectToolDropdown from './SelectToolDropdown'
 
 interface TextAreaProps {
   selectedPrompt?: string
@@ -203,9 +202,10 @@ const TextArea = memo(({ selectedPrompt, clearPrompt }: TextAreaProps) => {
         <div className="flex w-full flex-wrap items-end justify-between gap-2 px-3 pb-4">
           <div className="inline-flex flex-wrap gap-2">
             <SelectModelDropdown
+              withIcon
               models={models}
-              onSelectModel={selectModel}
               selectedModel={selectedModel}
+              onSelectModel={selectModel}
             />
             <SelectToolDropdown />
           </div>

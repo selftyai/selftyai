@@ -7,7 +7,8 @@ import {
   DropdownSection,
   DropdownItem,
   Chip,
-  Image
+  Image,
+  Tooltip
 } from '@nextui-org/react'
 import { memo, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -15,15 +16,17 @@ import { useNavigate } from 'react-router-dom'
 
 import { Model } from '@/shared/db/models/Model'
 import { Integrations } from '@/shared/types/Integrations'
+import useMediaQuery from '@/sidebar/hooks/useMediaQuery'
 
 interface SelectModelDropdownProps {
+  withIcon?: boolean
   models: Model[]
   selectedModel?: Model
   onSelectModel: (model: string) => void
 }
 
 const SelectModelDropdown = memo(
-  ({ models, selectedModel, onSelectModel }: SelectModelDropdownProps) => {
+  ({ withIcon, models, selectedModel, onSelectModel }: SelectModelDropdownProps) => {
     const { t } = useTranslation()
     const navigator = useNavigate()
 
@@ -62,16 +65,27 @@ const SelectModelDropdown = memo(
       }
     }
 
+    const isMobile = useMediaQuery('(max-width: 640px)')
+
     return (
       <Dropdown className="bg-content1" placement="top-start">
         <DropdownTrigger>
           <Button
             size="sm"
-            startContent={<Icon className="text-medium text-warning-500" icon="proicons:sparkle" />}
             variant="flat"
             className="h-auto min-h-8 whitespace-normal py-1"
+            isIconOnly={isMobile && withIcon}
           >
-            <p className="break-words">{selectedModel ? selectedModel.name : t('selectModel')}</p>
+            {isMobile && withIcon ? (
+              <Tooltip content={selectedModel ? selectedModel.name : t('selectModel')}>
+                <Icon className="text-medium text-warning-500" icon="proicons:sparkle" />
+              </Tooltip>
+            ) : (
+              <div className="inline-flex gap-2">
+                <Icon className="text-medium text-warning-500" icon="proicons:sparkle" />
+                <p>{selectedModel ? selectedModel.name : t('selectModel')}</p>
+              </div>
+            )}
           </Button>
         </DropdownTrigger>
         <DropdownMenu
