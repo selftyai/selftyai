@@ -49,11 +49,11 @@ const ReadAloudButton = ({ message }: ReadAloudButtonProps) => {
   }, [])
 
   return (
-    <Tooltip content={t(speaking ? 'stopButton' : 'readAloud')} placement="bottom">
+    <Tooltip showArrow content={t(speaking ? 'stopButton' : 'readAloud')} placement="bottom">
       <div>
         <Popover placement="bottom">
           <PopoverTrigger>
-            <Button isIconOnly radius="full" size="sm" variant="flat">
+            <Button isIconOnly radius="sm" size="sm" variant="ghost" className="border-0 ring-0">
               <Icon className="text-lg text-default-600" icon="gravity-ui:volume" />
             </Button>
           </PopoverTrigger>

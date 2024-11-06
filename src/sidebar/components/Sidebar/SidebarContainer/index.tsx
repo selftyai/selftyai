@@ -12,10 +12,10 @@ import {
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Markdown from 'react-markdown'
 import { useNavigate } from 'react-router-dom'
 
 import logo from '@/shared/assets/logo.svg'
+import Markdown from '@/sidebar/components/Chat/Message/Markdown'
 import RecentPromptDropdown from '@/sidebar/components/Sidebar/SidebarContainer/RecentPromptDropdown'
 import { Section, groupConversations } from '@/sidebar/components/Sidebar/SidebarContainer/utils'
 import SidebarDrawer from '@/sidebar/components/Sidebar/SidebarDrawer'
@@ -176,14 +176,7 @@ const Sidebar = ({
                     }
                     textValue={conversation.title}
                   >
-                    <Markdown
-                      components={{
-                        p: ({ children }) => <span>{children}</span>,
-                        strong: ({ children }) => <span>{children}</span>
-                      }}
-                    >
-                      {conversation.title}
-                    </Markdown>
+                    <Markdown className="[&>p]:truncate" children={conversation.title} />
                   </ListboxItem>
                 )}
               </ListboxSection>
@@ -231,7 +224,7 @@ const Sidebar = ({
   )
 
   return (
-    <div className="flex h-dvh w-full py-4">
+    <div className="flex h-dvh w-full py-1 md:py-4">
       <SidebarDrawer
         className="h-full flex-none rounded-[14px] bg-default-50"
         isOpen={isOpen}
@@ -239,7 +232,7 @@ const Sidebar = ({
       >
         {content}
       </SidebarDrawer>
-      <div className="flex w-full flex-col px-4 lg:max-w-[calc(100%_-_288px)]">
+      <div className="flex w-full flex-col px-1 md:px-4 lg:max-w-[calc(100%_-_288px)]">
         <header
           className={cn(
             'flex h-16 min-h-16 items-center justify-between gap-2 rounded-none rounded-t-medium border-small border-divider px-4 py-3',
@@ -262,15 +255,10 @@ const Sidebar = ({
           </Button>
           {(title || subTitle) && (
             <div className="w-full min-w-[120px] flex-1 sm:w-auto">
-              <div className="flex items-center justify-center truncate text-small font-semibold leading-5 text-foreground">
-                <Markdown
-                  components={{
-                    p: ({ children }) => <span>{children}</span>,
-                    strong: ({ children }) => <span>{children}</span>
-                  }}
-                >
-                  {title}
-                </Markdown>
+              <div className="flex items-center justify-center text-small font-semibold leading-5 text-foreground">
+                <div className="flex-1 truncate text-center">
+                  <Markdown className="[&>p]:truncate" children={title || ''} />
+                </div>
               </div>
               <div className="truncate text-small font-normal leading-5 text-default-500">
                 {subTitle}
@@ -279,10 +267,8 @@ const Sidebar = ({
           )}
           {header}
         </header>
-        <main className="flex h-full">
-          <div className="flex h-full w-full flex-col gap-4 rounded-none rounded-b-medium border-0 border-b border-l border-r border-divider py-3">
-            {children}
-          </div>
+        <main className="flex h-full max-h-[calc(100%_-_40px)] flex-col rounded-none rounded-b-medium border-0 border-b border-l border-r border-divider">
+          {children}
         </main>
       </div>
     </div>

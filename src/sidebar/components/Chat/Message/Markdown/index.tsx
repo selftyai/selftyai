@@ -1,4 +1,3 @@
-import { Icon } from '@iconify/react'
 import { Link } from '@nextui-org/react'
 import { useClipboard } from '@nextui-org/use-clipboard'
 import 'katex/dist/katex.min.css'
@@ -15,7 +14,12 @@ const remarkMathOptions = {
   singleDollarTextMath: true
 }
 
-const NonMemoizedMarkdown = ({ children }: { children: string }) => {
+interface MarkdownProps {
+  className?: string
+  children: string
+}
+
+const NonMemoizedMarkdown = ({ children, className }: MarkdownProps) => {
   const { copied, copy } = useClipboard()
 
   const handleCopy = useCallback(
@@ -80,9 +84,8 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
     },
     a({ href, children }) {
       return (
-        <Link href={href} target="_blank" rel="noopener noreferrer" size="sm">
+        <Link href={href} size="sm" isExternal showAnchorIcon>
           {children}
-          <Icon icon="akar-icons:link-out" className="ml-1 inline-block" />
         </Link>
       )
     },
@@ -132,7 +135,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
 
   return (
     <ReactMarkdown
-      className="break-words prose-p:leading-relaxed prose-pre:p-0"
+      className={className || 'break-words prose-p:leading-relaxed prose-pre:p-0'}
       rehypePlugins={[rehypeRaw, rehypeKatex]}
       remarkPlugins={[remarkGfm, [remarkMath, remarkMathOptions]]}
       components={components}

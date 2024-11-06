@@ -331,5 +331,9 @@
     }
   },
   "githubModels": "GitHub Models",
-  "deletedConversation": "Conversation deleted successfully"
+  "deletedConversation": "Conversation deleted successfully",
+  "send": "Send",
+  "editMessage": "Edit message",
+  "newMessage": "Type new message",
+  "rename": "Rename"
 }

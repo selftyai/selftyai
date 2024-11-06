@@ -43,7 +43,8 @@ const ChatContext = React.createContext<
       tools: string[]
       sendMessage: (
         message: string,
-        images: Omit<File, 'conversationId' | 'messageId'>[]
+        images: Omit<File, 'conversationId' | 'messageId'>[],
+        parentMessageId?: number | null
       ) => Promise<void>
       deleteConversation: (id?: number) => Promise<void>
       pinConversation: (id?: number) => Promise<void>
@@ -167,7 +168,11 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   }, [addMessageListener, sendPortMessage])
 
   const sendMessage = useCallback(
-    async (message: string, images: Omit<File, 'conversationId' | 'messageId'>[] = []) => {
+    async (
+      message: string,
+      images: Omit<File, 'conversationId' | 'messageId'>[] = [],
+      parentMessageId?: number | null
+    ) => {
       const trimmedMessage = message.trim()
       if (!trimmedMessage || !selectedModel || !selectedModel.id) return
 
@@ -192,7 +197,10 @@ const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         message: prompt,
         files: images,
         tools,
-        parentMessageId: branchRecord?.branchPath[branchRecord?.branchPath.length - 1]
+        parentMessageId:
+          parentMessageId === null
+            ? undefined
+            : parentMessageId || branchRecord?.branchPath[branchRecord?.branchPath.length - 1]
       })
 
       setContext(undefined)

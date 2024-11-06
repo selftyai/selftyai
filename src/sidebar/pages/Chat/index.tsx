@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react'
 import { Card, CardHeader, CardBody, Avatar, Button } from '@nextui-org/react'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import logo from '@/shared/assets/logo.svg'
@@ -14,11 +14,35 @@ import { useTheme } from '@/sidebar/providers/ThemeProvider'
 
 const Chat = () => {
   const [prompt, setPrompt] = useState<string>()
+  const [userHasScrolled, setUserHasScrolled] = useState(false)
 
   const { theme } = useTheme()
   const { messages, selectedConversation } = useChat()
+
   const { scrollRef, scrollToBottom, showScrollToBottom, handleScroll } = useScrollAnchor()
   const { t } = useTranslation()
+
+  useEffect(() => {
+    if (selectedConversation && messages.length && !selectedConversation.generating) {
+      scrollToBottom()
+      // TODO: Find a better way to scroll to bottom after messages are rendered
+      setTimeout(() => scrollToBottom(), 100)
+    }
+  }, [messages, selectedConversation, scrollToBottom])
+
+  useEffect(() => {
+    if (!userHasScrolled && selectedConversation?.generating) {
+      scrollToBottom()
+    }
+  }, [messages, selectedConversation?.generating, scrollToBottom, userHasScrolled])
+
+  const handleScrollEvent = (target: HTMLElement) => {
+    handleScroll(target)
+
+    const { scrollHeight, scrollTop, clientHeight } = target
+    const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 30
+    setUserHasScrolled(!isAtBottom)
+  }
 
   const prompts = t('prompts', { returnObjects: true }) as {
     id: string
@@ -35,11 +59,11 @@ const Chat = () => {
         }}
         title={selectedConversation?.title}
       >
-        <div className="relative mx-auto flex h-full max-h-[90dvh] w-full flex-col px-0 sm:px-6 lg:max-w-3xl">
+        <div className="relative mx-auto flex h-full w-full flex-col px-0 sm:px-6 lg:max-w-3xl">
           {selectedConversation ? (
             <OverlayScrollbarsComponent
               ref={scrollRef}
-              className="relative flex h-full flex-1 flex-col gap-6 overflow-y-auto pb-8 md:p-6"
+              className="flex h-full flex-1 flex-col gap-6 overflow-y-auto px-1 pb-8 pt-2 md:p-6"
               options={{
                 scrollbars: {
                   autoHide: 'scroll',
@@ -50,11 +74,11 @@ const Chat = () => {
               events={{
                 scroll(_, event) {
                   if (event.target instanceof HTMLElement) {
-                    handleScroll(event.target)
+                    handleScrollEvent(event.target)
                   }
                 },
                 updated(instance) {
-                  handleScroll(instance.elements().scrollOffsetElement)
+                  handleScrollEvent(instance.elements().scrollOffsetElement)
                 }
               }}
               defer
@@ -64,15 +88,17 @@ const Chat = () => {
                 isGenerating={selectedConversation?.generating || false}
               />
               {showScrollToBottom && (
-                <Button
-                  variant="flat"
-                  isIconOnly
-                  radius="full"
-                  className="fixed bottom-[27vh] left-[45vw] z-10 bg-content1 transition-opacity duration-300 lg:left-[calc(40vw_+_288px)]"
-                  onClick={scrollToBottom}
-                >
-                  <Icon icon="akar-icons:arrow-down" />
-                </Button>
+                <div className="sticky -bottom-3 flex items-center justify-center">
+                  <Button
+                    variant="solid"
+                    isIconOnly
+                    radius="full"
+                    className="z-10"
+                    onClick={scrollToBottom}
+                  >
+                    <Icon icon="akar-icons:arrow-down" />
+                  </Button>
+                </div>
               )}
             </OverlayScrollbarsComponent>
           ) : (
@@ -103,7 +129,7 @@ const Chat = () => {
             </div>
           )}
 
-          <div className="mt-auto flex max-w-full flex-col gap-2 px-2.5">
+          <div className="mt-auto flex max-w-full flex-col gap-2 px-1 pb-1 sm:px-2.5">
             <Textarea selectedPrompt={prompt} clearPrompt={() => setPrompt('')} />
             <p className="hidden px-2 text-center text-xs font-medium leading-5 text-default-500 sm:block">
               {t('disclaimer')}
